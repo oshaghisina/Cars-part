@@ -9,7 +9,7 @@ from app.services.user_service import UserService
 from app.schemas.user_schemas import (
     UserCreate, UserUpdate, UserResponse, UserSummary, UserLogin,
     UserStatistics, LoginResponse, UserListResponse, 
-    PasswordChange, BulkUserCreate, BulkRoleAssignment
+    PasswordChange, BulkUserCreate
 )
 from app.core.auth import create_access_token, verify_token, get_current_user
 from app.db.models import User
