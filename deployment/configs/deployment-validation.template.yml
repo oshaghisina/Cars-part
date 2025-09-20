@@ -1,0 +1,262 @@
+# 🔍 Deployment Validation Configuration Template
+# This template defines validation rules and checks for deployments
+
+# Validation Categories
+validation:
+  
+  # System Resource Validation
+  system_resources:
+    enabled: true
+    checks:
+      disk_space:
+        enabled: true
+        minimum_free_gb: 1
+        warning_threshold_gb: 2
+        check_paths:
+          - "/"
+          - "${APP_BASE_DIR}"
+          
+      memory:
+        enabled: true
+        minimum_free_mb: 512
+        warning_threshold_mb: 1024
+        
+      cpu:
+        enabled: true
+        max_usage_percent: 90
+        warning_threshold_percent: 80
+
+  # Network Validation
+  network:
+    enabled: true
+    checks:
+      port_availability:
+        enabled: true
+        required_ports:
+          - "${API_PORT:-8001}"
+          - "${BOT_PORT:-8002}"
+          
+      connectivity:
+        enabled: true
+        endpoints:
+          - "https://api.github.com"
+          - "https://registry.npmjs.org"
+          - "https://pypi.org"
+          
+      dns_resolution:
+        enabled: true
+        domains:
+          - "${ENV_DOMAIN}"
+          - "github.com"
+          - "npmjs.org"
+
+  # Service Validation
+  services:
+    enabled: true
+    checks:
+      systemd_services:
+        enabled: true
+        required_services:
+          - "nginx"
+          - "systemd-resolved"
+          
+      process_checks:
+        enabled: true
+        processes:
+          - "nginx"
+          - "python3.11"
+          - "node"
+
+  # Application Validation
+  application:
+    enabled: true
+    checks:
+      repository:
+        enabled: true
+        checks:
+          - "branch_exists"
+          - "commit_exists"
+          - "no_uncommitted_changes"
+          
+      dependencies:
+        enabled: true
+        python:
+          enabled: true
+          requirements_file: "requirements.txt"
+          check_versions: true
+          
+        node:
+          enabled: true
+          package_file: "app/frontend/panel/package.json"
+          lock_file: "app/frontend/panel/package-lock.json"
+          check_versions: true
+          
+      configuration:
+        enabled: true
+        files:
+          - "${APP_BASE_DIR}/.env"
+          - "${APP_BASE_DIR}/deployment/configs/production.env"
+          
+      database:
+        enabled: true
+        checks:
+          - "connection_test"
+          - "migration_status"
+          - "backup_available"
+
+  # Security Validation
+  security:
+    enabled: true
+    checks:
+      ssh_access:
+        enabled: true
+        user: "${SERVER_USER}"
+        host: "${SERVER_HOST}"
+        timeout: 10
+        
+      file_permissions:
+        enabled: true
+        critical_files:
+          - "${APP_BASE_DIR}/.env"
+          - "${APP_BASE_DIR}/data/"
+          - "/etc/systemd/system/china-car-parts-*.service"
+          
+      ssl_certificates:
+        enabled: ${SSL_ENABLED:-true}
+        domain: "${ENV_DOMAIN}"
+        check_expiry: true
+        warning_days: 30
+
+  # Performance Validation
+  performance:
+    enabled: true
+    checks:
+      response_times:
+        enabled: true
+        endpoints:
+          - "${ENV_DOMAIN}/api/v1/health"
+          - "${ENV_DOMAIN}/"
+        max_response_time_ms: 2000
+        
+      resource_usage:
+        enabled: true
+        max_cpu_percent: 80
+        max_memory_percent: 80
+        max_disk_usage_percent: 90
+
+# Validation Execution
+execution:
+  # Validation phases
+  phases:
+    pre_deploy:
+      enabled: true
+      parallel: false
+      timeout_minutes: 10
+      categories:
+        - "system_resources"
+        - "network"
+        - "services"
+        - "application.repository"
+        - "application.dependencies"
+        - "security"
+        
+    post_deploy:
+      enabled: true
+      parallel: true
+      timeout_minutes: 15
+      categories:
+        - "application.configuration"
+        - "application.database"
+        - "performance"
+        
+    rollback_check:
+      enabled: true
+      parallel: false
+      timeout_minutes: 5
+      categories:
+        - "system_resources"
+        - "services"
+
+  # Failure handling
+  failure_handling:
+    on_validation_failure:
+      action: "stop_deployment"  # stop_deployment, warn_and_continue, retry
+      retry_attempts: 3
+      retry_delay_seconds: 30
+      
+    on_warning:
+      action: "log_and_continue"  # log_and_continue, stop_deployment
+      
+    on_critical_failure:
+      action: "stop_deployment"
+      notify: true
+
+# Reporting
+reporting:
+  enabled: true
+  
+  # Report formats
+  formats:
+    - "console"
+    - "json"
+    - "html"
+    
+  # Report locations
+  output:
+    console: true
+    file: "${APP_BASE_DIR}/logs/validation-report.json"
+    html: "${APP_BASE_DIR}/logs/validation-report.html"
+    
+  # Notifications
+  notifications:
+    enabled: ${NOTIFICATIONS_ENABLED:-false}
+    on_failure: true
+    on_warning: false
+    on_success: false
+    
+    channels:
+      slack:
+        enabled: false
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+        
+      email:
+        enabled: false
+        smtp_server: "${SMTP_SERVER}"
+        recipients: ["${ADMIN_EMAIL}"]
+
+# Environment-specific overrides
+overrides:
+  staging:
+    validation:
+      system_resources:
+        checks:
+          disk_space:
+            minimum_free_gb: 0.5  # Lower threshold for staging
+            
+      performance:
+        checks:
+          response_times:
+            max_response_time_ms: 5000  # More lenient for staging
+            
+  production:
+    validation:
+      system_resources:
+        checks:
+          disk_space:
+            minimum_free_gb: 2  # Higher threshold for production
+            
+      performance:
+        checks:
+          response_times:
+            max_response_time_ms: 1000  # Stricter for production
+            
+      security:
+        checks:
+          ssl_certificates:
+            warning_days: 60  # Earlier warning for production
+            
+    execution:
+      failure_handling:
+        on_validation_failure:
+          action: "stop_deployment"
+          notify: true

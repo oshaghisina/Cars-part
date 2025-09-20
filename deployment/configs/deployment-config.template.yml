@@ -1,0 +1,193 @@
+# 🚀 Deployment Configuration Template
+# This template provides a standardized configuration structure for deployments
+
+# Environment Configuration
+environment:
+  name: "${ENV_NAME}"  # staging, production, development
+  description: "${ENV_DESCRIPTION}"
+  domain: "${ENV_DOMAIN}"
+  ssl_enabled: ${SSL_ENABLED:-true}
+
+# Server Configuration
+server:
+  host: "${SERVER_HOST}"
+  user: "${SERVER_USER}"
+  ssh_key_path: "${SSH_KEY_PATH}"
+  port: ${SSH_PORT:-22}
+  
+# Application Configuration
+application:
+  name: "china-car-parts"
+  version: "${APP_VERSION}"
+  repository:
+    url: "${REPO_URL}"
+    branch: "${REPO_BRANCH}"
+    commit_sha: "${COMMIT_SHA}"
+  
+  # Directory Configuration
+  directories:
+    base: "${APP_BASE_DIR}"
+    logs: "${APP_BASE_DIR}/logs"
+    backups: "${APP_BASE_DIR}/backups"
+    configs: "${APP_BASE_DIR}/configs"
+    data: "${APP_BASE_DIR}/data"
+
+# Service Configuration
+services:
+  api:
+    name: "china-car-parts-api"
+    port: ${API_PORT:-8001}
+    workers: ${API_WORKERS:-4}
+    timeout: ${API_TIMEOUT:-30}
+    health_check:
+      endpoint: "/api/v1/health"
+      timeout: 30
+      retries: 3
+      
+  bot:
+    name: "china-car-parts-bot"
+    enabled: ${BOT_ENABLED:-true}
+    health_check:
+      enabled: false  # Bot doesn't have HTTP health check
+      
+  nginx:
+    name: "nginx"
+    config_path: "/etc/nginx/sites-available/china-car-parts"
+    reload_after_deploy: true
+
+# Database Configuration
+database:
+  type: "sqlite"  # sqlite, postgresql, mysql
+  path: "${APP_BASE_DIR}/data/china_car_parts.db"
+  backup:
+    enabled: true
+    retention_days: 30
+    before_migration: true
+
+# Frontend Configuration
+frontend:
+  build_command: "npm run build"
+  build_directory: "app/frontend/panel"
+  static_path: "${APP_BASE_DIR}/app/frontend/panel/dist"
+  nginx_serve: true
+
+# Deployment Strategy
+deployment:
+  strategy: "${DEPLOYMENT_STRATEGY:-rolling}"  # rolling, blue-green, canary
+  max_parallel: 1
+  timeout_minutes: 30
+  
+  # Blue-Green Configuration (if strategy is blue-green)
+  blue_green:
+    blue_port: 8001
+    green_port: 8002
+    switch_timeout: 60
+    rollback_timeout: 60
+    
+  # Health Checks
+  health_checks:
+    enabled: true
+    timeout: 300
+    retries: 30
+    interval: 10
+    
+  # Rollback Configuration
+  rollback:
+    enabled: true
+    automatic_on_failure: false
+    max_rollback_attempts: 3
+
+# Monitoring and Logging
+monitoring:
+  enabled: ${MONITORING_ENABLED:-true}
+  log_level: "${LOG_LEVEL:-INFO}"
+  log_file: "${APP_BASE_DIR}/logs/deployment.log"
+  
+  # Metrics
+  metrics:
+    enabled: ${METRICS_ENABLED:-true}
+    endpoint: "/api/v1/metrics"
+    
+  # Alerts
+  alerts:
+    enabled: ${ALERTS_ENABLED:-false}
+    webhook_url: "${ALERT_WEBHOOK_URL}"
+    channels: ["slack", "email"]
+
+# Security Configuration
+security:
+  ssh:
+    strict_host_key_checking: false
+    connection_timeout: 10
+    
+  # Secrets Management
+  secrets:
+    env_file: "${APP_BASE_DIR}/.env"
+    backup_before_deploy: true
+    
+  # Firewall
+  firewall:
+    enabled: ${FIREWALL_ENABLED:-true}
+    allowed_ports: [22, 80, 443, 8001, 8002]
+
+# Backup Configuration
+backup:
+  enabled: ${BACKUP_ENABLED:-true}
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  
+  # Database Backup
+  database:
+    enabled: true
+    retention_days: 30
+    compression: true
+    
+  # Configuration Backup
+  configs:
+    enabled: true
+    retention_days: 90
+    
+  # Log Backup
+  logs:
+    enabled: true
+    retention_days: 30
+    compression: true
+
+# Validation Rules
+validation:
+  # Pre-deployment checks
+  pre_deploy:
+    - check_disk_space
+    - check_memory
+    - check_ports
+    - check_services
+    - validate_config
+    
+  # Post-deployment checks
+  post_deploy:
+    - health_check
+    - smoke_tests
+    - performance_check
+    
+  # Rollback triggers
+  rollback_triggers:
+    - health_check_failure
+    - smoke_test_failure
+    - performance_degradation
+
+# Environment-specific overrides
+overrides:
+  staging:
+    deployment:
+      timeout_minutes: 20
+    monitoring:
+      log_level: "DEBUG"
+      
+  production:
+    deployment:
+      timeout_minutes: 45
+      rollback:
+        automatic_on_failure: true
+    monitoring:
+      log_level: "INFO"
+      alerts:
+        enabled: true

@@ -1,0 +1,298 @@
+# 📊 Deployment Status Reporting Configuration Template
+# This template defines how deployment status is tracked and reported
+
+# Status Tracking
+status_tracking:
+  enabled: true
+  
+  # Status file location
+  status_file: "${APP_BASE_DIR}/logs/deployment-status.json"
+  
+  # Status history
+  history:
+    enabled: true
+    max_entries: 100
+    retention_days: 90
+    
+  # Real-time monitoring
+  realtime:
+    enabled: ${REALTIME_MONITORING:-true}
+    update_interval_seconds: 30
+
+# Deployment Phases
+phases:
+  - name: "pre_validation"
+    description: "Pre-deployment validation checks"
+    timeout_minutes: 10
+    
+  - name: "code_deployment"
+    description: "Code deployment and updates"
+    timeout_minutes: 15
+    
+  - name: "dependency_installation"
+    description: "Installing dependencies"
+    timeout_minutes: 10
+    
+  - name: "database_migration"
+    description: "Database schema migrations"
+    timeout_minutes: 5
+    
+  - name: "service_restart"
+    description: "Restarting application services"
+    timeout_minutes: 5
+    
+  - name: "health_checks"
+    description: "Post-deployment health checks"
+    timeout_minutes: 10
+    
+  - name: "smoke_tests"
+    description: "Basic functionality tests"
+    timeout_minutes: 5
+    
+  - name: "performance_validation"
+    description: "Performance validation checks"
+    timeout_minutes: 5
+
+# Status Definitions
+status_definitions:
+  pending:
+    color: "yellow"
+    icon: "⏳"
+    description: "Deployment phase is waiting to start"
+    
+  running:
+    color: "blue"
+    icon: "🔄"
+    description: "Deployment phase is currently running"
+    
+  success:
+    color: "green"
+    icon: "✅"
+    description: "Deployment phase completed successfully"
+    
+  warning:
+    color: "orange"
+    icon: "⚠️"
+    description: "Deployment phase completed with warnings"
+    
+  failed:
+    color: "red"
+    icon: "❌"
+    description: "Deployment phase failed"
+    
+  skipped:
+    color: "gray"
+    icon: "⏭️"
+    description: "Deployment phase was skipped"
+    
+  cancelled:
+    color: "purple"
+    icon: "🛑"
+    description: "Deployment phase was cancelled"
+
+# Metrics Collection
+metrics:
+  enabled: true
+  
+  # Performance metrics
+  performance:
+    enabled: true
+    collection_interval_seconds: 30
+    
+    metrics:
+      - "response_time"
+      - "cpu_usage"
+      - "memory_usage"
+      - "disk_usage"
+      - "network_io"
+      - "active_connections"
+      
+  # Application metrics
+  application:
+    enabled: true
+    
+    metrics:
+      - "request_count"
+      - "error_rate"
+      - "response_codes"
+      - "database_connections"
+      - "queue_size"
+
+# Reporting Formats
+reporting:
+  
+  # Console output
+  console:
+    enabled: true
+    format: "colored"  # colored, plain
+    show_progress: true
+    show_timestamps: true
+    
+  # JSON report
+  json:
+    enabled: true
+    output_file: "${APP_BASE_DIR}/logs/deployment-report.json"
+    include_metrics: true
+    include_logs: false
+    
+  # HTML report
+  html:
+    enabled: true
+    output_file: "${APP_BASE_DIR}/logs/deployment-report.html"
+    template: "default"  # default, detailed, summary
+    include_charts: true
+    
+  # Markdown report
+  markdown:
+    enabled: false
+    output_file: "${APP_BASE_DIR}/logs/deployment-report.md"
+    
+  # CSV export
+  csv:
+    enabled: false
+    output_file: "${APP_BASE_DIR}/logs/deployment-metrics.csv"
+    include_timestamps: true
+
+# Notifications
+notifications:
+  enabled: ${NOTIFICATIONS_ENABLED:-false}
+  
+  # Notification triggers
+  triggers:
+    deployment_started:
+      enabled: true
+      channels: ["console"]
+      
+    deployment_completed:
+      enabled: true
+      channels: ["console", "json"]
+      
+    deployment_failed:
+      enabled: true
+      channels: ["console", "json", "slack", "email"]
+      
+    phase_failed:
+      enabled: true
+      channels: ["console", "json"]
+      
+    performance_degradation:
+      enabled: false
+      threshold_percent: 20
+      channels: ["console", "slack"]
+      
+    health_check_failure:
+      enabled: true
+      channels: ["console", "slack", "email"]
+
+  # Notification channels
+  channels:
+    slack:
+      enabled: ${SLACK_NOTIFICATIONS:-false}
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+      channel: "${SLACK_CHANNEL:-#deployments}"
+      username: "Deployment Bot"
+      icon_emoji: ":rocket:"
+      
+    email:
+      enabled: ${EMAIL_NOTIFICATIONS:-false}
+      smtp_server: "${SMTP_SERVER}"
+      smtp_port: "${SMTP_PORT:-587}"
+      username: "${SMTP_USERNAME}"
+      password: "${SMTP_PASSWORD}"
+      from: "${EMAIL_FROM}"
+      to: ["${ADMIN_EMAIL}"]
+      subject_prefix: "[Deployment]"
+      
+    webhook:
+      enabled: ${WEBHOOK_NOTIFICATIONS:-false}
+      url: "${WEBHOOK_URL}"
+      method: "POST"
+      headers:
+        "Content-Type": "application/json"
+        "Authorization": "Bearer ${WEBHOOK_TOKEN}"
+
+# Dashboard Integration
+dashboard:
+  enabled: ${DASHBOARD_ENABLED:-false}
+  
+  # Real-time dashboard
+  realtime:
+    enabled: true
+    refresh_interval_seconds: 5
+    max_history_minutes: 60
+    
+  # Historical dashboard
+  historical:
+    enabled: true
+    data_retention_days: 30
+    
+  # Public dashboard
+  public:
+    enabled: false
+    url: "${DASHBOARD_PUBLIC_URL}"
+    authentication:
+      enabled: true
+      type: "basic"  # basic, token, oauth
+      credentials:
+        username: "${DASHBOARD_USERNAME}"
+        password: "${DASHBOARD_PASSWORD}"
+
+# Integration with CI/CD
+cicd_integration:
+  enabled: true
+  
+  # GitHub Actions integration
+  github_actions:
+    enabled: true
+    status_check: true
+    comment_on_pr: true
+    comment_template: "deployment-comment.md"
+    
+  # Jenkins integration
+  jenkins:
+    enabled: false
+    job_name: "${JENKINS_JOB_NAME}"
+    build_number: "${BUILD_NUMBER}"
+    
+  # GitLab CI integration
+  gitlab_ci:
+    enabled: false
+    pipeline_id: "${CI_PIPELINE_ID}"
+    job_id: "${CI_JOB_ID}"
+
+# Environment-specific overrides
+overrides:
+  staging:
+    reporting:
+      console:
+        show_progress: true
+        
+    notifications:
+      triggers:
+        deployment_started:
+          channels: ["console"]
+        deployment_completed:
+          channels: ["console", "json"]
+        deployment_failed:
+          channels: ["console", "json", "slack"]
+          
+  production:
+    reporting:
+      console:
+        show_progress: true
+        
+    notifications:
+      triggers:
+        deployment_started:
+          channels: ["console", "slack"]
+        deployment_completed:
+          channels: ["console", "json", "slack"]
+        deployment_failed:
+          channels: ["console", "json", "slack", "email"]
+        performance_degradation:
+          enabled: true
+          channels: ["console", "slack", "email"]
+          
+    dashboard:
+      realtime:
+        refresh_interval_seconds: 2  # More frequent updates for production
