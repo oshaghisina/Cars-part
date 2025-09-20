@@ -1,0 +1,263 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+  schedule:
+    - cron: '0 2 * * 1' # Weekly on Monday at 2 AM
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # Python Security Scanning
+  python-security:
+    name: Python Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Install security tools
+        run: |
+          pip install bandit safety semgrep pip-audit
+          pip install -r requirements.txt
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r app/ -f json -o bandit-report.json -ll
+          bandit -r app/ -f txt -o bandit-report.txt -ll
+        continue-on-error: true
+
+      - name: Run Safety dependency check
+        run: |
+          safety check --json --output safety-report.json
+          safety check --output safety-report.txt
+        continue-on-error: true
+
+      - name: Run pip-audit
+        run: |
+          pip-audit --format=json --output=pip-audit-report.json
+          pip-audit --format=text --output=pip-audit-report.txt
+        continue-on-error: true
+
+      - name: Run Semgrep SAST
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/python
+            p/owasp-top-ten
+            p/bandit
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Python security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-security-reports-${{ github.sha }}
+          path: |
+            bandit-report.json
+            bandit-report.txt
+            safety-report.json
+            safety-report.txt
+            pip-audit-report.json
+            pip-audit-report.txt
+          retention-days: 30
+
+  # Frontend Security Scanning
+  frontend-security:
+    name: Frontend Security Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app/frontend/panel
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/frontend/panel/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level moderate --json > npm-audit-report.json
+          npm audit --audit-level moderate > npm-audit-report.txt
+        continue-on-error: true
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN || '' }}
+        with:
+          args: --severity-threshold=high --json-file-output=snyk-report.json
+        continue-on-error: true
+
+      - name: Run OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: 'http://localhost:5173'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+        continue-on-error: true
+
+      - name: Upload frontend security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-security-reports-${{ github.sha }}
+          path: |
+            app/frontend/panel/npm-audit-report.json
+            app/frontend/panel/npm-audit-report.txt
+            app/frontend/panel/snyk-report.json
+            app/frontend/panel/zap-baseline-report.json
+          retention-days: 30
+
+  # Infrastructure Security Scanning
+  infrastructure-security:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Checkov IaC scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: dockerfile,github_actions
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+        continue-on-error: true
+
+      - name: Upload Checkov results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'checkov-results.sarif'
+
+  # Secret Scanning
+  secret-scanning:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog secret scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Run GitLeaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE || '' }}
+
+  # Security Summary
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [python-security, frontend-security, infrastructure-security, secret-scanning]
+    if: always()
+
+    steps:
+      - name: Download all security artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate security summary
+        run: |
+          echo "# 🔒 Security Scan Summary" > security-summary.md
+          echo "" >> security-summary.md
+          echo "**Scan Date:** $(date)" >> security-summary.md
+          echo "**Commit:** ${{ github.sha }}" >> security-summary.md
+          echo "**Branch:** ${{ github.ref_name }}" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          echo "## 📊 Scan Results" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "| Scanner | Status |" >> security-summary.md
+          echo "|---------|--------|" >> security-summary.md
+          echo "| Python Security | ${{ needs.python-security.result }} |" >> security-summary.md
+          echo "| Frontend Security | ${{ needs.frontend-security.result }} |" >> security-summary.md
+          echo "| Infrastructure Security | ${{ needs.infrastructure-security.result }} |" >> security-summary.md
+          echo "| Secret Scanning | ${{ needs.secret-scanning.result }} |" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          # Count vulnerabilities if reports exist
+          if [ -f "python-security-reports-${{ github.sha }}/bandit-report.json" ]; then
+            VULNS=$(jq '.results | length' "python-security-reports-${{ github.sha }}/bandit-report.json" 2>/dev/null || echo "0")
+            echo "**Bandit Findings:** $VULNS vulnerabilities" >> security-summary.md
+          fi
+          
+          if [ -f "python-security-reports-${{ github.sha }}/safety-report.json" ]; then
+            VULNS=$(jq '. | length' "python-security-reports-${{ github.sha }}/safety-report.json" 2>/dev/null || echo "0")
+            echo "**Safety Findings:** $VULNS vulnerable packages" >> security-summary.md
+          fi
+
+      - name: Comment security summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('security-summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Upload security summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-summary-${{ github.sha }}
+          path: security-summary.md
+          retention-days: 30

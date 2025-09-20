@@ -1,0 +1,360 @@
+name: 🚀 Main CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, staging, develop]
+  pull_request:
+    branches: [main, staging]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.13'
+  NODE_VERSION: '18'
+
+jobs:
+  # ============================================================================
+  # CONTINUOUS INTEGRATION
+  # ============================================================================
+  ci-backend:
+    name: 🧪 Backend CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Backend Tests
+        run: |
+          pytest tests/unit/ -v --cov=app --cov-report=xml
+
+      - name: Run Backend Linting
+        run: |
+          flake8 app/ --max-line-length=100
+          black --check app/
+          isort --check-only app/
+          mypy app/
+
+      - name: Upload Backend Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: backend
+          name: backend-coverage
+
+  ci-frontend:
+    name: 🎨 Frontend CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/frontend/panel/package-lock.json
+
+      - name: Install Frontend dependencies
+        working-directory: app/frontend/panel
+        run: npm ci
+
+      - name: Run Frontend Tests
+        working-directory: app/frontend/panel
+        run: |
+          npm run test:unit
+          npm run test:e2e
+
+      - name: Run Frontend Linting
+        working-directory: app/frontend/panel
+        run: |
+          npm run lint
+          npm run type-check
+
+  # ============================================================================
+  # SECURITY SCANNING
+  # ============================================================================
+  security:
+    name: 🔒 Security Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Python Security Scan
+        run: |
+          pip install bandit safety
+          bandit -r app/ -f json -o bandit-report.json || true
+          safety check --json --output safety-report.json || true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Frontend Security Scan
+        working-directory: app/frontend/panel
+        run: |
+          npm audit --audit-level=moderate --json > npm-audit-report.json || true
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # ============================================================================
+  # PERFORMANCE TESTING
+  # ============================================================================
+  performance:
+    name: ⚡ Performance Testing
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install locust
+
+      - name: Start API server
+        run: |
+          uvicorn app.api.main:app --host 0.0.0.0 --port 8001 &
+          sleep 10
+
+      - name: Run Load Tests
+        run: |
+          locust -f tests/performance/locustfile.py --host=http://localhost:8001 \
+            --users 10 --spawn-rate 2 --run-time 60s --headless --html=locust-report.html
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Frontend Performance Test
+        working-directory: app/frontend/panel
+        run: |
+          npm install -g lighthouse-ci
+          npm run build
+          lhci autorun --upload.target=temporary-public-storage
+
+      - name: Upload Performance Reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-reports
+          path: |
+            locust-report.html
+            lighthouse-results.json
+
+  # ============================================================================
+  # DEPLOYMENT
+  # ============================================================================
+  deploy-staging:
+    name: 🚀 Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [ci-backend, ci-frontend, security]
+    if: github.ref == 'refs/heads/staging'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_PRIVATE_KEY || '' }}
+
+      - name: Add staging server to known hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.STAGING_HOST || 'localhost' }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to staging server
+        run: |
+          # Create deployment script on the fly
+          cat > deploy-staging-temp.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          cd /opt/china-car-parts
+          git pull origin staging
+          source venv/bin/activate
+          pip install -r requirements.txt
+          alembic upgrade head
+          systemctl restart china-car-parts-api
+          systemctl restart china-car-parts-bot
+          systemctl restart nginx
+          echo "✅ Staging deployment completed successfully!"
+          EOF
+          
+          scp deploy-staging-temp.sh ${{ secrets.STAGING_USER || 'staging' }}@${{ secrets.STAGING_HOST || 'localhost' }}:/tmp/
+          ssh ${{ secrets.STAGING_USER || 'staging' }}@${{ secrets.STAGING_HOST || 'localhost' }} "chmod +x /tmp/deploy-staging-temp.sh && /tmp/deploy-staging-temp.sh"
+
+      - name: Run Smoke Tests
+        run: |
+          API_URL="${{ secrets.STAGING_API_URL || 'http://localhost:8001' }}"
+          FRONTEND_URL="${{ secrets.STAGING_FRONTEND_ORIGIN || 'http://localhost:5173' }}"
+          
+          # Test API health
+          curl -f "$API_URL/health" || exit 1
+          
+          # Test frontend
+          curl -f "$FRONTEND_URL" || exit 1
+          
+          echo "✅ Smoke tests passed!"
+
+  deploy-production:
+    name: 🌟 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [ci-backend, ci-frontend, security, performance]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.PROD_SSH_PRIVATE_KEY || '' }}
+
+      - name: Add production server to known hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.PROD_HOST || '5.223.59.155' }} >> ~/.ssh/known_hosts
+
+      - name: Execute Blue-Green Deployment
+        run: |
+          # Create blue-green deployment script
+          cat > deploy-blue-green.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          
+          # Determine current and target environments
+          CURRENT=$(nginx -T 2>/dev/null | grep -o 'upstream.*-api' | head -1 | cut -d'-' -f1)
+          if [ "$CURRENT" = "blue" ]; then
+            TARGET="green"
+          else
+            TARGET="blue"
+          fi
+          
+          echo "🔄 Deploying to $TARGET environment..."
+          
+          # Deploy to target environment
+          cd /opt/china-car-parts-$TARGET
+          git pull origin main
+          source venv/bin/activate
+          pip install -r requirements.txt
+          alembic upgrade head
+          
+          # Start services
+          systemctl restart china-car-parts-api-$TARGET
+          systemctl restart china-car-parts-bot-$TARGET
+          
+          # Health check
+          sleep 10
+          curl -f http://localhost:$([ "$TARGET" = "blue" ] && echo "8001" || echo "8002")/health || exit 1
+          
+          # Switch traffic
+          sed -i "s/upstream $CURRENT-api/upstream $TARGET-api/g" /etc/nginx/sites-available/china-car-parts
+          nginx -s reload
+          
+          echo "✅ Production deployment to $TARGET completed successfully!"
+          EOF
+          
+          scp deploy-blue-green.sh ${{ secrets.PROD_USER || 'root' }}@${{ secrets.PROD_HOST || '5.223.59.155' }}:/tmp/
+          ssh ${{ secrets.PROD_USER || 'root' }}@${{ secrets.PROD_HOST || '5.223.59.155' }} "chmod +x /tmp/deploy-blue-green.sh && /tmp/deploy-blue-green.sh"
+
+      - name: Production Health Check
+        run: |
+          API_URL="${{ secrets.PROD_API_URL || 'https://5.223.59.155/api' }}"
+          FRONTEND_URL="${{ secrets.PROD_FRONTEND_ORIGIN || 'https://5.223.59.155' }}"
+          
+          # Test API health
+          curl -f "$API_URL/health" || exit 1
+          
+          # Test frontend
+          curl -f "$FRONTEND_URL" || exit 1
+          
+          echo "✅ Production health checks passed!"
+
+      - name: Notify deployment success
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const commitSha = context.sha;
+            const prodUrl = '${{ secrets.PROD_API_URL || 'https://5.223.59.155/api' }}';
+            const frontendUrl = '${{ secrets.PROD_FRONTEND_ORIGIN || 'https://5.223.59.155' }}';
+            
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: context.payload.number || 0,
+              body: `🚀 **Production Deployment Successful!**
+              
+              **Commit:** \`${commitSha}\`
+              **API:** ${prodUrl}
+              **Frontend:** ${frontendUrl}
+              
+              Deployment completed at ${new Date().toISOString()}`
+            });
+
+  # ============================================================================
+  # CLEANUP & NOTIFICATIONS
+  # ============================================================================
+  cleanup:
+    name: 🧹 Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Generate Deployment Report
+        run: |
+          echo "## 🚀 Deployment Report" >> deployment-report.md
+          echo "- **Commit:** ${{ github.sha }}" >> deployment-report.md
+          echo "- **Branch:** ${{ github.ref_name }}" >> deployment-report.md
+          echo "- **Workflow:** ${{ github.workflow }}" >> deployment-report.md
+          echo "- **Status:** ${{ job.status }}" >> deployment-report.md
+          echo "- **Time:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> deployment-report.md
+
+      - name: Upload Deployment Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-report
+          path: deployment-report.md

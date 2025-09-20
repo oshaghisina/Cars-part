@@ -1,0 +1,287 @@
+name: Performance Testing
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+  schedule:
+    - cron: '0 3 * * 2' # Weekly on Tuesday at 3 AM
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # Backend Performance Testing
+  backend-performance:
+    name: Backend Performance Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-benchmark locust pytest-xdist
+
+      - name: Set up test database
+        run: |
+          export DATABASE_URL="postgresql://test:test@localhost:5432/test_db"
+          alembic upgrade head
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+
+      - name: Run performance benchmarks
+        run: |
+          pytest tests/performance/ --benchmark-only --benchmark-save=backend-performance --benchmark-save-data
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          TELEGRAM_BOT_TOKEN: test_token
+          SECRET_KEY: test_secret_key
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-performance-${{ github.sha }}
+          path: |
+            .benchmarks/
+            tests/performance/
+          retention-days: 30
+
+  # API Load Testing
+  api-load-testing:
+    name: API Load Testing
+    runs-on: ubuntu-latest
+    needs: backend-performance
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install locust
+
+      - name: Start API server
+        run: |
+          uvicorn app.api.main:app --host 0.0.0.0 --port 8000 &
+          sleep 10
+        env:
+          DATABASE_URL: sqlite:///./test.db
+          TELEGRAM_BOT_TOKEN: test_token
+          SECRET_KEY: test_secret_key
+
+      - name: Run Locust load tests
+        run: |
+          locust -f tests/performance/locustfile.py \
+            --host http://localhost:8000 \
+            --users 50 \
+            --spawn-rate 10 \
+            --run-time 60s \
+            --html locust-report.html \
+            --csv locust-results
+
+      - name: Upload load test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: load-test-results-${{ github.sha }}
+          path: |
+            locust-report.html
+            locust-results*
+          retention-days: 30
+
+  # Frontend Performance Testing
+  frontend-performance:
+    name: Frontend Performance Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app/frontend/panel
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/frontend/panel/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+
+      - name: Run Lighthouse CI
+        run: |
+          lhci autorun --upload.target=temporary-public-storage
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN || '' }}
+
+      - name: Run Web Vitals test
+        run: |
+          npx web-vitals-test --url http://localhost:5173 --output web-vitals-results.json
+        continue-on-error: true
+
+      - name: Upload frontend performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-performance-${{ github.sha }}
+          path: |
+            app/frontend/panel/.lighthouseci/
+            app/frontend/panel/web-vitals-results.json
+          retention-days: 30
+
+  # Database Performance Testing
+  database-performance:
+    name: Database Performance Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-benchmark
+
+      - name: Set up test database with sample data
+        run: |
+          export DATABASE_URL="postgresql://test:test@localhost:5432/test_db"
+          alembic upgrade head
+          python scripts/create_sample_data.py
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+
+      - name: Run database performance tests
+        run: |
+          pytest tests/performance/test_database.py --benchmark-only --benchmark-save=db-performance
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+
+      - name: Upload database performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: database-performance-${{ github.sha }}
+          path: |
+            .benchmarks/
+            tests/performance/test_database.py
+          retention-days: 30
+
+  # Performance Summary
+  performance-summary:
+    name: Performance Summary
+    runs-on: ubuntu-latest
+    needs: [backend-performance, api-load-testing, frontend-performance, database-performance]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all performance artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate performance summary
+        run: |
+          echo "# ⚡ Performance Test Summary" > performance-summary.md
+          echo "" >> performance-summary.md
+          echo "**Test Date:** $(date)" >> performance-summary.md
+          echo "**Commit:** ${{ github.sha }}" >> performance-summary.md
+          echo "**Branch:** ${{ github.ref_name }}" >> performance-summary.md
+          echo "" >> performance-summary.md
+          
+          echo "## 📊 Test Results" >> performance-summary.md
+          echo "" >> performance-summary.md
+          echo "| Test Type | Status |" >> performance-summary.md
+          echo "|-----------|--------|" >> performance-summary.md
+          echo "| Backend Performance | ${{ needs.backend-performance.result }} |" >> performance-summary.md
+          echo "| API Load Testing | ${{ needs.api-load-testing.result }} |" >> performance-summary.md
+          echo "| Frontend Performance | ${{ needs.frontend-performance.result }} |" >> performance-summary.md
+          echo "| Database Performance | ${{ needs.database-performance.result }} |" >> performance-summary.md
+          echo "" >> performance-summary.md
+          
+          echo "## 🎯 Performance Thresholds" >> performance-summary.md
+          echo "" >> performance-summary.md
+          echo "- **API Response Time:** < 200ms" >> performance-summary.md
+          echo "- **Database Query Time:** < 100ms" >> performance-summary.md
+          echo "- **Frontend Load Time:** < 2s" >> performance-summary.md
+          echo "- **Lighthouse Score:** > 90" >> performance-summary.md
+
+      - name: Comment performance summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('performance-summary.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Upload performance summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-summary-${{ github.sha }}
+          path: performance-summary.md
+          retention-days: 30
