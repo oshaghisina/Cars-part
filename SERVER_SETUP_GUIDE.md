@@ -43,11 +43,11 @@ su - partsbot
 
 ```bash
 # Create application directory
-sudo mkdir -p /opt/parts-bot
-sudo chown partsbot:partsbot /opt/parts-bot
+sudo mkdir -p /opt/china-car-parts
+sudo chown partsbot:partsbot /opt/china-car-parts
 
 # Create necessary subdirectories
-mkdir -p /opt/parts-bot/{logs,backups,ssl,configs}
+mkdir -p /opt/china-car-parts/{logs,backups,ssl,configs}
 ```
 
 ### 4. Install Python Dependencies
@@ -60,7 +60,7 @@ sudo apt update
 sudo apt install -y python3.11 python3.11-venv python3.11-dev
 
 # Create virtual environment
-cd /opt/parts-bot
+cd /opt/china-car-parts
 python3.11 -m venv venv
 source venv/bin/activate
 
@@ -211,9 +211,9 @@ After=network.target
 Type=exec
 User=partsbot
 Group=partsbot
-WorkingDirectory=/opt/parts-bot
-Environment=PATH=/opt/parts-bot/venv/bin
-ExecStart=/opt/parts-bot/venv/bin/uvicorn app.api.main:app --host 0.0.0.0 --port 8001
+WorkingDirectory=/opt/china-car-parts
+Environment=PATH=/opt/china-car-parts/venv/bin
+ExecStart=/opt/china-car-parts/venv/bin/uvicorn app.api.main:app --host 0.0.0.0 --port 8001
 Restart=always
 RestartSec=3
 
@@ -235,9 +235,9 @@ After=network.target
 Type=exec
 User=partsbot
 Group=partsbot
-WorkingDirectory=/opt/parts-bot
-Environment=PATH=/opt/parts-bot/venv/bin
-ExecStart=/opt/parts-bot/venv/bin/python -m app.bot.bot
+WorkingDirectory=/opt/china-car-parts
+Environment=PATH=/opt/china-car-parts/venv/bin
+ExecStart=/opt/china-car-parts/venv/bin/python -m app.bot.bot
 Restart=always
 RestartSec=3
 
@@ -279,7 +279,7 @@ ssh -i ~/.ssh/china_car_parts_key root@5.223.59.155
 PROD_SSH_PRIVATE_KEY=<content of ~/.ssh/china_car_parts_key>
 PROD_HOST=5.223.59.155
 PROD_USER=root
-PROD_API_URL=https://5.223.59.155
+PROD_API_URL=https://5.223.59.155/api
 PROD_FRONTEND_ORIGIN=https://5.223.59.155
 ```
 
@@ -292,7 +292,7 @@ Create environment file on the server:
 su - partsbot
 
 # Create environment file
-nano /opt/parts-bot/.env
+nano /opt/china-car-parts/.env
 ```
 
 Add the following configuration:
@@ -333,7 +333,7 @@ CORS_ORIGINS=https://5.223.59.155,http://5.223.59.155
 
 ```bash
 # Clone repository
-cd /opt/parts-bot
+cd /opt/china-car-parts
 git clone https://github.com/oshaghisina/Cars-part.git .
 
 # Install dependencies

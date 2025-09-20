@@ -34,7 +34,7 @@ PROD_USER=root
 
 #### 5. Production URLs
 ```
-PROD_API_URL=https://5.223.59.155
+PROD_API_URL=https://5.223.59.155/api
 PROD_FRONTEND_ORIGIN=https://5.223.59.155
 ```
 

@@ -206,7 +206,7 @@ switch_environments() {
     # Final health check through load balancer
     log "🩺 Final health check through load balancer..."
     for i in {1..5}; do
-        if curl -f -s "https://yourdomain.com/api/v1/health" > /dev/null; then
+        if curl -f -s "https://5.223.59.155/api/v1/health" > /dev/null; then
             success "Load balancer health check passed"
             break
         else
@@ -315,7 +315,7 @@ show_status() {
     
     # Check health
     echo "🩺 Health Status:"
-    if curl -f -s "https://yourdomain.com/api/v1/health" > /dev/null; then
+    if curl -f -s "https://5.223.59.155/api/v1/health" > /dev/null; then
         echo "  Production: ✅ Healthy"
     else
         echo "  Production: ❌ Unhealthy"

@@ -6,7 +6,7 @@
 set -e  # Exit on any error
 
 # Configuration
-STAGING_DIR="/opt/china-car-parts-staging"
+STAGING_DIR="/opt/china-car-parts"
 STAGING_USER="${STAGING_USER:-staging}"
 STAGING_HOST="${STAGING_HOST:-staging.yourdomain.com}"
 BRANCH="${BRANCH:-staging}"
