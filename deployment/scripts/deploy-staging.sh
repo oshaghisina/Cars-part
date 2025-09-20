@@ -52,7 +52,7 @@ health_check() {
     echo "🏥 Running health check..."
     
     while [ $attempt -le $max_attempts ]; do
-        if run_staging "curl -f -s $api_url/health > /dev/null"; then
+        if run_staging "curl -f -s $api_url/api/v1/health > /dev/null"; then
             echo "✅ Health check passed"
             return 0
         fi

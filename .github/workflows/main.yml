@@ -42,15 +42,13 @@ jobs:
 
       - name: Run Backend Tests
         run: |
-          pytest tests/unit/ -v --cov=app --cov-report=xml || echo "Tests completed with issues"
-        continue-on-error: true
+          pytest tests/unit/ -v --cov=app --cov-report=xml
 
       - name: Run Backend Linting
         run: |
-          flake8 app/ --max-line-length=100 || echo "Flake8 completed with issues"
-          black --check app/ || echo "Black formatting check completed with issues"
-          isort --check-only app/ || echo "Import sorting check completed with issues"
-        continue-on-error: true
+          flake8 app/ --max-line-length=100
+          black --check app/
+          isort --check-only app/
 
       - name: Upload Backend Coverage
         uses: codecov/codecov-action@v3
@@ -82,15 +80,13 @@ jobs:
       - name: Run Frontend Tests
         working-directory: app/frontend/panel
         run: |
-          npm run test:unit || echo "Frontend tests completed with issues"
-        continue-on-error: true
+          npm run test:unit
 
       - name: Run Frontend Linting
         working-directory: app/frontend/panel
         run: |
-          npm run lint || echo "Frontend linting completed with issues"
-          npm run type-check || echo "Type checking completed with issues"
-        continue-on-error: true
+          npm run lint
+          npm run type-check
 
   # ============================================================================
   # SECURITY SCANNING
@@ -110,9 +106,8 @@ jobs:
       - name: Python Security Scan
         run: |
           pip install bandit safety
-          bandit -r app/ -f json -o bandit-report.json || echo "Bandit scan completed with issues"
-          safety check --json --output safety-report.json || echo "Safety check completed with issues"
-        continue-on-error: true
+          bandit -r app/ -f json -o bandit-report.json
+          safety check --json --output safety-report.json
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -122,12 +117,10 @@ jobs:
       - name: Frontend Security Scan
         working-directory: app/frontend/panel
         run: |
-          npm audit --audit-level=moderate --json > npm-audit-report.json || echo "NPM audit completed with issues"
-        continue-on-error: true
+          npm audit --audit-level=moderate --json > npm-audit-report.json
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
-        continue-on-error: true
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -169,8 +162,7 @@ jobs:
       - name: Run Load Tests
         run: |
           locust -f tests/performance/locustfile.py --host=http://localhost:8001 \
-            --users 10 --spawn-rate 2 --run-time 60s --headless --html=locust-report.html || echo "Load tests completed with issues"
-        continue-on-error: true
+            --users 10 --spawn-rate 2 --run-time 60s --headless --html=locust-report.html
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -181,9 +173,8 @@ jobs:
         working-directory: app/frontend/panel
         run: |
           npm install -g lighthouse-ci
-          npm run build || echo "Frontend build completed with issues"
-          lhci autorun --upload.target=temporary-public-storage || echo "Lighthouse CI completed with issues"
-        continue-on-error: true
+          npm run build
+          lhci autorun --upload.target=temporary-public-storage
 
       - name: Upload Performance Reports
         uses: actions/upload-artifact@v3
@@ -242,13 +233,12 @@ jobs:
           FRONTEND_URL="${{ secrets.STAGING_FRONTEND_ORIGIN || 'http://localhost:5173' }}"
           
           # Test API health
-          curl -f "$API_URL/health" || echo "API health check failed"
+          curl -f "$API_URL/api/v1/health"
           
           # Test frontend
-          curl -f "$FRONTEND_URL" || echo "Frontend health check failed"
+          curl -f "$FRONTEND_URL"
           
           echo "✅ Smoke tests completed!"
-        continue-on-error: true
 
   deploy-production:
     name: 🌟 Deploy to Production
@@ -317,13 +307,12 @@ jobs:
           FRONTEND_URL="${{ secrets.PROD_FRONTEND_ORIGIN || 'https://5.223.59.155' }}"
           
           # Test API health
-          curl -f "$API_URL/health" || echo "Production API health check failed"
+          curl -f "$API_URL/api/v1/health"
           
           # Test frontend
-          curl -f "$FRONTEND_URL" || echo "Production frontend health check failed"
+          curl -f "$FRONTEND_URL"
           
           echo "✅ Production health checks completed!"
-        continue-on-error: true
 
       - name: Notify deployment success
         if: success()
