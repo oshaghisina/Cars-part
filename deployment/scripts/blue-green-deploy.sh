@@ -109,7 +109,42 @@ health_check() {
     error "$env_name environment health check failed after $timeout seconds"
 }
 
-# Deploy to environment
+# Validate deployment prerequisites
+validate_prerequisites() {
+    local target_dir=$1
+    local commit_sha=$2
+    local port=$3
+    local env_name=$4
+    
+    log "🔍 Validating deployment prerequisites..."
+    
+    # Check if port is available
+    if netstat -tuln | grep -q ":$port "; then
+        error "Port $port is already in use. Cannot deploy to $env_name environment."
+    fi
+    
+    # Check if commit SHA is valid
+    if [ -z "$commit_sha" ]; then
+        error "Commit SHA is required for deployment"
+    fi
+    
+    # Check if we have enough disk space (minimum 1GB)
+    local available_space=$(df "$target_dir" 2>/dev/null | awk 'NR==2 {print $4}' || echo "0")
+    if [ "$available_space" -lt 1048576 ]; then  # 1GB in KB
+        warning "Low disk space detected. Available: $(($available_space/1024))MB"
+    fi
+    
+    # Check if required commands exist
+    for cmd in git python3.11 pip npm systemctl nginx; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            error "Required command '$cmd' not found"
+        fi
+    done
+    
+    success "Prerequisites validation passed"
+}
+
+# Deploy to environment with enhanced error handling
 deploy_to_environment() {
     local target_dir=$1
     local commit_sha=$2
@@ -118,60 +153,167 @@ deploy_to_environment() {
     
     log "🚀 Deploying to $env_name environment ($target_dir)..."
     
+    # Validate prerequisites
+    validate_prerequisites "$target_dir" "$commit_sha" "$port" "$env_name"
+    
     # Create target directory if it doesn't exist
-    mkdir -p "$target_dir"
+    mkdir -p "$target_dir" || error "Failed to create target directory: $target_dir"
     
-    # Clone or update repository
+    # Clone or update repository with error handling
     if [ -d "$target_dir/.git" ]; then
-        cd "$target_dir"
-        git fetch origin
-        git reset --hard "$commit_sha"
+        log "📥 Updating existing repository..."
+        cd "$target_dir" || error "Failed to change to target directory: $target_dir"
+        
+        # Backup current state
+        git stash push -m "Deployment backup $(date)" || warning "No changes to stash"
+        
+        if ! git fetch origin; then
+            error "Failed to fetch from origin repository"
+        fi
+        
+        if ! git reset --hard "$commit_sha"; then
+            error "Failed to reset to commit: $commit_sha"
+        fi
     else
-        git clone https://github.com/your-org/china-car-parts.git "$target_dir"
-        cd "$target_dir"
-        git checkout "$commit_sha"
+        log "📥 Cloning repository..."
+        if ! git clone https://github.com/your-org/china-car-parts.git "$target_dir"; then
+            error "Failed to clone repository to: $target_dir"
+        fi
+        
+        cd "$target_dir" || error "Failed to change to target directory: $target_dir"
+        
+        if ! git checkout "$commit_sha"; then
+            error "Failed to checkout commit: $commit_sha"
+        fi
     fi
     
-    # Set up Python environment
+    # Set up Python environment with error handling
+    log "🐍 Setting up Python environment..."
     if [ ! -d "$target_dir/venv" ]; then
-        python3.11 -m venv "$target_dir/venv"
+        if ! python3.11 -m venv "$target_dir/venv"; then
+            error "Failed to create Python virtual environment"
+        fi
     fi
     
-    source "$target_dir/venv/bin/activate"
-    pip install -r requirements.txt
+    if ! source "$target_dir/venv/bin/activate"; then
+        error "Failed to activate Python virtual environment"
+    fi
     
-    # Run database migrations
+    # Upgrade pip first
+    pip install --upgrade pip || warning "Failed to upgrade pip"
+    
+    # Install dependencies with retry logic
+    local pip_attempts=0
+    local max_pip_attempts=3
+    while [ $pip_attempts -lt $max_pip_attempts ]; do
+        if pip install -r requirements.txt; then
+            break
+        else
+            pip_attempts=$((pip_attempts + 1))
+            if [ $pip_attempts -eq $max_pip_attempts ]; then
+                error "Failed to install Python dependencies after $max_pip_attempts attempts"
+            fi
+            warning "Pip install failed, retrying... (attempt $pip_attempts/$max_pip_attempts)"
+            sleep 5
+        fi
+    done
+    
+    # Run database migrations with backup
     log "🗄️ Running database migrations..."
-    alembic upgrade head
+    local db_backup_file="$BACKUP_DIR/${env_name}_db_backup_$(date +%Y%m%d_%H%M%S).db"
+    if [ -f "$target_dir/data/china_car_parts.db" ]; then
+        mkdir -p "$BACKUP_DIR"
+        cp "$target_dir/data/china_car_parts.db" "$db_backup_file" || warning "Failed to backup database"
+        log "📦 Database backed up to: $db_backup_file"
+    fi
     
-    # Build frontend
+    if ! alembic upgrade head; then
+        error "Database migration failed. Check database connection and migration files."
+    fi
+    
+    # Build frontend with error handling
     log "🎨 Building frontend..."
-    cd "$target_dir/app/frontend/panel"
-    npm ci
-    npm run build
-    cd "$target_dir"
+    if [ ! -d "$target_dir/app/frontend/panel" ]; then
+        error "Frontend directory not found: $target_dir/app/frontend/panel"
+    fi
+    
+    cd "$target_dir/app/frontend/panel" || error "Failed to change to frontend directory"
+    
+    # Install npm dependencies with retry logic
+    local npm_attempts=0
+    local max_npm_attempts=3
+    while [ $npm_attempts -lt $max_npm_attempts ]; do
+        if npm ci; then
+            break
+        else
+            npm_attempts=$((npm_attempts + 1))
+            if [ $npm_attempts -eq $max_npm_attempts ]; then
+                error "Failed to install npm dependencies after $max_npm_attempts attempts"
+            fi
+            warning "Npm ci failed, retrying... (attempt $npm_attempts/$max_npm_attempts)"
+            sleep 5
+        fi
+    done
+    
+    if ! npm run build; then
+        error "Frontend build failed. Check for build errors."
+    fi
+    
+    cd "$target_dir" || error "Failed to return to project root"
     
     # Copy environment configuration
-    cp "$target_dir/deployment/configs/production.env" "$target_dir/.env"
+    if [ -f "$target_dir/deployment/configs/production.env" ]; then
+        cp "$target_dir/deployment/configs/production.env" "$target_dir/.env" || error "Failed to copy environment configuration"
+    else
+        warning "Production environment configuration not found, using defaults"
+    fi
     
-    # Update systemd services
-    sed "s|/opt/china-car-parts|$target_dir|g" "$target_dir/deployment/configs/china-car-parts-api.service" > "/etc/systemd/system/china-car-parts-api-$env_name.service"
-    sed "s|/opt/china-car-parts|$target_dir|g" "$target_dir/deployment/configs/china-car-parts-bot.service" > "/etc/systemd/system/china-car-parts-bot-$env_name.service"
+    # Update systemd services with validation
+    log "⚙️ Configuring systemd services..."
+    if [ ! -f "$target_dir/deployment/configs/china-car-parts-api.service" ]; then
+        error "API service configuration not found"
+    fi
+    
+    if [ ! -f "$target_dir/deployment/configs/china-car-parts-bot.service" ]; then
+        error "Bot service configuration not found"
+    fi
+    
+    sed "s|/opt/china-car-parts|$target_dir|g" "$target_dir/deployment/configs/china-car-parts-api.service" > "/etc/systemd/system/china-car-parts-api-$env_name.service" || error "Failed to create API service file"
+    sed "s|/opt/china-car-parts|$target_dir|g" "$target_dir/deployment/configs/china-car-parts-bot.service" > "/etc/systemd/system/china-car-parts-bot-$env_name.service" || error "Failed to create bot service file"
     
     # Update port in service files
-    sed -i "s|--port 8001|--port $port|g" "/etc/systemd/system/china-car-parts-api-$env_name.service"
+    sed -i "s|--port 8001|--port $port|g" "/etc/systemd/system/china-car-parts-api-$env_name.service" || error "Failed to update API service port"
     
     # Reload systemd
-    systemctl daemon-reload
+    if ! systemctl daemon-reload; then
+        error "Failed to reload systemd daemon"
+    fi
     
-    # Enable and start services
-    systemctl enable "china-car-parts-api-$env_name"
-    systemctl enable "china-car-parts-bot-$env_name"
-    systemctl start "china-car-parts-api-$env_name"
-    systemctl start "china-car-parts-bot-$env_name"
+    # Enable and start services with error handling
+    log "🚀 Starting services..."
+    systemctl enable "china-car-parts-api-$env_name" || error "Failed to enable API service"
+    systemctl enable "china-car-parts-bot-$env_name" || error "Failed to enable bot service"
     
-    # Wait for services to start
+    if ! systemctl start "china-car-parts-api-$env_name"; then
+        error "Failed to start API service. Check logs with: journalctl -u china-car-parts-api-$env_name"
+    fi
+    
+    if ! systemctl start "china-car-parts-bot-$env_name"; then
+        error "Failed to start bot service. Check logs with: journalctl -u china-car-parts-bot-$env_name"
+    fi
+    
+    # Wait for services to start with validation
+    log "⏳ Waiting for services to start..."
     sleep 15
+    
+    # Verify services are running
+    if ! systemctl is-active --quiet "china-car-parts-api-$env_name"; then
+        error "API service is not running after start"
+    fi
+    
+    if ! systemctl is-active --quiet "china-car-parts-bot-$env_name"; then
+        error "Bot service is not running after start"
+    fi
     
     # Health check
     health_check "$port" "$env_name"
