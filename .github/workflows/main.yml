@@ -25,6 +25,10 @@ jobs:
   ci-backend:
     name: 🧪 Backend CI
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: ci-backend
+      cancel-in-progress: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,6 +73,10 @@ jobs:
   ci-frontend:
     name: 🎨 Frontend CI
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: ci-frontend
+      cancel-in-progress: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -101,6 +109,10 @@ jobs:
   security:
     name: 🔒 Security Scanning
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: security
+      cancel-in-progress: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -147,7 +159,11 @@ jobs:
   performance:
     name: ⚡ Performance Testing
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+    concurrency:
+      group: performance
+      cancel-in-progress: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -165,7 +181,23 @@ jobs:
       - name: Start API server
         run: |
           uvicorn app.api.main:app --host 0.0.0.0 --port 8001 &
-          sleep 10
+          
+          # Wait for API server to be ready
+          echo "⏳ Waiting for API server to be ready..."
+          for i in {1..30}; do
+            if curl -f -s http://localhost:8001/api/v1/health > /dev/null; then
+              echo "✅ API server is ready!"
+              break
+            fi
+            echo "⏳ Attempt $i/30: API server not ready yet..."
+            sleep 2
+          done
+          
+          # Final check
+          if ! curl -f -s http://localhost:8001/api/v1/health > /dev/null; then
+            echo "❌ API server failed to start after 60 seconds"
+            exit 1
+          fi
 
       - name: Run Load Tests
         run: |
@@ -199,9 +231,13 @@ jobs:
   deploy-staging:
     name: 🚀 Deploy to Staging
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [ci-backend, ci-frontend, security]
     if: github.ref == 'refs/heads/staging'
     environment: staging
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -226,6 +262,15 @@ jobs:
           git pull origin staging
           source venv/bin/activate
           pip install -r requirements.txt
+          
+          # Create database backup before migration
+          echo "📦 Creating database backup before migration..."
+          BACKUP_FILE="/opt/backups/staging_db_backup_$(date +%Y%m%d_%H%M%S).db"
+          mkdir -p /opt/backups
+          cp /opt/china-car-parts/data/china_car_parts.db "$BACKUP_FILE"
+          echo "✅ Database backup created: $BACKUP_FILE"
+          
+          # Run database migration
           alembic upgrade head
           systemctl restart china-car-parts-api
           systemctl restart china-car-parts-bot
@@ -252,9 +297,13 @@ jobs:
   deploy-production:
     name: 🌟 Deploy to Production
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [ci-backend, ci-frontend, security]
     if: github.ref == 'refs/heads/main'
     environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -291,6 +340,15 @@ jobs:
           git pull origin main
           source venv/bin/activate
           pip install -r requirements.txt
+          
+          # Create database backup before migration
+          echo "📦 Creating database backup before migration..."
+          BACKUP_FILE="/opt/backups/production_db_backup_$(date +%Y%m%d_%H%M%S).db"
+          mkdir -p /opt/backups
+          cp /opt/china-car-parts-$TARGET/data/china_car_parts.db "$BACKUP_FILE"
+          echo "✅ Database backup created: $BACKUP_FILE"
+          
+          # Run database migration
           alembic upgrade head
           
           # Start services
