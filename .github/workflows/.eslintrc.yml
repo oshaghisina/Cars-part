@@ -1,0 +1,19 @@
+# ESLint configuration for GitHub Actions workflows
+# This file suppresses false positive warnings about secrets context access
+
+extends:
+  - github/actions
+
+rules:
+  # Suppress context access warnings for secrets
+  # These are false positives as secrets are available at runtime
+  github/actions:
+    - off
+
+# Alternative: Use actionlint configuration
+actionlint:
+  ignore:
+    - "Context access might be invalid"
+    - "secrets.*"
+    - "STAGING_.*"
+    - "PROD_.*"

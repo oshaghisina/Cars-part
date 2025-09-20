@@ -1,0 +1,60 @@
+# Caddyfile for Chinese Auto Parts Price Bot
+# Production reverse proxy configuration
+
+yourdomain.com {
+    # API endpoints
+    reverse_proxy /api/* localhost:8000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
+    # Admin panel
+    reverse_proxy /admin/* localhost:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
+    # Health check endpoint (direct)
+    respond /health 200 {
+        body "OK"
+    }
+    
+    # Root redirect to admin panel
+    redir / /admin/
+    
+    # TLS configuration
+    tls your_email@domain.com
+    
+    # Security headers
+    header {
+        # Enable HSTS
+        Strict-Transport-Security max-age=31536000
+        
+        # Prevent clickjacking
+        X-Frame-Options DENY
+        
+        # XSS protection
+        X-XSS-Protection "1; mode=block"
+        
+        # Content type sniffing protection
+        X-Content-Type-Options nosniff
+        
+        # Referrer policy
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+    
+    # Logging
+    log {
+        output file /var/log/caddy/parts-bot.log {
+            roll_size 100mb
+            roll_keep 5
+            roll_keep_for 720h
+        }
+        format json
+        level INFO
+    }
+}

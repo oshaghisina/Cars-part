@@ -1,0 +1,26 @@
+# Actionlint configuration for GitHub Actions
+# This file suppresses false positive warnings about secrets context access
+
+# Ignore specific error types that are false positives
+ignore:
+  - "Context access might be invalid"
+  - "secrets\..*"
+  - "STAGING_.*"
+  - "PROD_.*"
+
+# Shell check configuration
+shellcheck:
+  enabled: true
+  severity: error
+
+# Pyflakes configuration
+pyflakes:
+  enabled: true
+  severity: error
+
+# Custom rules
+custom_rules:
+  - name: "secrets-context-access"
+    pattern: "secrets\\.[A-Z_]+"
+    message: "This is a valid GitHub Actions secret access"
+    severity: ignore

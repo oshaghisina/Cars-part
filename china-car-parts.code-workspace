@@ -1,0 +1,59 @@
+{
+    "folders": [
+        {
+            "name": "China Car Parts Bot",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "python.pythonPath": "./venv/bin/python",
+        "python.defaultInterpreterPath": "./venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "python.analysis.extraPaths": [
+            "./",
+            "./app",
+            "./app/api",
+            "./app/bot",
+            "./app/core",
+            "./app/db",
+            "./app/services"
+        ],
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.typeCheckingMode": "basic",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": false,
+        "python.linting.flake8Enabled": false,
+        "python.linting.mypyEnabled": false,
+        "python.analysis.autoSearchPaths": true,
+        "python.analysis.diagnosticMode": "workspace",
+        "basedpyright.analysis.typeCheckingMode": "basic",
+        "basedpyright.analysis.autoImportCompletions": true,
+        "basedpyright.analysis.extraPaths": [
+            "./",
+            "./app",
+            "./app/api",
+            "./app/bot",
+            "./app/core",
+            "./app/db",
+            "./app/services"
+        ],
+        "basedpyright.analysis.pythonVersion": "3.11",
+        "basedpyright.analysis.pythonPlatform": "Darwin",
+        "basedpyright.analysis.reportMissingImports": "warning",
+        "basedpyright.analysis.reportMissingTypeStubs": false,
+        "files.exclude": {
+            "**/__pycache__": true,
+            "**/*.pyc": true,
+            "**/.*": true
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.pylint",
+            "ms-python.flake8",
+            "ms-python.mypy-type-checker",
+            "ms-vscode.vscode-json"
+        ]
+    }
+}

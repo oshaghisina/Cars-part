@@ -1,0 +1,45 @@
+[Unit]
+Description=China Car Parts Telegram Bot - Production Environment
+Documentation=https://github.com/your-org/china-car-parts
+After=network.target postgresql.service
+Wants=postgresql.service
+Requires=network.target
+
+[Service]
+Type=exec
+User=partsbot
+Group=partsbot
+WorkingDirectory=/opt/china-car-parts
+Environment=PATH=/opt/china-car-parts/venv/bin
+Environment=APP_ENV=production
+EnvironmentFile=/opt/china-car-parts/.env
+ExecStart=/opt/china-car-parts/venv/bin/python -m app.bot.main
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=china-car-parts-bot
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/china-car-parts
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryMax=2G
+CPUQuota=200%
+
+# Health check - Bot doesn't have HTTP endpoint, so we check process
+ExecStartPost=/bin/sleep 10
+ExecStartPost=/bin/bash -c 'for i in {1..30}; do if pgrep -f "app.bot.main" > /dev/null; then exit 0; fi; sleep 2; done; exit 1'
+
+[Install]
+WantedBy=multi-user.target

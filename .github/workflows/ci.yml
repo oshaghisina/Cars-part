@@ -1,0 +1,204 @@
+name: CI - China Car Parts
+
+on:
+  push:
+    branches: [main, staging, develop]
+  pull_request:
+    branches: [main, staging, develop]
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+
+jobs:
+  # Backend Testing Job
+  backend-tests:
+    name: Backend Tests & Linting
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio httpx black isort flake8 mypy
+
+      - name: Run code formatting check (Black)
+        run: black --check app/
+
+      - name: Run import sorting check (isort)
+        run: isort --check-only app/
+
+      - name: Run linting (flake8)
+        run: flake8 app/ --max-line-length=88 --extend-ignore=E203,W503
+
+      - name: Run type checking (mypy)
+        run: mypy app/ --ignore-missing-imports
+        continue-on-error: true  # Allow type checking to fail without stopping pipeline
+
+      - name: Set up test database
+        run: |
+          export DATABASE_URL="postgresql://test:test@localhost:5432/test_db"
+          alembic upgrade head
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+
+      - name: Run backend unit tests
+        run: |
+          pytest tests/unit/ --cov=app --cov-report=xml --cov-report=term-missing
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          TELEGRAM_BOT_TOKEN: test_token
+          SECRET_KEY: test_secret_key
+          APP_ENV: testing
+
+      - name: Run integration tests
+        run: |
+          pytest tests/integration/ --cov=app --cov-append
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          TELEGRAM_BOT_TOKEN: test_token
+          SECRET_KEY: test_secret_key
+          APP_ENV: testing
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: backend
+          name: backend-coverage
+
+  # Frontend Testing Job
+  frontend-tests:
+    name: Frontend Tests & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app/frontend/panel
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/frontend/panel/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run linting (ESLint)
+        run: npm run lint
+
+      - name: Run type checking
+        run: npx vue-tsc --noEmit
+        continue-on-error: true  # Allow type checking to fail without stopping pipeline
+
+      - name: Build for production
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-dist-${{ github.sha }}
+          path: app/frontend/panel/dist/
+          retention-days: 7
+
+  # Security Scanning Job
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          pip install bandit safety
+
+      - name: Run Bandit security scan
+        run: |
+          bandit -r app/ -f json -o bandit-report.json
+        continue-on-error: true
+
+      - name: Run Safety dependency check
+        run: |
+          safety check --json --output safety-report.json
+        continue-on-error: true
+
+      - name: Frontend security audit
+        working-directory: ./app/frontend/panel
+        run: |
+          npm audit --audit-level high --json > npm-audit-report.json
+        continue-on-error: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports-${{ github.sha }}
+          path: |
+            bandit-report.json
+            safety-report.json
+            app/frontend/panel/npm-audit-report.json
+          retention-days: 30
+
+  # Build Status Job
+  build-status:
+    name: Build Status
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests]
+    if: always()
+
+    steps:
+      - name: Check build status
+        run: |
+          if [[ "${{ needs.backend-tests.result }}" == "success" && "${{ needs.frontend-tests.result }}" == "success" ]]; then
+            echo "✅ All tests passed successfully"
+            exit 0
+          else
+            echo "❌ Some tests failed"
+            echo "Backend tests: ${{ needs.backend-tests.result }}"
+            echo "Frontend tests: ${{ needs.frontend-tests.result }}"
+            exit 1
+          fi
