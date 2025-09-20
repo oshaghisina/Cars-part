@@ -279,7 +279,7 @@ ssh -i ~/.ssh/china_car_parts_key root@5.223.59.155
 PROD_SSH_PRIVATE_KEY=<content of ~/.ssh/china_car_parts_key>
 PROD_HOST=5.223.59.155
 PROD_USER=root
-PROD_API_URL=https://5.223.59.155/api
+PROD_API_URL=https://5.223.59.155
 PROD_FRONTEND_ORIGIN=https://5.223.59.155
 ```
 
@@ -359,7 +359,7 @@ sudo systemctl status china-car-parts-bot
 
 ```bash
 # Test API health
-curl https://5.223.59.155/api/health
+curl https://5.223.59.155/api/v1/health
 
 # Test frontend
 curl https://5.223.59.155/

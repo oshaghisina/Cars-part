@@ -141,7 +141,7 @@ FRONTEND_ORIGIN=https://your-domain.com
 
 Once deployed:
 - **Admin Panel**: `https://your-domain.com`
-- **API Docs**: `https://your-domain.com/api/docs`
+- **API Docs**: `https://staging.yourdomain.com/docs` (disabled in production)
 - **Telegram Bot**: `@YourBotUsername`
 
 ## 📈 **Next Steps (Optional Enhancements)**

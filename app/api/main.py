@@ -31,13 +31,8 @@ app.add_middleware(
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "app_env": settings.app_env,
-        "debug": settings.debug,
-        "version": "1.0.0"
-    }
+    """Basic health check endpoint (minimal payload)."""
+    return {"status": "healthy"}
 
 
 # Include routers
@@ -61,6 +56,16 @@ app.include_router(categories_module.router, prefix="/api/v1/categories", tags=[
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 
+
+@app.get("/api/v1/health")
+async def api_health_check():
+    """Versioned health check endpoint used by CI/CD and monitors."""
+    return {
+        "status": "healthy",
+        "app_env": settings.app_env,
+        "debug": settings.debug,
+        "version": "1.0.0"
+    }
 
 @app.get("/")
 async def root():
