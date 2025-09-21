@@ -1,16 +1,16 @@
 """Admin API endpoints."""
 
-from typing import Dict, Any, Optional, List
+from typing import Dict
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.db.database import get_db
 from app.core.auth import get_current_user
-from app.db.models import User, Setting
+from app.db.models import User
 from app.services.settings_service import SettingsService
 from app.services.user_service import UserService
 from app.schemas.admin_schemas import (
-    SettingResponse, SettingUpdate, SettingsResponse,
+    SettingsResponse,
     AdminUserResponse, AdminUserListResponse, AdminUserCreate,
     SystemStatusResponse
 )
@@ -32,10 +32,10 @@ async def get_settings(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
         )
-    
+
     settings_service = SettingsService(db)
     settings = settings_service.get_settings()
-    
+
     return SettingsResponse(
         settings=settings,
         total=len(settings)
@@ -55,13 +55,20 @@ async def update_settings(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
         )
-    
+
     settings_service = SettingsService(db)
-    updated_settings = settings_service.set_settings(settings, int(current_user.id))
-    
-    logger.info(f"Settings updated by user {current_user.username}: {list(settings.keys())}")
-    
-    return {"message": "Settings updated successfully", "updated": updated_settings}
+    updated_settings = settings_service.set_settings(
+        settings, int(current_user.id))
+
+    logger.info(
+        f"Settings updated by user {
+            current_user.username}: {
+            list(
+                settings.keys())}")
+
+    return {
+        "message": "Settings updated successfully",
+        "updated": updated_settings}
 
 
 @router.get("/users", response_model=AdminUserListResponse)
@@ -78,16 +85,14 @@ async def list_admin_users(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
         )
-    
-    user_service = UserService(db)
-    
+
     # Get total count
     total = db.query(func.count(User.id)).scalar()
-    
+
     # Get paginated users
     skip = (page - 1) * limit
     users = db.query(User).offset(skip).limit(limit).all()
-    
+
     user_responses = [
         AdminUserResponse(
             id=user.id,
@@ -102,9 +107,9 @@ async def list_admin_users(
         )
         for user in users
     ]
-    
+
     total_pages = (total + limit - 1) // limit
-    
+
     return AdminUserListResponse(
         users=user_responses,
         total=total,
@@ -127,9 +132,9 @@ async def create_admin_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Super admin access required"
         )
-    
+
     user_service = UserService(db)
-    
+
     try:
         # Create user using the existing user creation logic
         from app.schemas.user_schemas import UserCreate
@@ -141,9 +146,9 @@ async def create_admin_user(
             password=user_data.password,
             role=user_data.role
         )
-        
+
         new_user = await user_service.create_user(user_create)
-        
+
         return AdminUserResponse(
             id=new_user.id,
             username=new_user.username,
@@ -155,7 +160,7 @@ async def create_admin_user(
             created_at=new_user.created_at,
             last_login=new_user.last_login
         )
-        
+
     except Exception as e:
         logger.error(f"Error creating admin user: {e}")
         raise HTTPException(
@@ -176,21 +181,21 @@ async def get_system_status(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
         )
-    
+
     # Get basic statistics
     from app.db.models import Part, Order
-    
+
     total_users = db.query(func.count(User.id)).scalar()
     total_parts = db.query(func.count(Part.id)).scalar()
     total_orders = db.query(func.count(Order.id)).scalar()
-    
+
     # Check database status
     try:
         db.execute("SELECT 1")
         database_status = "connected"
     except Exception:
         database_status = "disconnected"
-    
+
     return SystemStatusResponse(
         status="healthy",
         version="1.0.0",

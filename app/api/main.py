@@ -3,6 +3,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
+from app.api.routers import search, orders, leads, users, bulk_operations, analytics, admin
+import app.api.routers.parts as parts_module
+import app.api.routers.ai_search as ai_search_module
+import app.api.routers.wizard as wizard_module
+import app.api.routers.vehicles as vehicles_module
+import app.api.routers.categories as categories_module
 
 # Create FastAPI application
 app = FastAPI(
@@ -35,14 +41,6 @@ async def health_check():
     return {"status": "healthy"}
 
 
-# Include routers
-from app.api.routers import search, orders, leads, users, bulk_operations, analytics, admin
-import app.api.routers.parts as parts_module
-import app.api.routers.ai_search as ai_search_module
-import app.api.routers.wizard as wizard_module
-import app.api.routers.vehicles as vehicles_module
-import app.api.routers.categories as categories_module
-
 app.include_router(search.router, prefix="/api/v1/search", tags=["search"])
 app.include_router(bulk_operations.router, prefix="/api/v1/bulk", tags=["bulk-operations"])
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["analytics"])
@@ -66,6 +64,7 @@ async def api_health_check():
         "debug": settings.debug,
         "version": "1.0.0"
     }
+
 
 @app.get("/")
 async def root():
