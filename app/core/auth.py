@@ -100,16 +100,16 @@ async def get_current_user(
         return user
 
     except Exception as e:
-        logger.error(f"Error getting current user: {e})
+        logger.error(f"Error getting current user: {e}")
         raise credentials_exception
 
 
 async def get_current_active_user(current_user=Depends(get_current_user)):
-    Get current active user.
+    """Get current active user."""
     if not current_user.is_active:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=Inactive user"
+            detail="Inactive user"
         )
     return current_user
 
@@ -121,20 +121,19 @@ def require_permission(permission: str):
         if not current_user.has_permission(permission):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required: {permission}
-            )
+                detail=f"Insufficient permissions. Required: {permission}")
         return current_user
 
     return permission_dependency
 
 
 def require_role(role: str):
-    Decorator to require specific role.
+    """Decorator to require specific role."""
     async def role_dependency(current_user=Depends(get_current_active_user)):
         if not current_user.has_role(role):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=fInsufficient permissions. Required role: {role}
+                detail=f"Insufficient permissions. Required role: {role}"
             )
         return current_user
 
@@ -142,7 +141,7 @@ def require_role(role: str):
 
 
 def require_admin(current_user=Depends(get_current_active_user)):
-    Require admin role."
+    """Require admin role."""
     if not (current_user.has_role("admin")
             or current_user.has_role("super_admin")):
         raise HTTPException(
@@ -172,12 +171,12 @@ class PermissionChecker:
         if not current_user.has_permission(self.required_permission):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required: {self.required_permission})
+                detail=f"Insufficient permissions. Required: {self.required_permission}")
         return current_user
 
 
 class RoleChecker:
-    Role checker class for dependency injection.
+    """Role checker class for dependency injection."""
 
     def __init__(self, required_role: str):
         self.required_role = required_role

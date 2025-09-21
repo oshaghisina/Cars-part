@@ -119,7 +119,7 @@ class UserSummary(BaseModel):
 
 
 class UserSessionResponse(BaseModel):
-    Schema for user session response.
+    """Schema for user session response."""
     id: int
     user_id: int
     session_token: str
@@ -139,7 +139,7 @@ class UserSessionResponse(BaseModel):
 
 
 class UserActivityLogResponse(BaseModel):
-    ""Schema for user activity log response."""
+    """Schema for user activity log response."""
     id: int
     user_id: int
     action: str
