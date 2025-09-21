@@ -32,7 +32,7 @@ class PartsService:
 
         # Apply search
         if search:
-            search_term = f"%{search.lower()}%
+            search_term = f"%{search.lower()}%"
             query = query.filter(
                 or_(
                     Part.part_name.ilike(search_term),
@@ -45,7 +45,7 @@ class PartsService:
         return query.offset(skip).limit(limit).all()
 
     def get_part_by_id(self, part_id: int) -> Optional[Part]:
-        Get a specific part by ID.
+        """Get a specific part by ID."""
         return self.db.query(Part).filter(Part.id == part_id).first()
 
     def create_part(self, part_data: Dict) -> Optional[Part]:
@@ -74,11 +74,11 @@ class PartsService:
             return part
         except Exception as e:
             self.db.rollback()
-            print(f"Error creating part: {e})
+            print(f"Error creating part: {e}")
             return None
 
     def update_part(self, part_id: int, update_data: Dict) -> Optional[Part]:
-        Update an existing part.
+        """Update an existing part."""
         try:
             part = self.get_part_by_id(part_id)
             if not part:
@@ -95,11 +95,11 @@ class PartsService:
             return part
         except Exception as e:
             self.db.rollback()
-            print(f"Error updating part: {e})
+            print(f"Error updating part: {e}")
             return None
 
     def delete_part(self, part_id: int) -> bool:
-        Delete a part (soft delete by setting status to inactive).""
+        """Delete a part (soft delete by setting status to inactive)."""
         try:
             part = self.get_part_by_id(part_id)
             if not part:
@@ -112,11 +112,11 @@ class PartsService:
             return True
         except Exception as e:
             self.db.rollback()
-            print(f"Error deleting part: {e})
+            print(f"Error deleting part: {e}")
             return False
 
     def get_part_prices(self, part_id: int) -> List[Price]:
-        Get all prices for a specific part.
+        """Get all prices for a specific part."""
         return self.db.query(Price).filter(Price.part_id == part_id).all()
 
     def get_part_synonyms(self, part_id: int) -> List[Synonym]:
@@ -147,7 +147,8 @@ class PartsService:
         if missing_columns:
             return {
                 "imported": 0, "errors": 1, "details": [
-                    f"Missing required columns: {', '.join(missing_columns)}]}
+                    f"Missing required columns: {', '.join(missing_columns)}"]
+            }
 
         for index, row in df.iterrows():
             try:
@@ -197,24 +198,18 @@ class PartsService:
                 if part:
                     imported += 1
                     details.append(
-                        fRow {
-                            index +
-                            2}: Part '{
-                            part.part_name}' created successfully)
+                        f"Row {index + 2}: Part '{part.part_name}' created successfully")
                 else:
                     errors += 1
                     details.append(
-                        fRow {
-                            index +
-                            2}: Failed to create part '{
-                            part_data['part_name']}')
+                        f"Row {index + 2}: Failed to create part '{part_data['part_name']}'")
 
             except Exception as e:
                 errors += 1
-                details.append(fRow {index + 2}: Error - {str(e)})
+                details.append(f"Row {index + 2}: Error - {str(e)}")
 
         return {
-            imported: imported,
+            "imported": imported,
             "errors": errors,
             "details": details
         }
