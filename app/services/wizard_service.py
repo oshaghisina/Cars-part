@@ -160,7 +160,7 @@ class WizardService:
             query = query.filter(Part.subcategory == part_data['subcategory'])
         if part_data.get('part_name'):
             query = query.filter(Part.part_name.ilike(
-                f"%{part_data['part_name']}"%"))
+                f"%{part_data['part_name']}%))
 
         parts = query.all()
         return [
@@ -180,7 +180,7 @@ class WizardService:
         ]
 
     def clear_session(self, user_id: str) -> bool:
-        """Clear wizard session data."""
+        Clear wizard session data.""
         session = self.get_session(user_id)
         if session:
             self.db.delete(session)

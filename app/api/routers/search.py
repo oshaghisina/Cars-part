@@ -63,7 +63,7 @@ async def advanced_search(
             search_request.per_page)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search error: {str(e)}"")
+        raise HTTPException(status_code=500, detail=f"Search error: {str(e)}")
 
 
 @router.post("/global", response_model=GlobalSearchResponse)
@@ -132,7 +132,7 @@ async def get_search_suggestions(
                     'text': part.part_name,
                     'type': 'part',
                     'id': part.id,
-                    'description': f"{part.brand_oem} - {part.oem_code}""
+                    'description': f"{part.brand_oem} - {part.oem_code}
                 })
 
         if not module or module == 'vehicles':
@@ -166,14 +166,14 @@ async def get_search_suggestions(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Suggestions error: {str(e)}")
+            detail=fSuggestions error: {str(e)})
 
 
 async def search_module(
         module: str,
         search_request: AdvancedSearchRequest,
         db: Session):
-    """Search within a specific module"""
+    Search within a specific module"
     results = []
     count = 0
 
@@ -220,9 +220,9 @@ async def search_module(
                 id=str(part.id),
                 module='parts',
                 title=part.part_name,
-                description=f"{part.brand_oem} - {part.oem_code}"",
+                description=f"{part.brand_oem} - {part.oem_code},
                 type='Part',
-                url=f"/parts/{part.id}"",
+                url=f/parts/{part.id},
                 metadata={
                     'category': part.category.name if part.category else None,
                     'price': float(part.price) if part.price else None,
@@ -249,9 +249,9 @@ async def search_module(
                 id=str(brand.id),
                 module='vehicles',
                 title=brand.name,
-                description=f"Vehicle brand with {len(brand.models)}" models",
+                description=fVehicle brand with {len(brand.models)} models,
                 type='Vehicle Brand',
-                url=f"/vehicles/brands/{brand.id}"",
+                url=f/vehicles/brands/{brand.id},
                 metadata={
                     'model_count': len(brand.models),
                     'created_at': brand.created_at.isoformat() if brand.created_at else None
@@ -293,10 +293,10 @@ async def search_module(
             results.append(SearchResult(
                 id=str(order.id),
                 module='orders',
-                title=f"Order #{order.id}"",
-                description=f"{order.customer_name} - {order.status}"",
+                title=fOrder #{order.id},
+                description=f{order.customer_name} - {order.status},
                 type='Order',
-                url=f"/orders/{order.id}"",
+                url=f"/orders/{order.id},
                 metadata={
                     'status': order.status,
                     'total': float(order.total) if order.total else None,
@@ -331,10 +331,10 @@ async def search_module(
             results.append(SearchResult(
                 id=str(lead.id),
                 module='leads',
-                title=f"{lead.first_name} {lead.last_name}"",
-                description=f"{lead.city} - {lead.phone_e164}"",
+                title=f{lead.first_name} {lead.last_name},
+                description=f{lead.city} - {lead.phone_e164},
                 type='Lead',
-                url=f"/leads/{lead.id}"",
+                url=f/leads/{lead.id}",
                 metadata={
                     'city': lead.city,
                     'phone': lead.phone_e164,
@@ -369,10 +369,10 @@ async def search_module(
             results.append(SearchResult(
                 id=str(user.id),
                 module='users',
-                title=f"{user.first_name} {user.last_name}"",
-                description=f"{user.username} - {user.role}"",
+                title=f"{user.first_name} {user.last_name},
+                description=f{user.username} - {user.role},
                 type='User',
-                url=f"/users/{user.id}"",
+                url=f/users/{user.id},
                 metadata={
                     'username': user.username,
                     'email': user.email,
@@ -386,7 +386,7 @@ async def search_module(
 
 
 async def search_module_global(module: str, query: str, db: Session):
-    """Global search within a specific module"""
+    Global search within a specific module""
     results = []
 
     if module == 'parts':
@@ -403,9 +403,9 @@ async def search_module_global(module: str, query: str, db: Session):
                 id=str(part.id),
                 module='parts',
                 title=part.part_name,
-                description=f"{part.brand_oem} - {part.oem_code}"",
+                description=f"{part.brand_oem} - {part.oem_code},
                 type='Part',
-                url=f"/parts/{part.id}"",
+                url=f/parts/{part.id},
                 metadata={'category': part.category.name if part.category else None},
                 relevance_score=1.0
             ))
@@ -416,7 +416,7 @@ async def search_module_global(module: str, query: str, db: Session):
 
 
 def apply_global_filters(results: List[SearchResult], filters):
-    """Apply global filters to search results"""
+    Apply global filters to search results"
     filtered_results = []
 
     for result in results:

@@ -61,12 +61,12 @@ async def update_settings(
         settings, int(current_user.id))
 
     logger.info(
-        f"Settings updated by user {current_user.username}: "
-        f"{list(settings.keys())}")
+        f"Settings updated by user {current_user.username}: 
+        f{list(settings.keys())})
 
     return {
-        "message": "Settings updated successfully",
-        "updated": updated_settings}
+        message: Settings updated successfully,
+        updated": updated_settings}
 
 
 @router.get("/users", response_model=AdminUserListResponse)
@@ -160,19 +160,19 @@ async def create_admin_user(
         )
 
     except Exception as e:
-        logger.error(f"Error creating admin user: {e}"")
+        logger.error(f"Error creating admin user: {e})
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
 
 
-@router.get("/status", response_model=SystemStatusResponse)
+@router.get(/status, response_model=SystemStatusResponse)
 async def get_system_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get system status and statistics."""
+    Get system status and statistics."
     # Check if user is admin
     if current_user.role not in ["admin", "super_admin"]:
         raise HTTPException(

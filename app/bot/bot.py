@@ -38,15 +38,15 @@ try:
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
 except Exception as e:
-    print(f"⚠️  Bot initialization failed: {e}"")
-    print("⚠️  Please set a valid TELEGRAM_BOT_TOKEN in .env file")
+    print(f"⚠️  Bot initialization failed: {e})
+    print(⚠️  Please set a valid TELEGRAM_BOT_TOKEN in .env file)
     bot = None
     dp = None
 
 
 if dp:
     async def setup_bot_commands():
-        """Set up bot commands menu."""
+        Set up bot commands menu.""
         commands = [
             BotCommand(command="start", description="شروع استفاده از ربات"),
             BotCommand(command="help", description="راهنمای استفاده"),
@@ -166,7 +166,7 @@ if dp:
             return
 
         action = args[1].lower()
-        if action == "on":
+        if action == on:
             # Enable AI search
             from app.db.database import SessionLocal
             from app.services.settings_service import SettingsService
@@ -174,15 +174,15 @@ if dp:
             db = SessionLocal()
             try:
                 settings_service = SettingsService(db)
-                settings_service.set_setting("AI_ENABLED", "true")
-                await message.answer("جستجوی هوش مصنوعی فعال شد ✅")
+                settings_service.set_setting(AI_ENABLED, true)
+                await message.answer(جستجوی هوش مصنوعی فعال شد ✅)
             except Exception as e:
                 await message.answer("خطا در فعال‌سازی جستجوی هوش مصنوعی ❌")
-                logger.error(f"Error enabling AI search: {e}"")
+                logger.error(f"Error enabling AI search: {e})
             finally:
                 db.close()
 
-        elif action == "off":
+        elif action == off:
             # Disable AI search
             from app.db.database import SessionLocal
             from app.services.settings_service import SettingsService
@@ -190,19 +190,19 @@ if dp:
             db = SessionLocal()
             try:
                 settings_service = SettingsService(db)
-                settings_service.set_setting("AI_ENABLED", "false")
-                await message.answer("جستجوی هوش مصنوعی غیرفعال شد ❌")
+                settings_service.set_setting(AI_ENABLED, false)
+                await message.answer(جستجوی هوش مصنوعی غیرفعال شد ❌)
             except Exception as e:
                 await message.answer("خطا در غیرفعال‌سازی جستجوی هوش مصنوعی ❌")
-                logger.error(f"Error disabling AI search: {e}"")
+                logger.error(f"Error disabling AI search: {e})
             finally:
                 db.close()
         else:
-            await message.answer("استفاده: /ai on یا /ai off")
+            await message.answer(استفاده: /ai on یا /ai off)
 
-    @dp.message(Command("orders"))
+    @dp.message(Command(orders))
     async def cmd_orders(message: Message):
-        """Handle /orders command to check order status."""
+        Handle /orders command to check order status.""
         telegram_user_id = str(message.from_user.id)
 
         db = SessionLocal()
@@ -216,31 +216,31 @@ if dp:
                     await message.answer(result["message"])
 
                     for order in result["orders"][:5]:  # Show last 5 orders
-                        status_text = f"📋 سفارش #{order['order_id']:05d}"\n"
-                        status_text += f"وضعیت: {order['status']}"\n"
-                        status_text += f"تاریخ: {
-                            order['created_at'].strftime('%Y-%m-%d %H:%M')}\n"
-                        status_text += f"تعداد قطعات: {order['total_items']}"\n"
+                        status_text = f"📋 سفارش #{order['order_id']:05d}\n
+                        status_text += fوضعیت: {order['status']}\n
+                        status_text += fتاریخ: {
+                            order['created_at'].strftime('%Y-%m-%d %H:%M')}\n
+                        status_text += fتعداد قطعات: {order['total_items']}\n
 
                         if order['matched_items'] > 0:
-                            status_text += f"قطعات یافت شده: {
-                                order['matched_items']}/{order['total_items']}"
+                            status_text += fقطعات یافت شده: {
+                                order['matched_items']}/{order['total_items']}
 
                         await message.answer(status_text)
                 else:
-                    await message.answer(result["message"])
+                    await message.answer(result[message])
             else:
                 await message.answer(result["message"])
 
         except Exception as e:
-            logger.error(f"Error checking orders: {e}"")
-            await message.answer("خطایی در بررسی سفارشات رخ داد.")
+            logger.error(f"Error checking orders: {e})
+            await message.answer(خطایی در بررسی سفارشات رخ داد.)
         finally:
             db.close()
 
-    @dp.message(Command("search"))
+    @dp.message(Command(search))
     async def cmd_search(message: Message, state: FSMContext):
-        """Handle /search command."""
+        "Handle /search command."""
         await state.set_state(SearchStates.waiting_for_search)
         await message.answer(
             "🔍 **جستجوی قطعات**\n\n"
@@ -300,32 +300,32 @@ if dp:
                     await callback_query.message.answer(result["message"])
 
                     for order in result["orders"][:3]:  # Show last 3 orders
-                        status_text = f"📋 سفارش #{order['order_id']:05d}"\n"
-                        status_text += f"وضعیت: {order['status']}"\n"
-                        status_text += f"تاریخ: {
-                            order['created_at'].strftime('%Y-%m-%d %H:%M')}\n"
-                        status_text += f"تعداد قطعات: {order['total_items']}"\n"
+                        status_text = f"📋 سفارش #{order['order_id']:05d}\n
+                        status_text += fوضعیت: {order['status']}\n
+                        status_text += fتاریخ: {
+                            order['created_at'].strftime('%Y-%m-%d %H:%M')}\n
+                        status_text += fتعداد قطعات: {order['total_items']}\n
 
                         if order['matched_items'] > 0:
-                            status_text += f"قطعات یافت شده: {
-                                order['matched_items']}/{order['total_items']}"
+                            status_text += fقطعات یافت شده: {
+                                order['matched_items']}/{order['total_items']}
 
                         await callback_query.message.answer(status_text)
                 else:
-                    await callback_query.message.answer(result["message"])
+                    await callback_query.message.answer(result[message])
             else:
                 await callback_query.message.answer(result["message"])
 
         except Exception as e:
-            logger.error(f"Error checking orders: {e}"")
-            await callback_query.message.answer("خطایی در بررسی سفارشات رخ داد.")
+            logger.error(f"Error checking orders: {e})
+            await callback_query.message.answer(خطایی در بررسی سفارشات رخ داد.)
         finally:
             db.close()
 
-    @dp.callback_query(lambda c: c.data == "help")
+    @dp.callback_query(lambda c: c.data == help)
     async def handle_help(callback_query: CallbackQuery):
         await callback_query.answer()
-        help_text = """
+        help_text = "
 📖 **راهنمای سریع**
 
 🔍 **جستجو:** نام قطعه را بنویسید
@@ -408,22 +408,22 @@ if dp:
                             price_text = ""
                             if item["best_price"]:
                                 price_text = f" - قیمت: {
-                                    item['best_price']:,.0f} {item['currency']}"
+                                    item['best_price']:,.0f} {item['currency']}
 
-                            detail_text = f"✅ {
+                            detail_text = f✅ {
                                 item['query']}\n{
                                 item['part_name']} {
-                                item['vehicle_model']}{price_text}"
+                                item['vehicle_model']}{price_text}
                             await message.answer(detail_text)
                         else:
                             # Not found
-                            await message.answer(f"❌ {item['query']}: {item['message']}"")
+                            await message.answer(f❌ {item['query']}: {item['message']})
                 else:
-                    await message.answer(result["message"])
+                    await message.answer(result[message])
 
             except Exception as e:
-                logger.error(f"Error in bulk search: {e}"")
-                await message.answer("خطایی در جستجو رخ داد. لطفاً دوباره تلاش کنید.")
+                logger.error(fError in bulk search: {e})
+                await message.answer(خطایی در جستجو رخ داد. لطفاً دوباره تلاش کنید.)
             finally:
                 db.close()
         else:
@@ -433,7 +433,7 @@ if dp:
                 bot_service = BotService(db)
                 result = bot_service.search_and_confirm_part(query)
 
-                if result["found"]:
+                if result[found"]:
                     # Send confirmation message with inline keyboard
                     part_data = result["part_data"]
 
@@ -444,34 +444,34 @@ if dp:
                                 InlineKeyboardButton(
                                     text="✅ بله، این همان قطعه است",
                                     callback_data=f"confirm_part_{
-                                        part_data['id']}_{query}"),
+                                        part_data['id']}_{query}),
                                 InlineKeyboardButton(
-                                    text="❌ خیر، جستجوی جدید",
-                                    callback_data="search_again")]])
+                                    text=❌ خیر، جستجوی جدید,
+                                    callback_data=search_again)]])
 
-                    await message.answer(result["message"], reply_markup=keyboard)
+                    await message.answer(result[message], reply_markup=keyboard)
 
                     # Send additional details
-                    detail_text = f"📋 جزئیات:\n"
-                    detail_text += f"• کد OEM: {
-                        part_data['oem_code']}\n" if part_data['oem_code'] else ""
-                    detail_text += f"• دسته‌بندی: {part_data['category']}"\n"
-                    detail_text += f"• موقعیت: {
-                        part_data['position']}\n" if part_data['position'] else ""
+                    detail_text = f📋 جزئیات:\n
+                    detail_text += f• کد OEM: {
+                        part_data['oem_code']}\n if part_data['oem_code'] else 
+                    detail_text += f• دسته‌بندی: {part_data['category']}\n
+                    detail_text += f• موقعیت: {
+                        part_data['position']}\n if part_data['position'] else ""
                     detail_text += f"• بسته‌بندی: {
-                        part_data['pack_size']} عدد\n" if part_data['pack_size'] else ""
+                        part_data['pack_size']} عدد\n if part_data['pack_size'] else 
 
                     await message.answer(detail_text)
                 else:
-                    await message.answer(result["message"])
+                    await message.answer(result[message])
 
             except Exception as e:
-                logger.error(f"Error in part search: {e}"")
-                await message.answer("خطایی در جستجو رخ داد. لطفاً دوباره تلاش کنید.")
+                logger.error(fError in part search: {e})
+                await message.answer(خطایی در جستجو رخ داد. لطفاً دوباره تلاش کنید.)
             finally:
                 db.close()
 
-    @dp.callback_query(lambda c: c.data.startswith("confirm_part_"))
+    @dp.callback_query(lambda c: c.data.startswith(confirm_part_))
     async def handle_part_confirmation(callback_query: CallbackQuery):
         """Handle part confirmation callback."""
         await callback_query.answer()
@@ -495,18 +495,18 @@ if dp:
                 contact_keyboard = InlineKeyboardMarkup(inline_keyboard=[
                     [InlineKeyboardButton(text="📱 ارسال شماره تماس",
                                           request_contact=True,
-                                          callback_data=f"send_contact_{part_id}_{original_query}"")]
+                                          callback_data=f"send_contact_{part_id}_{original_query})]
                 ])
 
                 await callback_query.message.answer(
-                    "برای ثبت سفارش، لطفاً شماره تماس خود را ارسال کنید:",
+                    برای ثبت سفارش، لطفاً شماره تماس خود را ارسال کنید:,
                     reply_markup=contact_keyboard
                 )
             else:
                 # Create order directly
                 search_result = {
-                    "found": True,
-                    "part_data": {"id": int(part_id)},
+                    found: True,
+                    part_data: {"id": int(part_id)},
                     "original_query": original_query
                 }
 
@@ -523,14 +523,14 @@ if dp:
                     await callback_query.message.answer(order_result["message"])
 
         except Exception as e:
-            logger.error(f"Error in part confirmation: {e}"")
-            await callback_query.message.answer("خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید.")
+            logger.error(f"Error in part confirmation: {e})
+            await callback_query.message.answer(خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید.)
         finally:
             db.close()
 
-    @dp.callback_query(lambda c: c.data == "search_again")
+    @dp.callback_query(lambda c: c.data == search_again)
     async def handle_search_again(callback_query: CallbackQuery):
-        """Handle search again callback."""
+        "Handle search again callback."""
         await callback_query.answer()
         await callback_query.message.answer("لطفاً نام قطعه مورد نظر خود را وارد کنید:")
 
@@ -559,14 +559,14 @@ if dp:
                 await message.answer("❌ خطا در ثبت اطلاعات تماس.")
 
         except Exception as e:
-            logger.error(f"Error handling contact: {e}"")
-            await message.answer("خطایی در ثبت اطلاعات تماس رخ داد.")
+            logger.error(f"Error handling contact: {e})
+            await message.answer(خطایی در ثبت اطلاعات تماس رخ داد.)
         finally:
             db.close()
 
 
 async def main():
-    """Main bot function."""
+    Main bot function.""
     if bot is None or dp is None:
         logger.error(
             "Bot not initialized. Please check your TELEGRAM_BOT_TOKEN.")
@@ -588,21 +588,21 @@ async def main():
 
         # Get bot info
         bot_info = await bot.get_me()
-        logger.info(f"Bot @{bot_info.username}" is running")
+        logger.info(f"Bot @{bot_info.username} is running)
 
         # Start polling
         await dp.start_polling(bot)
     except Exception as e:
-        logger.error(f"Bot error: {e}"")
+        logger.error(fBot error: {e})
     finally:
         if bot:
             await bot.session.close()
 
 
-if __name__ == "__main__":
+if __name__ == __main__:
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        logger.info("Bot stopped by user")
+        logger.info(Bot stopped by user")
     except Exception as e:
         logger.error(f"Bot startup error: {e}"")

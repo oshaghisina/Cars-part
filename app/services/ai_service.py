@@ -33,13 +33,13 @@ class AIService:
                 self.client = openai.OpenAI(api_key=settings.openai_api_key)
                 logger.info("OpenAI client initialized successfully")
             except Exception as e:
-                logger.error(f"Failed to initialize OpenAI client: {e}"")
+                logger.error(f"Failed to initialize OpenAI client: {e})
                 self.client = None
         else:
-            logger.warning("OpenAI API key not provided")
+            logger.warning(OpenAI API key not provided)
 
     def is_available(self) -> bool:
-        """Check if AI service is available."""
+        Check if AI service is available.""
         return self.client is not None and settings.ai_enabled
 
     def _create_embeddings(self, texts: List[str]) -> List[List[float]]:
@@ -54,11 +54,11 @@ class AIService:
             )
             return [embedding.embedding for embedding in response.data]
         except Exception as e:
-            logger.error(f"Error creating embeddings: {e}"")
+            logger.error(f"Error creating embeddings: {e})
             return []
 
     def _cosine_similarity(self, a: List[float], b: List[float]) -> float:
-        """Calculate cosine similarity between two vectors."""
+        Calculate cosine similarity between two vectors.
         try:
             a_np = np.array(a)
             b_np = np.array(b)
@@ -91,13 +91,13 @@ class AIService:
                     part.part_name} {
                     part.brand_oem} {
                     part.vehicle_make} {
-                    part.vehicle_model} {part.category}"
+                    part.vehicle_model} {part.category}
                 if part.oem_code:
-                    description += f" {part.oem_code}""
+                    description += f {part.oem_code}
                 if part.vehicle_trim:
-                    description += f" {part.vehicle_trim}""
+                    description += f {part.vehicle_trim}
                 if part.position:
-                    description += f" {part.position}""
+                    description += f {part.position}
 
                 part_descriptions.append(description)
                 part_data.append(part)
@@ -108,7 +108,7 @@ class AIService:
 
             if not part_embeddings or not query_embedding:
                 logger.warning(
-                    "Failed to create embeddings, falling back to regular search")
+                    Failed to create embeddings, falling back to regular search)
                 return self.search_service.search_parts(query, limit)
 
             # Calculate similarities
@@ -141,12 +141,12 @@ class AIService:
             return results
 
         except Exception as e:
-            logger.error(f"Error in semantic search: {e}"")
+            logger.error(f"Error in semantic search: {e})
             return self.search_service.search_parts(query, limit)
 
     def intelligent_search(
             self, query: str, limit: int = 10) -> Dict[str, Any]:
-        """Perform intelligent search with query understanding and expansion."""
+        Perform intelligent search with query understanding and expansion.
         if not self.is_available():
             return {
                 "success": True,
@@ -196,11 +196,11 @@ class AIService:
             }
 
         except Exception as e:
-            logger.error(f"Error in intelligent search: {e}"")
+            logger.error(f"Error in intelligent search: {e})
             return {
-                "success": False,
-                "parts": [],
-                "query_analysis": None,
+                success: False,
+                parts: [],
+                query_analysis: None,
                 "suggestions": [],
                 "search_type": "basic",
                 "error": str(e)
@@ -212,7 +212,7 @@ class AIService:
             return {"intent": "search", "entities": [], "language": "unknown"}
 
         try:
-            prompt = f"""
+            prompt = f"
             Analyze this car parts search query and extract:
             1. Intent (what the user wants to find)
             2. Car brand/model mentioned
@@ -220,11 +220,11 @@ class AIService:
             4. Language (Persian/English)
             5. Specific requirements (front/rear, left/right, etc.)
 
-            Query: "{query}"
+            Query: {query}
 
             Respond in JSON format:
             {{
-                "intent": "search_for_part",
+                intent: search_for_part,
                 "car_brand": "Chery",
                 "car_model": "Tiggo 8",
                 "part_type": "brake_pad",
@@ -259,8 +259,8 @@ class AIService:
                     "specific_requirements": []}
 
         except Exception as e:
-            logger.error(f"Error analyzing query: {e}"")
-            return {"intent": "search", "entities": [], "language": "unknown"}
+            logger.error(f"Error analyzing query: {e})
+            return {intent: search, entities: [], "language": "unknown"}
 
     def _expand_query(self, query: str, analysis: Dict[str, Any]) -> List[str]:
         """Expand query with synonyms and related terms."""
@@ -268,9 +268,9 @@ class AIService:
 
         try:
             # Generate synonyms and related terms
-            prompt = f"""
+            prompt = f"
             Generate 3 alternative search queries for car parts based on this query:
-            Original: "{query}"
+            Original: {query}
             Analysis: {json.dumps(analysis, ensure_ascii=False)}
 
             Generate variations that might help find the same or related parts:
@@ -279,11 +279,11 @@ class AIService:
             3. Add related part categories
 
             Respond with just 3 queries, one per line, no explanations.
-            """
+            
 
             response = self.client.chat.completions.create(
                 model=settings.openai_model,
-                messages=[{"role": "user", "content": prompt}],
+                messages=[{role": "user", "content": prompt}],
                 max_tokens=150,
                 temperature=0.5
             )
@@ -294,7 +294,7 @@ class AIService:
                                     for exp in expansions if exp.strip()])
 
         except Exception as e:
-            logger.error(f"Error expanding query: {e}"")
+            logger.error(f"Error expanding query: {e})
 
         return expanded_queries[:4]  # Limit to 4 total queries
 
@@ -304,7 +304,7 @@ class AIService:
                                              Any],
                               results: List[Dict[str,
                                                  Any]]) -> List[str]:
-        """Generate smart suggestions based on search results."""
+        Generate smart suggestions based on search results.
         if not self.is_available() or not results:
             return []
 
@@ -315,10 +315,10 @@ class AIService:
             brands = list(set([result.get('brand_oem', '')
                           for result in results if result.get('brand_oem')]))
 
-            prompt = f"""
+            prompt = f"
             Based on this car parts search query and results, generate 3 helpful suggestions:
 
-            Query: "{query}"
+            Query: {query}
             Found categories: {', '.join(categories)}
             Found brands: {', '.join(brands)}
 
@@ -328,7 +328,7 @@ class AIService:
             - Complementary parts for maintenance
 
             Respond with just 3 suggestions, one per line, in the same language as the query.
-            """
+            "
 
             response = self.client.chat.completions.create(
                 model=settings.openai_model,
@@ -342,12 +342,12 @@ class AIService:
             return [s.strip() for s in suggestions if s.strip()][:3]
 
         except Exception as e:
-            logger.error(f"Error generating suggestions: {e}"")
+            logger.error(f"Error generating suggestions: {e})
             return []
 
     def get_part_recommendations(
             self, part_id: int, limit: int = 5) -> List[Dict[str, Any]]:
-        """Get AI-powered part recommendations based on a specific part."""
+        Get AI-powered part recommendations based on a specific part.
         if not self.is_available():
             return []
 
@@ -361,7 +361,7 @@ class AIService:
                 part.part_name} {
                 part.brand_oem} {
                 part.vehicle_make} {
-                part.vehicle_model} {part.category}"
+                part.vehicle_model} {part.category}
 
             # Find similar parts using semantic search
             similar_parts = self.semantic_search(part_description, limit * 2)
@@ -375,11 +375,11 @@ class AIService:
             return recommendations
 
         except Exception as e:
-            logger.error(f"Error getting part recommendations: {e}"")
+            logger.error(fError getting part recommendations: {e})
             return []
 
     def _extract_brand(self, text: str) -> Optional[str]:
-        """Extract car brand from text."""
+        "Extract car brand from text."""
         brands = [
             'Chery',
             'JAC',

@@ -54,7 +54,7 @@ class SettingsService:
         self.db.commit()
         self.db.refresh(setting)
 
-        logger.info(f"Setting updated: {key} = {value}"")
+        logger.info(f"Setting updated: {key} = {value})
         return setting
 
     def set_settings(self,
@@ -62,7 +62,7 @@ class SettingsService:
                                     str],
                      updated_by: Optional[int] = None) -> Dict[str,
                                                                str]:
-        """Set multiple settings."""
+        Set multiple settings.
         results = {}
 
         for key, value in settings.items():

@@ -57,11 +57,11 @@ class UserService:
 
         # Role is set directly in the User model
 
-        logger.info(f"User created: {user.username} (ID: {user.id}")")
+        logger.info(f"User created: {user.username} (ID: {user.id}))
         return user
 
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
-        """Get user by ID."""
+        Get user by ID.
         return self.db.query(User).filter(User.id == user_id).first()
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
@@ -82,10 +82,10 @@ class UserService:
 
         if search:
             search_filter = or_(
-                User.username.ilike(f"%{search}"%"),
-                User.email.ilike(f"%{search}"%"),
-                User.first_name.ilike(f"%{search}"%"),
-                User.last_name.ilike(f"%{search}"%")
+                User.username.ilike(f"%{search}%),
+                User.email.ilike(f%{search}%),
+                User.first_name.ilike(f%{search}%),
+                User.last_name.ilike(f%{search}%)
             )
             query = query.filter(search_filter)
 
@@ -95,7 +95,7 @@ class UserService:
             self,
             user_id: int,
             user_data: UserUpdate) -> Optional[User]:
-        """Update user information."""
+        ""Update user information."""
         user = await self.get_user_by_id(user_id)
         if not user:
             return None
@@ -146,11 +146,11 @@ class UserService:
         self.db.commit()
         self.db.refresh(user)
 
-        logger.info(f"User updated: {user.username} (ID: {user.id}")")
+        logger.info(f"User updated: {user.username} (ID: {user.id}))
         return user
 
     async def delete_user(self, user_id: int) -> bool:
-        """Delete user (soft delete by deactivating)."""
+        Delete user (soft delete by deactivating).
         user = await self.get_user_by_id(user_id)
         if not user:
             return False
@@ -164,7 +164,7 @@ class UserService:
 
         self.db.commit()
 
-        logger.info(f"User deactivated: {user.username} (ID: {user.id}")")
+        logger.info(f"User deactivated: {user.username} (ID: {user.id}))
         return True
 
     async def change_password(
@@ -172,7 +172,7 @@ class UserService:
             user_id: int,
             current_password: str,
             new_password: str) -> bool:
-        """Change user password."""
+        Change user password.
         user = await self.get_user_by_id(user_id)
         if not user:
             return False
@@ -188,7 +188,7 @@ class UserService:
         logger.info(
             f"Password changed for user: {
                 user.username} (ID: {
-                user.id})")
+                user.id}))
         return True
 
     # Authentication Operations
@@ -198,7 +198,7 @@ class UserService:
             password: str,
             ip_address: Optional[str] = None,
             user_agent: Optional[str] = None) -> Optional[User]:
-        """Authenticate user with username/email and password."""
+        Authenticate user with username/email and password.
         # Find user by username or email
         user = self.db.query(User).filter(
             or_(User.username == username_or_email, User.email == username_or_email)
@@ -206,19 +206,19 @@ class UserService:
 
         if not user:
             logger.warning(
-                f"Authentication failed: User not found - {username_or_email}"")
+                fAuthentication failed: User not found - {username_or_email})
             return None
 
         # Check if account is locked
         if user.is_locked():
             logger.warning(
-                f"Authentication failed: Account locked - {user.username}"")
+                fAuthentication failed: Account locked - {user.username})
             return None
 
         # Check if account is active
         if not user.is_active:  # type: ignore[comparison-overlap]
             logger.warning(
-                f"Authentication failed: Account inactive - {user.username}"")
+                fAuthentication failed: Account inactive - {user.username})
             return None
 
         # Verify password
@@ -226,7 +226,7 @@ class UserService:
             user.increment_login_attempts()
             self.db.commit()
             logger.warning(
-                f"Authentication failed: Invalid password - {user.username}"")
+                fAuthentication failed: Invalid password - {user.username}")
             return None
 
         # Reset login attempts on successful login
@@ -234,7 +234,7 @@ class UserService:
         user.last_login = func.now()  # type: ignore[assignment]
         self.db.commit()
 
-        logger.info(f"User authenticated successfully: {user.username}"")
+        logger.info(f"User authenticated successfully: {user.username})
         return user
 
     async def create_session(
@@ -243,7 +243,7 @@ class UserService:
             ip_address: Optional[str] = None,
             user_agent: Optional[str] = None,
             expires_hours: int = 24):
-        """Create a new user session with basic tracking."""
+        Create a new user session with basic tracking.
         # Generate session token
         session_token = secrets.token_urlsafe(32)
 
@@ -263,7 +263,7 @@ class UserService:
         # For now, we'll log it and return the token
         logger.info(
             f"Session created for user: {
-                user.username} (IP: {ip_address})")
+                user.username} (IP: {ip_address}))
 
         # Update user's last login
         user.last_login = func.now()  # type: ignore[assignment]
@@ -276,7 +276,7 @@ class UserService:
 
     # Utility Methods
     async def get_user_statistics(self) -> Dict[str, Any]:
-        """Get user statistics."""
+        Get user statistics."
         total_users = self.db.query(User).count()
         active_users = self.db.query(User).filter(User.is_active).count()
         verified_users = self.db.query(User).filter(User.is_verified).count()

@@ -54,20 +54,20 @@ async def bulk_import(
 
         return ImportResponse(
             success=True,
-            message=f"Successfully imported {result.processed_count}" records",
+            message=f"Successfully imported {result.processed_count} records,
             result=result
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Import error: {str(e)}"")
+        raise HTTPException(status_code=500, detail=fImport error: {str(e)})
 
 
-@router.post("/export", response_model=ExportResponse)
+@router.post(/export, response_model=ExportResponse)
 async def bulk_export(
     export_request: ExportRequest,
     db: Session = Depends(get_db)
 ):
-    """
+    
     Export data to specified format
     """
     try:
@@ -78,25 +78,25 @@ async def bulk_export(
         if export_request.format == 'csv':
             output = data.to_csv(index=False)
             content_type = 'text/csv'
-            filename = f"{export_request.data_type}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}".csv"
+            filename = f"{export_request.data_type}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv
         elif export_request.format == 'xlsx':
             output = io.BytesIO()
             data.to_excel(output, index=False)
             output.seek(0)
             content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            filename = f"{
+            filename = f{
                 export_request.data_type}_export_{
-                datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+                datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx
         elif export_request.format == 'json':
             output = data.to_json(orient='records', date_format='iso')
             content_type = 'application/json'
-            filename = f"{
+            filename = f{
                 export_request.data_type}_export_{
-                datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                datetime.now().strftime('%Y%m%d_%H%M%S')}.json
         else:
             raise HTTPException(
                 status_code=400,
-                detail="Unsupported export format")
+                detail=Unsupported export format)
 
         return ExportResponse(
             success=True,
@@ -107,15 +107,15 @@ async def bulk_export(
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Export error: {str(e)}"")
+        raise HTTPException(status_code=500, detail=fExport error: {str(e)})
 
 
-@router.post("/batch", response_model=BatchOperationResponse)
+@router.post(/batch, response_model=BatchOperationResponse)
 async def batch_operation(
     operation_request: BatchOperationRequest,
     db: Session = Depends(get_db)
 ):
-    """
+    "
     Perform batch operations on selected items
     """
     try:
@@ -123,14 +123,14 @@ async def batch_operation(
 
         return BatchOperationResponse(
             success=True,
-            message=f"Successfully processed {result.processed_count}" items",
+            message=f"Successfully processed {result.processed_count} items,
             result=result
         )
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Batch operation error: {str(e)}")
+            detail=fBatch operation error: {str(e)})
 
 
 async def process_import(
@@ -140,7 +140,7 @@ async def process_import(
         validate_data: bool,
         skip_errors: bool,
         db: Session):
-    """Process import data"""
+    Process import data""
     processed_count = 0
     error_count = 0
     errors = []
@@ -157,7 +157,7 @@ async def process_import(
         elif data_type == 'leads':
             processed_count, error_count, errors = await import_leads(df, mode, validate_data, skip_errors, db)
         else:
-            raise ValueError(f"Unsupported data type: {data_type}"")
+            raise ValueError(f"Unsupported data type: {data_type})
 
         db.commit()
 
@@ -179,21 +179,21 @@ async def import_parts(
         validate_data: bool,
         skip_errors: bool,
         db: Session):
-    """Import parts data"""
+    Import parts data
     processed_count = 0
     error_count = 0
     errors = []
 
     required_columns = ['part_name', 'brand_oem', 'oem_code']
     if not all(col in df.columns for col in required_columns):
-        raise ValueError(f"Missing required columns: {required_columns}"")
+        raise ValueError(fMissing required columns: {required_columns})
 
     for index, row in df.iterrows():
         try:
             # Validate data if requested
             if validate_data:
                 if pd.isna(row['part_name']) or pd.isna(row['brand_oem']):
-                    raise ValueError("Required fields cannot be empty")
+                    raise ValueError(Required fields cannot be empty)
 
             # Check if part exists
             existing_part = db.query(Part).filter(
@@ -202,16 +202,16 @@ async def import_parts(
             if existing_part and mode == 'create':
                 if skip_errors:
                     errors.append(
-                        f"Row {
+                        fRow {
                             index +
                             1}: Part with OEM code {
-                            row['oem_code']} already exists")
+                            row['oem_code']} already exists)
                     error_count += 1
                     continue
                 else:
                     raise ValueError(
-                        f"Part with OEM code {
-                            row['oem_code']} already exists")
+                        fPart with OEM code {
+                            row['oem_code']} already exists)
 
             # Create or update part
             if existing_part and mode in ['update', 'upsert']:
@@ -230,7 +230,7 @@ async def import_parts(
 
         except Exception as e:
             error_count += 1
-            errors.append(f"Row {index + 1}: {str(e)}"")
+            errors.append(f"Row {index + 1}: {str(e)})
             if not skip_errors:
                 raise e
 
@@ -243,7 +243,7 @@ async def import_vehicles(
         validate_data: bool,
         skip_errors: bool,
         db: Session):
-    """Import vehicles data"""
+    "Import vehicles data"""
     processed_count = 0
     error_count = 0
     errors = []
@@ -261,7 +261,7 @@ async def import_vehicles(
                             f"Row {
                                 index +
                                 1}: Brand {
-                                row['brand_name']} already exists")
+                                row['brand_name']} already exists)
                         error_count += 1
                         continue
                 else:
@@ -290,7 +290,7 @@ async def import_vehicles(
 
         except Exception as e:
             error_count += 1
-            errors.append(f"Row {index + 1}: {str(e)}"")
+            errors.append(fRow {index + 1}: {str(e)})
             if not skip_errors:
                 raise e
 
@@ -303,7 +303,7 @@ async def import_categories(
         validate_data: bool,
         skip_errors: bool,
         db: Session):
-    """Import categories data"""
+    Import categories data""
     processed_count = 0
     error_count = 0
     errors = []
@@ -322,7 +322,7 @@ async def import_categories(
                         f"Row {
                             index +
                             1}: Category {
-                            row['name']} already exists")
+                            row['name']} already exists)
                     error_count += 1
                     continue
             else:
@@ -337,7 +337,7 @@ async def import_categories(
 
         except Exception as e:
             error_count += 1
-            errors.append(f"Row {index + 1}: {str(e)}"")
+            errors.append(fRow {index + 1}: {str(e)})
             if not skip_errors:
                 raise e
 
@@ -350,7 +350,7 @@ async def import_orders(
         validate_data: bool,
         skip_errors: bool,
         db: Session):
-    """Import orders data"""
+    Import orders data""
     processed_count = 0
     error_count = 0
     errors = []
@@ -361,7 +361,7 @@ async def import_orders(
                 required_fields = ['customer_name', 'customer_phone']
                 for field in required_fields:
                     if field not in row or pd.isna(row[field]):
-                        raise ValueError(f"Required field {field}" is missing")
+                        raise ValueError(f"Required field {field} is missing)
 
             order_data = {
                 'customer_name': row['customer_name'],
@@ -377,7 +377,7 @@ async def import_orders(
 
         except Exception as e:
             error_count += 1
-            errors.append(f"Row {index + 1}: {str(e)}"")
+            errors.append(fRow {index + 1}: {str(e)})
             if not skip_errors:
                 raise e
 
@@ -390,7 +390,7 @@ async def import_leads(
         validate_data: bool,
         skip_errors: bool,
         db: Session):
-    """Import leads data"""
+    Import leads data"""
     processed_count = 0
     error_count = 0
     errors = []
@@ -401,7 +401,7 @@ async def import_leads(
                 required_fields = ['first_name', 'last_name', 'phone_e164']
                 for field in required_fields:
                     if field not in row or pd.isna(row[field]):
-                        raise ValueError(f"Required field {field}" is missing")
+                        raise ValueError(f"Required field {field} is missing)
 
             lead_data = {
                 'first_name': row['first_name'],
@@ -418,7 +418,7 @@ async def import_leads(
 
         except Exception as e:
             error_count += 1
-            errors.append(f"Row {index + 1}: {str(e)}"")
+            errors.append(fRow {index + 1}: {str(e)})
             if not skip_errors:
                 raise e
 
@@ -426,7 +426,7 @@ async def import_leads(
 
 
 async def get_export_data(export_request: ExportRequest, db: Session):
-    """Get data for export"""
+    Get data for export"""
     if export_request.data_type == 'parts':
         query = db.query(Part)
         if export_request.date_from:
@@ -495,7 +495,7 @@ async def process_batch_operation(
                         processed_count += 1
 
                 except Exception as e:
-                    errors.append(f"Item {item_id}: {str(e)}"")
+                    errors.append(f"Item {item_id}: {str(e)})
 
         elif operation_request.operation_type == 'assign-category':
             for item_id in operation_request.item_ids:
@@ -508,7 +508,7 @@ async def process_batch_operation(
                             processed_count += 1
 
                 except Exception as e:
-                    errors.append(f"Item {item_id}: {str(e)}"")
+                    errors.append(fItem {item_id}: {str(e)})
 
         elif operation_request.operation_type == 'delete':
             for item_id in operation_request.item_ids:
@@ -526,7 +526,7 @@ async def process_batch_operation(
                         processed_count += 1
 
                 except Exception as e:
-                    errors.append(f"Item {item_id}: {str(e)}"")
+                    errors.append(fItem {item_id}: {str(e)}"")
 
         db.commit()
 

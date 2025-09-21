@@ -112,14 +112,14 @@ class UserSummary(BaseModel):
 
     @property
     def full_name(self) -> str:
-        return f"{self.first_name} {self.last_name}".strip()
+        return f"{self.first_name} {self.last_name}.strip()
 
     class Config:
         from_attributes = True
 
 
 class UserSessionResponse(BaseModel):
-    """Schema for user session response."""
+    Schema for user session response.
     id: int
     user_id: int
     session_token: str
@@ -139,7 +139,7 @@ class UserSessionResponse(BaseModel):
 
 
 class UserActivityLogResponse(BaseModel):
-    """Schema for user activity log response."""
+    ""Schema for user activity log response."""
     id: int
     user_id: int
     action: str

@@ -179,10 +179,10 @@ async def get_users(
         from sqlalchemy import or_
         total = db.query(User).filter(
             or_(
-                User.username.ilike(f"%{search}"%"),
-                User.email.ilike(f"%{search}"%"),
-                User.first_name.ilike(f"%{search}"%"),
-                User.last_name.ilike(f"%{search}"%")
+                User.username.ilike(f"%{search}%),
+                User.email.ilike(f%{search}%),
+                User.first_name.ilike(f%{search}%),
+                User.last_name.ilike(f%{search}%)
             )
         ).count()
 
@@ -195,7 +195,7 @@ async def get_users(
     )
 
 
-@router.post("/", response_model=UserResponse)
+@router.post(/", response_model=UserResponse)
 async def create_user(
     user_data: UserCreate,
     current_user: User = Depends(get_current_user),
@@ -353,17 +353,17 @@ async def delete_user(
 #
 #     # Activity logging not implemented yet
 #
-#     return {"message": f"Role '{role_name}"' assigned successfully"}
+#     return {"message": f"Role '{role_name}' assigned successfully}
 
 
-# @router.delete("/{user_id}/roles/{role_name}")
+# @router.delete(/{user_id}/roles/{role_name})
 # async def remove_role_from_user(
 #     user_id: int,
 #     role_name: str,
 #     current_user: User = Depends(get_current_user),
 #     db: Session = Depends(get_db)
 # ):
-#     """Remove role from user."""
+#     Remove role from user.""
 #     # Check permission
 #     if not current_user.has_permission("users.update"):
 #         raise HTTPException(
@@ -383,7 +383,7 @@ async def delete_user(
 #
 #         # Activity logging not implemented yet
 #
-#         return {"message": f"Role '{role_name}"' removed successfully"}
+#         return {"message": f"Role '{role_name}' removed successfully}
 #     except ValueError as e:
 #         raise HTTPException(
 #             status_code=status.HTTP_400_BAD_REQUEST,
@@ -394,12 +394,12 @@ async def delete_user(
 # Activity logging endpoint removed - activity models not implemented yet
 
 
-@router.get("/statistics/overview", response_model=UserStatistics)
+@router.get(/statistics/overview, response_model=UserStatistics)
 async def get_user_statistics(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get user statistics."""
+    Get user statistics.""
     # Check permission
     if not current_user.has_permission("users.read"):
         raise HTTPException(
@@ -435,7 +435,7 @@ async def create_users_bulk(
             user = await user_service.create_user(user_data)
             created_users.append(user)
         except ValueError as e:
-            logger.error(f"Failed to create user {user_data.username}: {e}"")
+            logger.error(f"Failed to create user {user_data.username}: {e}")
             continue
 
     # Activity logging not implemented yet
