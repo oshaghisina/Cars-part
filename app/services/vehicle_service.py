@@ -62,7 +62,9 @@ class VehicleService:
             logger.error(f"Error creating brand: {e}")
             return None
 
-    def update_brand(self, brand_id: int, brand_data: Dict[str, Any]) -> Optional[VehicleBrand]:
+    def update_brand(
+        self, brand_id: int, brand_data: Dict[str, Any]
+    ) -> Optional[VehicleBrand]:
         """Update an existing brand."""
         try:
             brand = self.get_brand_by_id(brand_id)
@@ -155,7 +157,9 @@ class VehicleService:
             logger.error(f"Error creating model: {e}")
             return None
 
-    def update_model(self, model_id: int, model_data: Dict[str, Any]) -> Optional[VehicleModel]:
+    def update_model(
+        self, model_id: int, model_data: Dict[str, Any]
+    ) -> Optional[VehicleModel]:
         """Update an existing model."""
         try:
             model = self.get_model_by_id(model_id)
@@ -220,7 +224,10 @@ class VehicleService:
             query = query.filter(search_filter)
 
         return (
-            query.order_by(VehicleTrim.sort_order, VehicleTrim.name).offset(skip).limit(limit).all()
+            query.order_by(VehicleTrim.sort_order, VehicleTrim.name)
+            .offset(skip)
+            .limit(limit)
+            .all()
         )
 
     def get_trims_by_model(self, model_id: int) -> List[VehicleTrim]:
@@ -249,7 +256,9 @@ class VehicleService:
             logger.error(f"Error creating trim: {e}")
             return None
 
-    def update_trim(self, trim_id: int, trim_data: Dict[str, Any]) -> Optional[VehicleTrim]:
+    def update_trim(
+        self, trim_id: int, trim_data: Dict[str, Any]
+    ) -> Optional[VehicleTrim]:
         """Update an existing trim."""
         try:
             trim = self.get_trim_by_id(trim_id)
@@ -340,7 +349,8 @@ class VehicleService:
             .filter(
                 VehicleBrand.is_active,
                 or_(
-                    VehicleBrand.name.ilike(f"%{query}%"), VehicleBrand.name_fa.ilike(f"%{query}%")
+                    VehicleBrand.name.ilike(f"%{query}%"),
+                    VehicleBrand.name_fa.ilike(f"%{query}%"),
                 ),
             )
             .limit(limit)
@@ -366,7 +376,8 @@ class VehicleService:
                 VehicleModel.is_active,
                 VehicleBrand.is_active,
                 or_(
-                    VehicleModel.name.ilike(f"%{query}%"), VehicleModel.name_fa.ilike(f"%{query}%")
+                    VehicleModel.name.ilike(f"%{query}%"),
+                    VehicleModel.name_fa.ilike(f"%{query}%"),
                 ),
             )
             .limit(limit)

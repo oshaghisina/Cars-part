@@ -31,7 +31,9 @@ class SettingsService:
         # type: ignore[misc]
         return {setting.key: setting.value for setting in settings}
 
-    def set_setting(self, key: str, value: str, updated_by: Optional[int] = None) -> Setting:
+    def set_setting(
+        self, key: str, value: str, updated_by: Optional[int] = None
+    ) -> Setting:
         """Set a setting value."""
         setting = self.db.query(Setting).filter(Setting.key == key).first()
 
@@ -81,7 +83,12 @@ class SettingsService:
         bool_keys = ["AI_ENABLED", "MAINTENANCE_MODE", "BACKUP_ENABLED"]
         for key in bool_keys:
             if key in raw_settings:
-                system_settings[key] = raw_settings[key].lower() in ("true", "1", "yes", "on")
+                system_settings[key] = raw_settings[key].lower() in (
+                    "true",
+                    "1",
+                    "yes",
+                    "on",
+                )
 
         # Integer settings
         int_keys = [

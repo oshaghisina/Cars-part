@@ -174,7 +174,9 @@ class PartsService:
                     if pd.notna(row.get("position"))
                     else None,
                     "unit": str(row.get("unit", "pcs")).strip(),
-                    "pack_size": int(row["pack_size"]) if pd.notna(row.get("pack_size")) else None,
+                    "pack_size": int(row["pack_size"])
+                    if pd.notna(row.get("pack_size"))
+                    else None,
                     "status": "active",
                 }
 
@@ -182,7 +184,9 @@ class PartsService:
                 part = self.create_part(part_data)
                 if part:
                     imported += 1
-                    details.append(f"Row {index + 2}: Part '{part.part_name}' created successfully")
+                    details.append(
+                        f"Row {index + 2}: Part '{part.part_name}' created successfully"
+                    )
                 else:
                     errors += 1
                     details.append(
@@ -239,6 +243,10 @@ class PartsService:
             "total_parts": total_parts,
             "active_parts": active_parts,
             "inactive_parts": inactive_parts,
-            "category_stats": [{"category": cat, "count": count} for cat, count in category_stats],
-            "make_stats": [{"make": make, "count": count} for make, count in make_stats],
+            "category_stats": [
+                {"category": cat, "count": count} for cat, count in category_stats
+            ],
+            "make_stats": [
+                {"make": make, "count": count} for make, count in make_stats
+            ],
         }

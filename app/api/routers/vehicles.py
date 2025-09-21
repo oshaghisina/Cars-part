@@ -121,7 +121,9 @@ async def list_brands(
 ):
     """List all vehicle brands with optional filtering."""
     vehicle_service = VehicleService(db)
-    brands = vehicle_service.get_brands(skip=skip, limit=limit, is_active=is_active, search=search)
+    brands = vehicle_service.get_brands(
+        skip=skip, limit=limit, is_active=is_active, search=search
+    )
 
     return [
         VehicleBrandResponse(
@@ -144,7 +146,9 @@ async def list_brands(
 
 
 @router.post("/brands", response_model=VehicleBrandResponse)
-async def create_brand(request: VehicleBrandCreateRequest, db: Session = Depends(get_db)):
+async def create_brand(
+    request: VehicleBrandCreateRequest, db: Session = Depends(get_db)
+):
     """Create a new vehicle brand."""
     vehicle_service = VehicleService(db)
     brand = vehicle_service.create_brand(request.dict())
@@ -236,7 +240,9 @@ async def list_models(
 
 
 @router.post("/models", response_model=VehicleModelResponse)
-async def create_model(request: VehicleModelCreateRequest, db: Session = Depends(get_db)):
+async def create_model(
+    request: VehicleModelCreateRequest, db: Session = Depends(get_db)
+):
     """Create a new vehicle model."""
     vehicle_service = VehicleService(db)
     model = vehicle_service.create_model(request.dict())

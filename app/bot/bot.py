@@ -98,11 +98,17 @@ if dp:
                     InlineKeyboardButton(
                         text="🧙‍♂️ راهنمای گام به گام", callback_data="start_wizard"
                     ),
-                    InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
+                    InlineKeyboardButton(
+                        text="🔍 جستجوی قطعات", callback_data="search_parts"
+                    ),
                 ],
                 [
-                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
-                    InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
+                    InlineKeyboardButton(
+                        text="📋 سفارشات من", callback_data="my_orders"
+                    ),
+                    InlineKeyboardButton(
+                        text="❓ راهنمای استفاده", callback_data="help"
+                    ),
                 ],
                 [InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings")],
             ]
@@ -158,8 +164,12 @@ if dp:
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="🔍 شروع جستجو", callback_data="search_parts"),
-                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
+                    InlineKeyboardButton(
+                        text="🔍 شروع جستجو", callback_data="search_parts"
+                    ),
+                    InlineKeyboardButton(
+                        text="📋 سفارشات من", callback_data="my_orders"
+                    ),
                 ],
                 [InlineKeyboardButton(text="🏠 منوی اصلی", callback_data="main_menu")],
             ]
@@ -235,7 +245,9 @@ if dp:
                     for order in result["orders"][:5]:  # Show last 5 orders
                         status_text = f"📋 سفارش #{order['order_id']:05d}\n"
                         status_text += f"وضعیت: {order['status']}\n"
-                        status_text += f"تاریخ: {order['created_at'].strftime('%Y-%m-%d %H:%M')}\n"
+                        status_text += (
+                            f"تاریخ: {order['created_at'].strftime('%Y-%m-%d %H:%M')}\n"
+                        )
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
@@ -278,14 +290,24 @@ if dp:
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
-                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
+                    InlineKeyboardButton(
+                        text="🔍 جستجوی قطعات", callback_data="search_parts"
+                    ),
+                    InlineKeyboardButton(
+                        text="📋 سفارشات من", callback_data="my_orders"
+                    ),
                 ],
                 [
-                    InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
+                    InlineKeyboardButton(
+                        text="❓ راهنمای استفاده", callback_data="help"
+                    ),
                     InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings"),
                 ],
-                [InlineKeyboardButton(text="📞 تماس با پشتیبانی", callback_data="support")],
+                [
+                    InlineKeyboardButton(
+                        text="📞 تماس با پشتیبانی", callback_data="support"
+                    )
+                ],
             ]
         )
 
@@ -317,7 +339,9 @@ if dp:
                     for order in result["orders"][:3]:  # Show last 3 orders
                         status_text = f"📋 سفارش #{order['order_id']:05d}\n"
                         status_text += f"وضعیت: {order['status']}\n"
-                        status_text += f"تاریخ: {order['created_at'].strftime('%Y-%m-%d %H:%M')}\n"
+                        status_text += (
+                            f"تاریخ: {order['created_at'].strftime('%Y-%m-%d %H:%M')}\n"
+                        )
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
@@ -385,11 +409,17 @@ if dp:
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
-                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
+                    InlineKeyboardButton(
+                        text="🔍 جستجوی قطعات", callback_data="search_parts"
+                    ),
+                    InlineKeyboardButton(
+                        text="📋 سفارشات من", callback_data="my_orders"
+                    ),
                 ],
                 [
-                    InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
+                    InlineKeyboardButton(
+                        text="❓ راهنمای استفاده", callback_data="help"
+                    ),
                     InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings"),
                 ],
             ]
@@ -428,7 +458,8 @@ if dp:
                             price_text = ""
                             if item["best_price"]:
                                 price_text = (
-                                    f" - قیمت: {item['best_price']:,.0f} " f"{item['currency']}"
+                                    f" - قیمت: {item['best_price']:,.0f} "
+                                    f"{item['currency']}"
                                 )
 
                             detail_text = (
@@ -439,7 +470,9 @@ if dp:
                             await message.answer(detail_text)
                         else:
                             # Not found
-                            await message.answer(f"❌ {item['query']}: {item['message']}")
+                            await message.answer(
+                                f"❌ {item['query']}: {item['message']}"
+                            )
                 else:
                     await message.answer(result["message"])
 
@@ -468,7 +501,8 @@ if dp:
                                     callback_data=f"confirm_part_{part_data['id']}_{query}",
                                 ),
                                 InlineKeyboardButton(
-                                    text="❌ خیر، جستجوی جدید", callback_data="search_again"
+                                    text="❌ خیر، جستجوی جدید",
+                                    callback_data="search_again",
                                 ),
                             ]
                         ]

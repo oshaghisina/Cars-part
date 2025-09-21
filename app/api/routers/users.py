@@ -50,7 +50,8 @@ async def login(login_data: UserLogin, request: Request, db: Session = Depends(g
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username/email or password"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username/email or password",
         )
 
     # Create session (placeholder - session management not fully implemented)
@@ -68,19 +69,24 @@ async def login(login_data: UserLogin, request: Request, db: Session = Depends(g
     db.commit()
 
     return LoginResponse(
-        access_token=access_token, expires_in=86400, user=UserResponse.from_orm(user)  # 24 hours
+        access_token=access_token,
+        expires_in=86400,
+        user=UserResponse.from_orm(user),  # 24 hours
     )
 
 
 @router.post("/logout")
 async def logout(
-    credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
 ):
     """Logout user and invalidate session."""
     # Verify token and get user
     token_data = verify_token(credentials.credentials)
     if not token_data:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
 
     # For JWT, we can't invalidate the token itself
     # Session invalidation would be handled by client-side token removal
@@ -106,7 +112,9 @@ async def update_current_user(
     # type: ignore[arg-type]
     updated_user = await user_service.update_user(int(current_user.id), user_update)
     if not updated_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     # Activity logging not implemented yet
 
@@ -210,7 +218,9 @@ async def create_user(
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
-    user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """Get user by ID."""
     # Check permission
@@ -223,7 +233,9 @@ async def get_user(
     user = await user_service.get_user_by_id(user_id)
 
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     return UserResponse.from_orm(user)
 
@@ -247,7 +259,9 @@ async def update_user(
     try:
         updated_user = await user_service.update_user(user_id, user_update)
         if not updated_user:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
 
         # Activity logging not implemented yet
 
@@ -258,7 +272,9 @@ async def update_user(
 
 @router.delete("/{user_id}")
 async def delete_user(
-    user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     """Delete user (soft delete)."""
     # Check permission
@@ -270,7 +286,8 @@ async def delete_user(
     # Don't allow users to delete themselves
     if user_id == current_user.id:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete your own account"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete your own account",
         )
 
     user_service = UserService(db)
@@ -278,7 +295,9 @@ async def delete_user(
     try:
         success = await user_service.delete_user(user_id)
         if not success:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
 
         # Activity logging not implemented yet
 

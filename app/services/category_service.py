@@ -47,7 +47,9 @@ class CategoryService:
             query = query.filter(search_filter)
 
         return (
-            query.options(selectinload(PartCategory.children), selectinload(PartCategory.parts))
+            query.options(
+                selectinload(PartCategory.children), selectinload(PartCategory.parts)
+            )
             .order_by(PartCategory.sort_order, PartCategory.name)
             .offset(skip)
             .limit(limit)
@@ -56,9 +58,13 @@ class CategoryService:
 
     def get_category_by_id(self, category_id: int) -> Optional[PartCategory]:
         """Get category by ID."""
-        return self.db.query(PartCategory).filter(PartCategory.id == category_id).first()
+        return (
+            self.db.query(PartCategory).filter(PartCategory.id == category_id).first()
+        )
 
-    def get_root_categories(self, is_active: Optional[bool] = None) -> List[PartCategory]:
+    def get_root_categories(
+        self, is_active: Optional[bool] = None
+    ) -> List[PartCategory]:
         """Get all root categories (level 0)."""
         query = self.db.query(PartCategory).filter(PartCategory.parent_id.is_(None))
 
@@ -99,7 +105,9 @@ class CategoryService:
             query = query.filter(PartCategory.is_active)
 
         # Get all categories and build the tree
-        all_categories = query.order_by(PartCategory.sort_order, PartCategory.name).all()
+        all_categories = query.order_by(
+            PartCategory.sort_order, PartCategory.name
+        ).all()
 
         # Create a dictionary for quick lookup
         category_dict = {cat.id: cat for cat in all_categories}
@@ -247,7 +255,9 @@ class CategoryService:
                     category.level = parent.level + 1  # type: ignore[assignment]
                     # type: ignore[assignment]
                     category.path = (
-                        f"{parent.path}/{category.name}" if parent.path else f"/{category.name}"
+                        f"{parent.path}/{category.name}"
+                        if parent.path
+                        else f"/{category.name}"
                     )
                 else:
                     category.parent_id = None  # type: ignore[assignment]
@@ -324,7 +334,9 @@ class CategoryService:
     def get_category_stats(self) -> Dict[str, Any]:
         """Get category statistics."""
         total_categories = self.db.query(PartCategory).count()
-        active_categories = self.db.query(PartCategory).filter(PartCategory.is_active).count()
+        active_categories = (
+            self.db.query(PartCategory).filter(PartCategory.is_active).count()
+        )
         root_categories = (
             self.db.query(PartCategory)
             .filter(PartCategory.parent_id.is_(None), PartCategory.is_active)

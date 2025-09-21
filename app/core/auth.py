@@ -27,7 +27,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 
-def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(
+    data: Dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """Create JWT access token."""
     to_encode = data.copy()
 
@@ -69,7 +71,8 @@ def get_password_hash(password: str) -> str:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
 ):
     """Get current authenticated user."""
     credentials_exception = HTTPException(
@@ -101,7 +104,9 @@ async def get_current_user(
 async def get_current_active_user(current_user=Depends(get_current_user)):
     """Get current active user."""
     if not current_user.is_active:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
+        )
     return current_user
 
 
@@ -136,7 +141,9 @@ def require_role(role: str):
 def require_admin(current_user=Depends(get_current_active_user)):
     """Require admin role."""
     if not (current_user.has_role("admin") or current_user.has_role("super_admin")):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+        )
     return current_user
 
 
@@ -241,10 +248,13 @@ def check_resource_access(
     return False
 
 
-async def validate_user_access(resource_user_id: int, current_user=Depends(get_current_user)):
+async def validate_user_access(
+    resource_user_id: int, current_user=Depends(get_current_user)
+):
     """Validate user access to a resource."""
     if not check_resource_access(current_user.id, resource_user_id, current_user):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to this resource"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied to this resource",
         )
     return current_user

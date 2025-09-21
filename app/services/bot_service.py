@@ -129,7 +129,8 @@ class BotService:
             summary_message = f"✅ تمام {found_count} قطعه یافت شد."
         else:
             summary_message = (
-                f"✅ {found_count} از " f"{len([q for q in queries if q.strip()])} قطعه یافت شد."
+                f"✅ {found_count} از "
+                f"{len([q for q in queries if q.strip()])} قطعه یافت شد."
             )
 
         return {
@@ -207,7 +208,10 @@ class BotService:
                 )
 
         if not order_items:
-            return {"success": False, "message": "هیچ قطعه معتبری برای ثبت سفارش یافت نشد."}
+            return {
+                "success": False,
+                "message": "هیچ قطعه معتبری برای ثبت سفارش یافت نشد.",
+            }
 
         # Create order
         order_result = self.order_service.create_order(
@@ -252,9 +256,15 @@ class BotService:
             orders = self.order_service.get_orders_by_lead(lead.id)
 
             if not orders:
-                return {"success": True, "orders": [], "message": "هنوز سفارشی ثبت نکرده‌اید."}
+                return {
+                    "success": True,
+                    "orders": [],
+                    "message": "هنوز سفارشی ثبت نکرده‌اید.",
+                }
 
-            summaries = [self.order_service.get_order_summary(order) for order in orders]
+            summaries = [
+                self.order_service.get_order_summary(order) for order in orders
+            ]
 
             return {
                 "success": True,
@@ -294,14 +304,17 @@ class BotService:
 
         if best_part.get("best_price"):
             confirmation_message += (
-                f"💰 قیمت: {best_part['best_price']:,} " f"{best_part['prices'][0]['currency']}\n"
+                f"💰 قیمت: {best_part['best_price']:,} "
+                f"{best_part['prices'][0]['currency']}\n"
             )
 
         # Add AI insights
         if query_analysis:
             confirmation_message += "\n🤖 **تحلیل هوشمند:**\n"
             if query_analysis.get("car_brand"):
-                confirmation_message += f"• برند تشخیص داده شده: {query_analysis['car_brand']}\n"
+                confirmation_message += (
+                    f"• برند تشخیص داده شده: {query_analysis['car_brand']}\n"
+                )
             if query_analysis.get("part_type"):
                 confirmation_message += f"• نوع قطعه: {query_analysis['part_type']}\n"
             if query_analysis.get("position"):

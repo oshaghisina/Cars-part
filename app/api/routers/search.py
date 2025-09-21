@@ -18,7 +18,9 @@ router = APIRouter()
 
 
 @router.post("/advanced", response_model=AdvancedSearchResponse)
-async def advanced_search(search_request: AdvancedSearchRequest, db: Session = Depends(get_db)):
+async def advanced_search(
+    search_request: AdvancedSearchRequest, db: Session = Depends(get_db)
+):
     """
     Perform advanced search across multiple modules with filters
     """
@@ -28,7 +30,9 @@ async def advanced_search(search_request: AdvancedSearchRequest, db: Session = D
 
         # Search in each selected module
         for module in search_request.modules:
-            module_results, module_count = await search_module(module, search_request, db)
+            module_results, module_count = await search_module(
+                module, search_request, db
+            )
             results.extend(module_results)
             total_count += module_count
 
@@ -38,7 +42,9 @@ async def advanced_search(search_request: AdvancedSearchRequest, db: Session = D
 
         # Sort results
         if search_request.sort_by:
-            results = sort_results(results, search_request.sort_by, search_request.sort_order)
+            results = sort_results(
+                results, search_request.sort_by, search_request.sort_order
+            )
 
         # Paginate results
         start = search_request.page * search_request.per_page
@@ -50,7 +56,8 @@ async def advanced_search(search_request: AdvancedSearchRequest, db: Session = D
             total_count=len(results),
             page=search_request.page,
             per_page=search_request.per_page,
-            total_pages=(len(results) + search_request.per_page - 1) // search_request.per_page,
+            total_pages=(len(results) + search_request.per_page - 1)
+            // search_request.per_page,
         )
 
     except Exception as e:
@@ -58,7 +65,9 @@ async def advanced_search(search_request: AdvancedSearchRequest, db: Session = D
 
 
 @router.post("/global", response_model=GlobalSearchResponse)
-async def global_search(search_request: GlobalSearchRequest, db: Session = Depends(get_db)):
+async def global_search(
+    search_request: GlobalSearchRequest, db: Session = Depends(get_db)
+):
     """
     Perform global search across all modules
     """
@@ -165,7 +174,9 @@ async def get_search_suggestions(
         raise HTTPException(status_code=500, detail=f"Suggestions error: {str(e)}")
 
 
-async def search_module(module: str, search_request: AdvancedSearchRequest, db: Session):
+async def search_module(
+    module: str, search_request: AdvancedSearchRequest, db: Session
+):
     """
     Search within a specific module
     """
@@ -188,7 +199,9 @@ async def search_module(module: str, search_request: AdvancedSearchRequest, db: 
         # Apply filters
         if search_request.filters:
             if search_request.filters.category:
-                query = query.filter(Part.category_id == search_request.filters.category)
+                query = query.filter(
+                    Part.category_id == search_request.filters.category
+                )
             if search_request.filters.status:
                 query = query.filter(Part.status == search_request.filters.status)
             if search_request.filters.price_min:
@@ -212,7 +225,9 @@ async def search_module(module: str, search_request: AdvancedSearchRequest, db: 
                         "category": part.category.name if part.category else None,
                         "price": float(part.price) if part.price else None,
                         "status": part.status,
-                        "created_at": part.created_at.isoformat() if part.created_at else None,
+                        "created_at": part.created_at.isoformat()
+                        if part.created_at
+                        else None,
                     },
                     relevance_score=1.0,
                 )
@@ -222,7 +237,9 @@ async def search_module(module: str, search_request: AdvancedSearchRequest, db: 
         query = db.query(VehicleBrand)
 
         if search_request.query:
-            text_filter = func.lower(VehicleBrand.name).contains(search_request.query.lower())
+            text_filter = func.lower(VehicleBrand.name).contains(
+                search_request.query.lower()
+            )
             query = query.filter(text_filter)
 
         count = query.count()
@@ -239,7 +256,9 @@ async def search_module(module: str, search_request: AdvancedSearchRequest, db: 
                     url=f"/vehicles/brands/{brand.id}",
                     metadata={
                         "model_count": len(brand.models),
-                        "created_at": brand.created_at.isoformat() if brand.created_at else None,
+                        "created_at": brand.created_at.isoformat()
+                        if brand.created_at
+                        else None,
                     },
                     relevance_score=1.0,
                 )
@@ -260,7 +279,9 @@ async def search_module(module: str, search_request: AdvancedSearchRequest, db: 
             if search_request.filters.status:
                 query = query.filter(Order.status == search_request.filters.status)
             if search_request.filters.date_from:
-                query = query.filter(Order.created_at >= search_request.filters.date_from)
+                query = query.filter(
+                    Order.created_at >= search_request.filters.date_from
+                )
             if search_request.filters.date_to:
                 query = query.filter(Order.created_at <= search_request.filters.date_to)
 
@@ -279,7 +300,9 @@ async def search_module(module: str, search_request: AdvancedSearchRequest, db: 
                     metadata={
                         "status": order.status,
                         "total": float(order.total) if order.total else None,
-                        "created_at": order.created_at.isoformat() if order.created_at else None,
+                        "created_at": order.created_at.isoformat()
+                        if order.created_at
+                        else None,
                     },
                     relevance_score=1.0,
                 )
@@ -312,7 +335,9 @@ async def search_module(module: str, search_request: AdvancedSearchRequest, db: 
                     metadata={
                         "city": lead.city,
                         "phone": lead.phone_e164,
-                        "created_at": lead.created_at.isoformat() if lead.created_at else None,
+                        "created_at": lead.created_at.isoformat()
+                        if lead.created_at
+                        else None,
                     },
                     relevance_score=1.0,
                 )
@@ -346,7 +371,9 @@ async def search_module(module: str, search_request: AdvancedSearchRequest, db: 
                         "username": user.username,
                         "email": user.email,
                         "role": user.role,
-                        "created_at": user.created_at.isoformat() if user.created_at else None,
+                        "created_at": user.created_at.isoformat()
+                        if user.created_at
+                        else None,
                     },
                     relevance_score=1.0,
                 )
@@ -384,7 +411,9 @@ async def search_module_global(module: str, query: str, db: Session):
                     description=f"{part.brand_oem} - {part.oem_code}",
                     type="Part",
                     url=f"/parts/{part.id}",
-                    metadata={"category": part.category.name if part.category else None},
+                    metadata={
+                        "category": part.category.name if part.category else None
+                    },
                     relevance_score=1.0,
                 )
             )
@@ -438,6 +467,8 @@ def sort_results(results: List[SearchResult], sort_by: str, sort_order: str):
     elif sort_by == "title":
         return sorted(results, key=lambda x: x.title.lower(), reverse=reverse)
     elif sort_by == "created_at":
-        return sorted(results, key=lambda x: x.metadata.get("created_at", ""), reverse=reverse)
+        return sorted(
+            results, key=lambda x: x.metadata.get("created_at", ""), reverse=reverse
+        )
 
     return results

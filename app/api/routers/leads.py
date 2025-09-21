@@ -114,7 +114,9 @@ async def get_lead(lead_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{lead_id}", response_model=LeadResponse)
-async def update_lead(lead_id: int, request: LeadCreateRequest, db: Session = Depends(get_db)):
+async def update_lead(
+    lead_id: int, request: LeadCreateRequest, db: Session = Depends(get_db)
+):
     """Update lead by ID."""
     lead_service = LeadService(db)
 

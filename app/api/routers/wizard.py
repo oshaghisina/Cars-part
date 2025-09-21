@@ -41,7 +41,9 @@ class WizardSessionResponse(BaseModel):
 
 
 @router.post("/sessions", response_model=WizardSessionResponse)
-async def create_wizard_session(request: WizardSessionCreate, db: Session = Depends(get_db)):
+async def create_wizard_session(
+    request: WizardSessionCreate, db: Session = Depends(get_db)
+):
     """Create a new wizard session."""
     wizard_service = WizardService(db)
 

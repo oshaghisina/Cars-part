@@ -68,7 +68,10 @@ class SearchService:
         parts = (
             self.db.query(Part)
             .filter(
-                or_(Part.oem_code.ilike(f"%{query}%"), Part.alt_codes.ilike(f"%{query}%")),
+                or_(
+                    Part.oem_code.ilike(f"%{query}%"),
+                    Part.alt_codes.ilike(f"%{query}%"),
+                ),
                 Part.status == "active",
             )
             .all()
@@ -77,7 +80,12 @@ class SearchService:
         results = []
         for part in parts:
             results.append(
-                {"part": part, "score": 1.0, "match_type": "oem_code", "matched_field": "oem_code"}
+                {
+                    "part": part,
+                    "score": 1.0,
+                    "match_type": "oem_code",
+                    "matched_field": "oem_code",
+                }
             )
 
         return results
@@ -135,7 +143,9 @@ class SearchService:
 
                 if part:
                     match_score = fuzz.ratio(query, synonym.keyword) / 100.0
-                    score = synonym.weight * match_score * 0.8  # Lower weight for English
+                    score = (
+                        synonym.weight * match_score * 0.8
+                    )  # Lower weight for English
 
                     results.append(
                         {
@@ -166,7 +176,9 @@ class SearchService:
             # Only include if score is above threshold
             if max_score >= 60:  # 60% similarity threshold
                 # Normalize score
-                normalized_score = max_score / 100.0 * 0.7  # Lower weight for fuzzy matches
+                normalized_score = (
+                    max_score / 100.0 * 0.7
+                )  # Lower weight for fuzzy matches
 
                 matched_field = "part_name"
                 if vehicle_score == max_score:
@@ -265,5 +277,7 @@ class SearchService:
             "match_type": result["match_type"],
             "matched_field": result["matched_field"],
             "prices": prices,
-            "best_price": min(prices, key=lambda p: p["price"])["price"] if prices else None,
+            "best_price": min(prices, key=lambda p: p["price"])["price"]
+            if prices
+            else None,
         }

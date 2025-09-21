@@ -2,7 +2,12 @@
 
 import logging
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import (
+    Message,
+    CallbackQuery,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+)
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
@@ -29,7 +34,8 @@ class WizardBotService:
         """Create wizard session."""
         try:
             response = requests.post(
-                f"{self.api_base}/wizard/sessions", json={"user_id": user_id, "state": state}
+                f"{self.api_base}/wizard/sessions",
+                json={"user_id": user_id, "state": state},
             )
             if response.status_code == 200:
                 return response.json()
@@ -52,7 +58,9 @@ class WizardBotService:
     def update_session(self, user_id: str, **kwargs) -> Dict[str, Any]:
         """Update wizard session."""
         try:
-            response = requests.put(f"{self.api_base}/wizard/sessions/{user_id}", json=kwargs)
+            response = requests.put(
+                f"{self.api_base}/wizard/sessions/{user_id}", json=kwargs
+            )
             if response.status_code == 200:
                 return response.json()
             return {}
@@ -82,7 +90,9 @@ class WizardBotService:
             logger.error(f"Error getting models: {e}")
             return []
 
-    def get_categories(self, brand: str | None = None, model: str | None = None) -> List[str]:
+    def get_categories(
+        self, brand: str | None = None, model: str | None = None
+    ) -> List[str]:
         """Get available categories."""
         try:
             params = {}
@@ -104,7 +114,10 @@ class WizardBotService:
             return []
 
     def get_parts(
-        self, brand: str | None = None, model: str | None = None, category: str | None = None
+        self,
+        brand: str | None = None,
+        model: str | None = None,
+        category: str | None = None,
     ) -> List[Dict[str, Any]]:
         """Get available parts."""
         try:
@@ -168,13 +181,19 @@ async def safe_edit_message(
     try:
         # Try to edit the message directly; fall back to answering if not supported
         if isinstance(callback.message, Message):
-            await callback.message.edit_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+            await callback.message.edit_text(
+                text, reply_markup=reply_markup, parse_mode=parse_mode
+            )
         else:
             # If message is inaccessible, answer with a new one
-            await callback.message.answer(text, reply_markup=reply_markup, parse_mode=parse_mode)
+            await callback.message.answer(
+                text, reply_markup=reply_markup, parse_mode=parse_mode
+            )
     except (TelegramBadRequest, AttributeError):
         # If edit fails, send a new message
-        await callback.message.answer(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        await callback.message.answer(
+            text, reply_markup=reply_markup, parse_mode=parse_mode
+        )
 
 
 def create_inline_keyboard(
@@ -183,7 +202,9 @@ def create_inline_keyboard(
     """Create inline keyboard from items."""
     buttons = []
     for item in items:
-        buttons.append([InlineKeyboardButton(text=item, callback_data=f"{prefix}:{item}")])
+        buttons.append(
+            [InlineKeyboardButton(text=item, callback_data=f"{prefix}:{item}")]
+        )
 
     # Add navigation buttons
     buttons.append([InlineKeyboardButton(text="🔙 بازگشت", callback_data="back")])
@@ -228,7 +249,9 @@ async def start_wizard_direct(callback: CallbackQuery, state: FSMContext):
     session = wizard_service.create_session(user_id, "start")
 
     if not session:
-        await callback.message.answer("❌ خطا در شروع روند راهنمایی. لطفاً دوباره تلاش کنید.")
+        await callback.message.answer(
+            "❌ خطا در شروع روند راهنمایی. لطفاً دوباره تلاش کنید."
+        )
         return
 
     # Get available brands
@@ -286,7 +309,9 @@ async def handle_brand_selection(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("model:"), StateFilter(PartsWizard.model_selection))
+@router.callback_query(
+    F.data.startswith("model:"), StateFilter(PartsWizard.model_selection)
+)
 async def handle_model_selection(callback: CallbackQuery, state: FSMContext):
     """Handle model selection."""
     model = callback.data.split(":", 1)[1]
@@ -311,7 +336,9 @@ async def handle_model_selection(callback: CallbackQuery, state: FSMContext):
         return
 
     # Get available categories
-    categories = wizard_service.get_categories(brand=vehicle_data.get("brand"), model=model)
+    categories = wizard_service.get_categories(
+        brand=vehicle_data.get("brand"), model=model
+    )
 
     if not categories:
         await safe_edit_message(
@@ -335,7 +362,9 @@ async def handle_model_selection(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("category:"), StateFilter(PartsWizard.category_selection))
+@router.callback_query(
+    F.data.startswith("category:"), StateFilter(PartsWizard.category_selection)
+)
 async def handle_category_selection(callback: CallbackQuery, state: FSMContext):
     """Handle category selection."""
     category = callback.data.split(":", 1)[1]
@@ -383,7 +412,11 @@ async def handle_category_selection(callback: CallbackQuery, state: FSMContext):
             display_text += f" ({position})"
 
         buttons.append(
-            [InlineKeyboardButton(text=display_text, callback_data=f"part:{part.get('id')}")]
+            [
+                InlineKeyboardButton(
+                    text=display_text, callback_data=f"part:{part.get('id')}"
+                )
+            ]
         )
 
     # Add navigation buttons
@@ -405,7 +438,9 @@ async def handle_category_selection(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("part:"), StateFilter(PartsWizard.part_selection))
+@router.callback_query(
+    F.data.startswith("part:"), StateFilter(PartsWizard.part_selection)
+)
 async def handle_part_selection(callback: CallbackQuery, state: FSMContext):
     """Handle part selection."""
     part_id = callback.data.split(":", 1)[1]
@@ -470,7 +505,11 @@ async def handle_confirmation(callback: CallbackQuery, state: FSMContext):
     # Create contact capture keyboard
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📱 ارسال شماره تلفن", callback_data="request_contact")],
+            [
+                InlineKeyboardButton(
+                    text="📱 ارسال شماره تلفن", callback_data="request_contact"
+                )
+            ],
             [InlineKeyboardButton(text="🔙 بازگشت", callback_data="back")],
             [InlineKeyboardButton(text="❌ لغو", callback_data="cancel")],
         ]
@@ -492,7 +531,9 @@ async def handle_confirmation(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 
-@router.callback_query(F.data == "request_contact", StateFilter(PartsWizard.contact_capture))
+@router.callback_query(
+    F.data == "request_contact", StateFilter(PartsWizard.contact_capture)
+)
 async def handle_contact_request(callback: CallbackQuery, state: FSMContext):
     """Handle contact request."""
     await safe_edit_message(
@@ -500,7 +541,11 @@ async def handle_contact_request(callback: CallbackQuery, state: FSMContext):
         "📱 لطفاً شماره تلفن خود را با استفاده از دکمه زیر ارسال کنید:",
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="📱 ارسال شماره تلفن", callback_data="send_contact")],
+                [
+                    InlineKeyboardButton(
+                        text="📱 ارسال شماره تلفن", callback_data="send_contact"
+                    )
+                ],
                 [InlineKeyboardButton(text="🔙 بازگشت", callback_data="back")],
                 [InlineKeyboardButton(text="❌ لغو", callback_data="cancel")],
             ]
@@ -574,7 +619,8 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
             keyboard = create_inline_keyboard(brands, "brand", "brand")
             await safe_edit_message(
                 callback,
-                "🚗 **راهنمای جستجوی قطعات خودرو**\n\n" "لطفاً برند خودروی خود را انتخاب کنید:",
+                "🚗 **راهنمای جستجوی قطعات خودرو**\n\n"
+                "لطفاً برند خودروی خود را انتخاب کنید:",
                 reply_markup=keyboard,
                 parse_mode="Markdown",
             )
@@ -590,7 +636,10 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
                 keyboard = create_inline_keyboard(models, "model", "model")
                 await safe_edit_message(
                     callback,
-                    (f"🚗 **برند انتخاب شده: {brand}**\n\n" "لطفاً مدل خودروی خود را انتخاب کنید:"),
+                    (
+                        f"🚗 **برند انتخاب شده: {brand}**\n\n"
+                        "لطفاً مدل خودروی خود را انتخاب کنید:"
+                    ),
                     reply_markup=keyboard,
                     parse_mode="Markdown",
                 )
@@ -640,7 +689,9 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
                     ]
                 )
 
-            buttons.append([InlineKeyboardButton(text="🔙 بازگشت", callback_data="back")])
+            buttons.append(
+                [InlineKeyboardButton(text="🔙 بازگشت", callback_data="back")]
+            )
             buttons.append([InlineKeyboardButton(text="❌ لغو", callback_data="cancel")])
 
             keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
@@ -696,7 +747,8 @@ async def handle_cancel(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit_message(
         callback,
-        "❌ **روند راهنمایی لغو شد.**\n\n" "برای شروع مجدد از دستور /wizard استفاده کنید.",
+        "❌ **روند راهنمایی لغو شد.**\n\n"
+        "برای شروع مجدد از دستور /wizard استفاده کنید.",
         parse_mode="Markdown",
     )
 

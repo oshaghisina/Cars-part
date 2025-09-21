@@ -6,7 +6,9 @@ from datetime import date
 class ImportRequest(BaseModel):
     """Import request schema"""
 
-    data_type: Literal["parts", "vehicles", "categories", "orders", "leads"] = Field(...)
+    data_type: Literal["parts", "vehicles", "categories", "orders", "leads"] = Field(
+        ...
+    )
     mode: Literal["create", "update", "upsert"] = Field(default="upsert")
     validate_data: bool = Field(default=True)
     skip_errors: bool = Field(default=True)
@@ -31,7 +33,9 @@ class ImportResponse(BaseModel):
 class ExportRequest(BaseModel):
     """Export request schema"""
 
-    data_type: Literal["parts", "vehicles", "categories", "orders", "leads", "all"] = Field(...)
+    data_type: Literal[
+        "parts", "vehicles", "categories", "orders", "leads", "all"
+    ] = Field(...)
     format: Literal["csv", "xlsx", "json"] = Field(default="csv")
     date_from: Optional[date] = None
     date_to: Optional[date] = None
@@ -52,10 +56,12 @@ class ExportResponse(BaseModel):
 class BatchOperationRequest(BaseModel):
     """Batch operation request"""
 
-    operation_type: Literal["update-status", "assign-category", "delete", "bulk-update"] = Field(
-        ...
-    )
-    data_type: Literal["parts", "vehicles", "categories", "orders", "leads", "users"] = Field(...)
+    operation_type: Literal[
+        "update-status", "assign-category", "delete", "bulk-update"
+    ] = Field(...)
+    data_type: Literal[
+        "parts", "vehicles", "categories", "orders", "leads", "users"
+    ] = Field(...)
     item_ids: List[int] = Field(..., min_items=1)
     data: Optional[Dict[str, Any]] = None
 
@@ -71,7 +77,9 @@ class BatchOperationResponse(BaseModel):
 class BulkDeleteRequest(BaseModel):
     """Bulk delete request"""
 
-    data_type: Literal["parts", "vehicles", "categories", "orders", "leads", "users"] = Field(...)
+    data_type: Literal[
+        "parts", "vehicles", "categories", "orders", "leads", "users"
+    ] = Field(...)
     item_ids: List[int] = Field(..., min_items=1)
     confirm: bool = Field(default=False)
 
@@ -79,7 +87,9 @@ class BulkDeleteRequest(BaseModel):
 class BulkUpdateRequest(BaseModel):
     """Bulk update request"""
 
-    data_type: Literal["parts", "vehicles", "categories", "orders", "leads", "users"] = Field(...)
+    data_type: Literal[
+        "parts", "vehicles", "categories", "orders", "leads", "users"
+    ] = Field(...)
     item_ids: List[int] = Field(..., min_items=1)
     updates: Dict[str, Any] = Field(...)
 

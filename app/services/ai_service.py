@@ -60,7 +60,9 @@ class AIService:
         try:
             a_np = np.array(a)
             b_np = np.array(b)
-            return float(np.dot(a_np, b_np) / (np.linalg.norm(a_np) * np.linalg.norm(b_np)))
+            return float(
+                np.dot(a_np, b_np) / (np.linalg.norm(a_np) * np.linalg.norm(b_np))
+            )
         except Exception:
             return 0.0
 
@@ -102,7 +104,9 @@ class AIService:
             query_embedding = self._create_embeddings([query])
 
             if not part_embeddings or not query_embedding:
-                logger.warning("Failed to create embeddings, falling back to regular search")
+                logger.warning(
+                    "Failed to create embeddings, falling back to regular search"
+                )
                 return self.search_service.search_parts(query, limit)
 
             # Calculate similarities
@@ -294,10 +298,22 @@ Respond with just 3 queries, one per line, no explanations."""
         try:
             # Extract categories from results
             categories = list(
-                set([result.get("category", "") for result in results if result.get("category")])
+                set(
+                    [
+                        result.get("category", "")
+                        for result in results
+                        if result.get("category")
+                    ]
+                )
             )
             brands = list(
-                set([result.get("brand_oem", "") for result in results if result.get("brand_oem")])
+                set(
+                    [
+                        result.get("brand_oem", "")
+                        for result in results
+                        if result.get("brand_oem")
+                    ]
+                )
             )
 
             # Based on this car parts search query and results, generate 3 helpful suggestions:
@@ -332,7 +348,9 @@ Respond with just 3 suggestions, one per line, in the same language as the query
             logger.error(f"Error generating suggestions: {e}")
             return []
 
-    def get_part_recommendations(self, part_id: int, limit: int = 5) -> List[Dict[str, Any]]:
+    def get_part_recommendations(
+        self, part_id: int, limit: int = 5
+    ) -> List[Dict[str, Any]]:
         """Get AI-powered part recommendations based on a specific part."""
         if not self.is_available():
             return []
@@ -353,9 +371,9 @@ Respond with just 3 suggestions, one per line, in the same language as the query
             similar_parts = self.semantic_search(part_description, limit * 2)
 
             # Filter out the original part and get top recommendations
-            recommendations = [result for result in similar_parts if result["id"] != part_id][
-                :limit
-            ]
+            recommendations = [
+                result for result in similar_parts if result["id"] != part_id
+            ][:limit]
 
             return recommendations
 

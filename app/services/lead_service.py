@@ -32,7 +32,9 @@ class LeadService:
         """
         # Check if lead already exists
         existing_lead = (
-            self.db.query(Lead).filter(Lead.telegram_user_id == telegram_user_id).first()
+            self.db.query(Lead)
+            .filter(Lead.telegram_user_id == telegram_user_id)
+            .first()
         )
 
         if existing_lead:
@@ -58,7 +60,9 @@ class LeadService:
                 "lead": existing_lead,
                 "created": False,
                 "updated": updated,
-                "message": "اطلاعات شما به‌روزرسانی شد" if updated else "اطلاعات شما موجود است",
+                "message": "اطلاعات شما به‌روزرسانی شد"
+                if updated
+                else "اطلاعات شما موجود است",
             }
         else:
             # Create new lead
@@ -92,7 +96,11 @@ class LeadService:
 
     def get_lead_by_telegram_id(self, telegram_user_id: str) -> Optional[Lead]:
         """Get lead by Telegram user ID."""
-        return self.db.query(Lead).filter(Lead.telegram_user_id == telegram_user_id).first()
+        return (
+            self.db.query(Lead)
+            .filter(Lead.telegram_user_id == telegram_user_id)
+            .first()
+        )
 
     def update_lead_info(self, lead_id: int, **kwargs) -> Dict:
         """Update lead information."""

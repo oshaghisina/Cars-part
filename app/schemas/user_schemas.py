@@ -35,7 +35,9 @@ class UserCreate(UserBase):
         if len(v) < 3:
             raise ValueError("Username must be at least 3 characters long")
         if not v.replace("_", "").replace("-", "").isalnum():
-            raise ValueError("Username can only contain letters, numbers, underscores, and hyphens")
+            raise ValueError(
+                "Username can only contain letters, numbers, underscores, and hyphens"
+            )
         return v
 
 

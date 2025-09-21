@@ -148,7 +148,9 @@ async def list_categories(
 
 
 @router.post("/", response_model=PartCategoryResponse)
-async def create_category(request: PartCategoryCreateRequest, db: Session = Depends(get_db)):
+async def create_category(
+    request: PartCategoryCreateRequest, db: Session = Depends(get_db)
+):
     """Create a new part category."""
     category_service = CategoryService(db)
     category = category_service.create_category(request.dict())
@@ -187,13 +189,16 @@ async def get_category(category_id: int, db: Session = Depends(get_db)):
 
     # Get children count for this specific category
     children_count = (
-        db.query(func.count(PartCategory.id)).filter(PartCategory.parent_id == category_id).scalar()
+        db.query(func.count(PartCategory.id))
+        .filter(PartCategory.parent_id == category_id)
+        .scalar()
         or 0
     )
 
     # Get parts count for this specific category
     parts_count = (
-        db.query(func.count(Part.id)).filter(Part.category_id == category_id).scalar() or 0
+        db.query(func.count(Part.id)).filter(Part.category_id == category_id).scalar()
+        or 0
     )
 
     return PartCategoryResponse(
@@ -222,20 +227,27 @@ async def update_category(
 ):
     """Update an existing part category."""
     category_service = CategoryService(db)
-    category = category_service.update_category(category_id, request.dict(exclude_unset=True))
+    category = category_service.update_category(
+        category_id, request.dict(exclude_unset=True)
+    )
 
     if not category:
-        raise HTTPException(status_code=404, detail="Category not found or update failed")
+        raise HTTPException(
+            status_code=404, detail="Category not found or update failed"
+        )
 
     # Get children count for this specific category
     children_count = (
-        db.query(func.count(PartCategory.id)).filter(PartCategory.parent_id == category_id).scalar()
+        db.query(func.count(PartCategory.id))
+        .filter(PartCategory.parent_id == category_id)
+        .scalar()
         or 0
     )
 
     # Get parts count for this specific category
     parts_count = (
-        db.query(func.count(Part.id)).filter(Part.category_id == category_id).scalar() or 0
+        db.query(func.count(Part.id)).filter(Part.category_id == category_id).scalar()
+        or 0
     )
 
     return PartCategoryResponse(
@@ -299,7 +311,9 @@ async def get_category_tree(
                 is_active=category.is_active,  # type: ignore[arg-type]
                 sort_order=category.sort_order,  # type: ignore[arg-type]
                 parts_count=0,  # Tree view doesn't need exact parts count
-                children=build_tree_response(category.children) if category.children else [],
+                children=build_tree_response(category.children)
+                if category.children
+                else [],
             )
             result.append(category_data)
         return result

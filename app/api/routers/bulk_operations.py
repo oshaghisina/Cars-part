@@ -49,7 +49,9 @@ async def bulk_import(
             df = pd.DataFrame(data)
 
         # Process import based on data type
-        result = await process_import(df, data_type, mode, validate_data, skip_errors, db)
+        result = await process_import(
+            df, data_type, mode, validate_data, skip_errors, db
+        )
 
         return ImportResponse(
             success=True,
@@ -82,7 +84,9 @@ async def bulk_export(export_request: ExportRequest, db: Session = Depends(get_d
             output = io.BytesIO()
             data.to_excel(output, index=False)
             output.seek(0)
-            content_type = "application/vnd.openxmlformats-officedocument." "spreadsheetml.sheet"
+            content_type = (
+                "application/vnd.openxmlformats-officedocument." "spreadsheetml.sheet"
+            )
             filename = (
                 f"{export_request.data_type}_export_"
                 f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
@@ -110,7 +114,9 @@ async def bulk_export(export_request: ExportRequest, db: Session = Depends(get_d
 
 
 @router.post("/batch", response_model=BatchOperationResponse)
-async def batch_operation(operation_request: BatchOperationRequest, db: Session = Depends(get_db)):
+async def batch_operation(
+    operation_request: BatchOperationRequest, db: Session = Depends(get_db)
+):
     """
     Perform batch operations on selected items
     """
@@ -128,7 +134,12 @@ async def batch_operation(operation_request: BatchOperationRequest, db: Session 
 
 
 async def process_import(
-    df: pd.DataFrame, data_type: str, mode: str, validate_data: bool, skip_errors: bool, db: Session
+    df: pd.DataFrame,
+    data_type: str,
+    mode: str,
+    validate_data: bool,
+    skip_errors: bool,
+    db: Session,
 ):
     """Process import data"""
     processed_count = 0
@@ -192,7 +203,9 @@ async def import_parts(
                     raise ValueError("Required fields cannot be empty")
 
             # Check if part exists
-            existing_part = db.query(Part).filter(Part.oem_code == row["oem_code"]).first()
+            existing_part = (
+                db.query(Part).filter(Part.oem_code == row["oem_code"]).first()
+            )
 
             if existing_part and mode == "create":
                 if skip_errors:
@@ -202,7 +215,9 @@ async def import_parts(
                     error_count += 1
                     continue
                 else:
-                    raise ValueError(f"Part with OEM code {row['oem_code']} already exists")
+                    raise ValueError(
+                        f"Part with OEM code {row['oem_code']} already exists"
+                    )
 
             # Create or update part
             if existing_part and mode in ["update", "upsert"]:
@@ -212,7 +227,9 @@ async def import_parts(
                         setattr(existing_part, col, value)
             else:
                 # Create new part
-                part_data = {col: value for col, value in row.items() if not pd.isna(value)}
+                part_data = {
+                    col: value for col, value in row.items() if not pd.isna(value)
+                }
                 new_part = Part(**part_data)
                 db.add(new_part)
 
@@ -240,12 +257,16 @@ async def import_vehicles(
             if "brand_name" in row and not pd.isna(row["brand_name"]):
                 # Import brand
                 existing_brand = (
-                    db.query(VehicleBrand).filter(VehicleBrand.name == row["brand_name"]).first()
+                    db.query(VehicleBrand)
+                    .filter(VehicleBrand.name == row["brand_name"])
+                    .first()
                 )
 
                 if existing_brand and mode == "create":
                     if skip_errors:
-                        errors.append(f"Row {index + 1}: Brand {row['brand_name']} already exists")
+                        errors.append(
+                            f"Row {index + 1}: Brand {row['brand_name']} already exists"
+                        )
                         error_count += 1
                         continue
                 else:
@@ -257,7 +278,9 @@ async def import_vehicles(
             # Import model if specified
             if "model_name" in row and not pd.isna(row["model_name"]):
                 brand = (
-                    db.query(VehicleBrand).filter(VehicleBrand.name == row["brand_name"]).first()
+                    db.query(VehicleBrand)
+                    .filter(VehicleBrand.name == row["brand_name"])
+                    .first()
                 )
                 if brand:
                     existing_model = (
@@ -270,7 +293,9 @@ async def import_vehicles(
                     )
 
                     if not existing_model:
-                        new_model = VehicleModel(name=row["model_name"], brand_id=brand.id)
+                        new_model = VehicleModel(
+                            name=row["model_name"], brand_id=brand.id
+                        )
                         db.add(new_model)
                         processed_count += 1
 
@@ -302,7 +327,9 @@ async def import_categories(
 
             if existing_category and mode == "create":
                 if skip_errors:
-                    errors.append(f"Row {index + 1}: Category {row['name']} already exists")
+                    errors.append(
+                        f"Row {index + 1}: Category {row['name']} already exists"
+                    )
                     error_count += 1
                     continue
             else:
@@ -424,7 +451,9 @@ async def get_export_data(export_request: ExportRequest, db: Session):
                     "price": part.price,
                     "status": part.status,
                     "category": part.category.name if part.category else None,
-                    "created_at": part.created_at.isoformat() if part.created_at else None,
+                    "created_at": part.created_at.isoformat()
+                    if part.created_at
+                    else None,
                 }
             )
 
@@ -451,7 +480,9 @@ async def get_export_data(export_request: ExportRequest, db: Session):
     return pd.DataFrame()
 
 
-async def process_batch_operation(operation_request: BatchOperationRequest, db: Session):
+async def process_batch_operation(
+    operation_request: BatchOperationRequest, db: Session
+):
     """Process batch operation"""
     processed_count = 0
     errors = []
@@ -508,4 +539,8 @@ async def process_batch_operation(operation_request: BatchOperationRequest, db: 
         db.rollback()
         raise e
 
-    return {"processed_count": processed_count, "error_count": len(errors), "errors": errors}
+    return {
+        "processed_count": processed_count,
+        "error_count": len(errors),
+        "errors": errors,
+    }

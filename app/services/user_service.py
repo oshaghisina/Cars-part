@@ -24,7 +24,9 @@ class UserService:
         # Check if username or email already exists
         existing_user = (
             self.db.query(User)
-            .filter(or_(User.username == user_data.username, User.email == user_data.email))
+            .filter(
+                or_(User.username == user_data.username, User.email == user_data.email)
+            )
             .first()
         )
 
@@ -166,7 +168,9 @@ class UserService:
         logger.info(f"User deactivated: {user.username} (ID: {user.id})")
         return True
 
-    async def change_password(self, user_id: int, current_password: str, new_password: str) -> bool:
+    async def change_password(
+        self, user_id: int, current_password: str, new_password: str
+    ) -> bool:
         """Change user password."""
         user = await self.get_user_by_id(user_id)
         if not user:
@@ -195,12 +199,16 @@ class UserService:
         # Find user by username or email
         user = (
             self.db.query(User)
-            .filter(or_(User.username == username_or_email, User.email == username_or_email))
+            .filter(
+                or_(User.username == username_or_email, User.email == username_or_email)
+            )
             .first()
         )
 
         if not user:
-            logger.warning(f"Authentication failed: User not found - {username_or_email}")
+            logger.warning(
+                f"Authentication failed: User not found - {username_or_email}"
+            )
             return None
 
         # Check if account is locked

@@ -47,7 +47,9 @@ class Part(Base):
     pack_size = Column(Integer, nullable=True, default=1)
     status = Column(String(20), nullable=False, default="active", index=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     # Relationships
     prices = relationship("Price", back_populates="part")
@@ -57,7 +59,9 @@ class Part(Base):
     specifications = relationship(
         "PartSpecification", back_populates="part", cascade="all, delete-orphan"
     )
-    images = relationship("PartImage", back_populates="part", cascade="all, delete-orphan")
+    images = relationship(
+        "PartImage", back_populates="part", cascade="all, delete-orphan"
+    )
 
 
 class Price(Base):
@@ -115,7 +119,9 @@ class Lead(Base):
     notes = Column(Text, nullable=True)
     consent = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     # Relationships
     orders = relationship("Order", back_populates="lead")
@@ -131,7 +137,9 @@ class Order(Base):
     status = Column(String(20), nullable=False, default="new", index=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
-    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
 
     # Relationships
     lead = relationship("Lead", back_populates="orders")
@@ -163,7 +171,9 @@ class Setting(Base):
 
     key = Column(String(100), primary_key=True)
     value = Column(Text, nullable=False)
-    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
     updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
 
@@ -180,7 +190,9 @@ class User(Base):
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
     phone = Column(String(20), nullable=True)
-    role = Column(String(20), nullable=False, index=True, default="user")  # Simple role field
+    role = Column(
+        String(20), nullable=False, index=True, default="user"
+    )  # Simple role field
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     last_login = Column(DateTime, nullable=True)
@@ -188,7 +200,9 @@ class User(Base):
     locked_until = Column(DateTime, nullable=True)
     password_changed_at = Column(DateTime, nullable=False, default=func.now())
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     # Profile information
     avatar_url = Column(String(500), nullable=True)
@@ -294,7 +308,9 @@ class WizardSession(Base):
     part_data = Column(Text, nullable=True)  # JSON string
     contact_data = Column(Text, nullable=True)  # JSON string
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     def get_vehicle_data(self):
         """Parse vehicle data from JSON string."""
@@ -344,10 +360,14 @@ class VehicleBrand(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     # Relationships
-    models = relationship("VehicleModel", back_populates="brand", cascade="all, delete-orphan")
+    models = relationship(
+        "VehicleModel", back_populates="brand", cascade="all, delete-orphan"
+    )
 
 
 class VehicleModel(Base):
@@ -368,11 +388,15 @@ class VehicleModel(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     # Relationships
     brand = relationship("VehicleBrand", back_populates="models")
-    trims = relationship("VehicleTrim", back_populates="model", cascade="all, delete-orphan")
+    trims = relationship(
+        "VehicleTrim", back_populates="model", cascade="all, delete-orphan"
+    )
 
 
 class VehicleTrim(Base):
@@ -397,7 +421,9 @@ class VehicleTrim(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     # Relationships
     model = relationship("VehicleModel", back_populates="trims")
@@ -424,7 +450,9 @@ class PartCategory(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
 
     # Relationships
     children = relationship("PartCategory", backref="parent", remote_side=[id])
