@@ -313,11 +313,11 @@ export default {
           throw new Error(`Search failed: ${response.statusText}`)
         }
         
-        const searchResults = await response.json()
+        const apiResponse = await response.json()
         
         // Use real search results
-        results.value = searchResults.results || []
-        totalResults.value = searchResults.total || 0
+        searchResults.value = apiResponse.results || []
+        resultCount.value = apiResponse.total || 0
         
         // Fallback mock results for demo purposes
         const mockResults = [

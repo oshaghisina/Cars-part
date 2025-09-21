@@ -358,6 +358,9 @@ export default {
     const showAddPartModal = ref(false)
     const showImportModal = ref(false)
     const selectedFile = ref(null)
+    const selectedPart = ref(null)
+    const showEditModal = ref(false)
+    const showDetailModal = ref(false)
     
     const filters = reactive({
       search: '',
@@ -551,6 +554,9 @@ export default {
       showAddPartModal,
       showImportModal,
       selectedFile,
+      selectedPart,
+      showEditModal,
+      showDetailModal,
       fetchParts,
       createPart,
       editPart,

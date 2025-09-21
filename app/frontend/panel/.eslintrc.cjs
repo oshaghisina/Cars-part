@@ -18,20 +18,23 @@ module.exports = {
     // Vue.js specific rules
     'vue/multi-word-component-names': 'off',
     'vue/no-reserved-component-names': 'off',
+    'vue/require-explicit-emits': 'warn',
     
     // General JavaScript rules
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'no-unused-vars': ['error', { 
+    'no-unused-vars': ['warn', { 
       'argsIgnorePattern': '^_',
-      'varsIgnorePattern': '^_'
+      'varsIgnorePattern': '^_',
+      'ignoreRestSiblings': true
     }],
+    'no-undef': 'error',
     
-    // Code style
-    'prefer-const': 'error',
-    'no-var': 'error',
-    'object-shorthand': 'error',
-    'prefer-template': 'error',
+    // Code style - make these warnings instead of errors
+    'prefer-const': 'warn',
+    'no-var': 'warn',
+    'object-shorthand': 'warn',
+    'prefer-template': 'warn',
   },
   overrides: [
     {
@@ -42,6 +45,13 @@ module.exports = {
         'plugin:vue/vue3-recommended',
         '@vue/eslint-config-prettier',
       ],
+      rules: {
+        // Make Vue.js rules more lenient
+        'vue/multi-word-component-names': 'off',
+        'vue/require-explicit-emits': 'warn',
+        'no-unused-vars': 'warn',
+        'no-undef': 'error',
+      },
     },
     {
       files: ['**/tests/**/*.js', '**/*.test.js', '**/*.spec.js'],

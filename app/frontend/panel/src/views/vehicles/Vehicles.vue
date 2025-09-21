@@ -325,6 +325,12 @@ export default {
     const showBrandForm = ref(false)
     const showModelForm = ref(false)
     const showTrimForm = ref(false)
+    const selectedBrand = ref(null)
+    const showBrandDetail = ref(false)
+    const selectedModel = ref(null)
+    const showModelDetail = ref(false)
+    const selectedTrim = ref(null)
+    const showTrimDetail = ref(false)
 
     const refreshData = async () => {
       await Promise.all([
@@ -385,6 +391,12 @@ export default {
       showBrandForm,
       showModelForm,
       showTrimForm,
+      selectedBrand,
+      showBrandDetail,
+      selectedModel,
+      showModelDetail,
+      selectedTrim,
+      showTrimDetail,
       refreshData,
       selectBrand,
       selectModel,
