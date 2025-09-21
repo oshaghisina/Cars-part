@@ -18,7 +18,7 @@ PROD_DIR="/opt/china-car-parts"
 BLUE_DIR="/opt/china-car-parts-blue"
 GREEN_DIR="/opt/china-car-parts-green"
 BACKUP_DIR="/opt/backups/china-car-parts"
-REPO_URL="https://github.com/oshaghisina/Cars-part.git"
+REPO_URL="https://github.com/your-org/china-car-parts.git"  # Update this with your actual repo URL
 
 # Logging functions
 log() {
