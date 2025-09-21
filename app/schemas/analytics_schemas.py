@@ -156,12 +156,12 @@ class ReportRequest(BaseModel):
     )
     date_from: Optional[date] = None
     date_to: Optional[date] = None
-    format: Literal["json", "pdf", excel] = Field(default=json)
+    format: Literal["json", "pdf", "excel"] = Field(default="json")
     include_charts: bool = Field(default=True)
 
 
 class ReportResponse(BaseModel):
-    Report generation response""
+    """Report generation response"""
 
     success: bool
     report_id: str
