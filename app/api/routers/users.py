@@ -195,7 +195,7 @@ async def get_users(
     )
 
 
-@router.post(/", response_model=UserResponse)
+@router.post("/", response_model=UserResponse)
 async def create_user(
     user_data: UserCreate,
     current_user: User = Depends(get_current_user),
@@ -394,12 +394,14 @@ async def delete_user(
 # Activity logging endpoint removed - activity models not implemented yet
 
 
-@router.get(/statistics/overview, response_model=UserStatistics)
+@router.get("/statistics/overview", response_model=UserStatistics)
 async def get_user_statistics(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    Get user statistics.""
+    """
+    Get user statistics.
+    """
     # Check permission
     if not current_user.has_permission("users.read"):
         raise HTTPException(

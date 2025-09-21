@@ -57,11 +57,11 @@ class UserService:
 
         # Role is set directly in the User model
 
-        logger.info(f"User created: {user.username} (ID: {user.id}))
+        logger.info(f"User created: {user.username} (ID: {user.id})")
         return user
 
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
-        Get user by ID.
+        """Get user by ID."""
         return self.db.query(User).filter(User.id == user_id).first()
 
     async def get_user_by_username(self, username: str) -> Optional[User]:
