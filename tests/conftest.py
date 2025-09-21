@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from app.api.main import app
 from app.db.models import Base
-from app.core.config import get_settings
+from app.core.config import settings
 
 
 @pytest.fixture(scope="session")
@@ -42,9 +42,9 @@ def client():
 
 
 @pytest.fixture
-def settings():
+def test_settings():
     """Get test settings."""
-    return get_settings()
+    return settings
 
 
 @pytest.fixture
