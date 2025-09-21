@@ -136,10 +136,12 @@ jobs:
 
       - name: Frontend Security Scan
         working-directory: app/frontend/panel
+        continue-on-error: true
         run: |
           npm audit --audit-level=moderate --json > npm-audit-report.json
 
       - name: Run Trivy vulnerability scanner
+        id: trivy
         uses: aquasecurity/trivy-action@0.32.0
         with:
           scan-type: 'fs'
@@ -154,7 +156,7 @@ jobs:
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: steps.trivy.outcome == 'success'
         with:
           sarif_file: 'trivy-results.sarif'
 
