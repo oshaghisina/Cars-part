@@ -139,7 +139,7 @@ health_check() {
     # Check API health
     local api_url="http://localhost:8001"
     for i in {1..10}; do
-        if curl -f -s "$api_url/health" > /dev/null; then
+        if curl -f -s "$api_url/api/v1/health" > /dev/null; then
             success "API health check passed"
             break
         else

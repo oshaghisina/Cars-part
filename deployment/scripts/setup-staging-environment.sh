@@ -352,7 +352,7 @@ API_URL="http://localhost:8001"
 LOG_FILE="/var/log/china-car-parts-staging/monitor.log"
 
 check_api() {
-    if curl -f -s "$API_URL/health" > /dev/null; then
+    if curl -f -s "$API_URL/api/v1/health" > /dev/null; then
         echo "$(date): API health check passed" >> "$LOG_FILE"
         return 0
     else

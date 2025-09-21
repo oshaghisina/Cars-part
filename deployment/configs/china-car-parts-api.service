@@ -39,7 +39,7 @@ CPUQuota=400%
 
 # Health check
 ExecStartPost=/bin/sleep 5
-ExecStartPost=/bin/bash -c 'for i in {1..30}; do if curl -f -s http://localhost:8001/health > /dev/null; then exit 0; fi; sleep 2; done; exit 1'
+ExecStartPost=/bin/bash -c 'for i in {1..30}; do if curl -f -s http://localhost:8001/api/v1/health > /dev/null; then exit 0; fi; sleep 2; done; exit 1'
 
 [Install]
 WantedBy=multi-user.target

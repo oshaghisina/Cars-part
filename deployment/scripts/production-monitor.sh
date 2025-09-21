@@ -80,8 +80,8 @@ check_api_health() {
     local health_status="healthy"
     
     # Check response time and status
-    response_time=$(curl -w "%{time_total}" -s -o /dev/null "$API_URL/health" || echo "999")
-    http_status=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/health" || echo "000")
+    response_time=$(curl -w "%{time_total}" -s -o /dev/null "$API_URL/api/v1/health" || echo "999")
+    http_status=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/api/v1/health" || echo "000")
     
     # Check if response time is within threshold
     if (( $(echo "$response_time > $ALERT_THRESHOLD_RESPONSE_TIME" | bc -l) )); then
@@ -258,7 +258,7 @@ generate_report() {
         echo "API Health:"
         local api_health=$(check_api_health)
         echo "  Status: $api_health"
-        echo "  Response Time: $(curl -w "%{time_total}" -s -o /dev/null "$API_URL/health" || echo "N/A")s"
+        echo "  Response Time: $(curl -w "%{time_total}" -s -o /dev/null "$API_URL/api/v1/health" || echo "N/A")s"
         echo ""
         
         echo "Recent Alerts:"

@@ -180,7 +180,7 @@ main() {
     echo -e "\n${BLUE}📋 Running comprehensive health checks...${NC}\n"
     
     # API Health Check
-    check_endpoint "$API_URL/health" "API Health Endpoint" || overall_status=1
+    check_endpoint "$API_URL/api/v1/health" "API Health Endpoint" || overall_status=1
     
     # API Documentation (if available)
     check_endpoint "$API_URL/docs" "API Documentation" || true  # Non-critical
