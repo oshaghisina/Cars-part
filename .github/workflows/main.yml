@@ -355,9 +355,22 @@ jobs:
           systemctl restart china-car-parts-api-$TARGET
           systemctl restart china-car-parts-bot-$TARGET
           
-          # Health check
-          sleep 10
-          curl -f http://localhost:$([ "$TARGET" = "blue" ] && echo "8001" || echo "8002")/health || exit 1
+          # Health check with retry logic
+          echo "⏳ Waiting for services to be ready..."
+          for i in {1..30}; do
+            if curl -f -s http://localhost:$([ "$TARGET" = "blue" ] && echo "8001" || echo "8002")/api/v1/health > /dev/null; then
+              echo "✅ Health check passed"
+              break
+            fi
+            echo "⏳ Health check attempt $i/30..."
+            sleep 2
+          done
+          
+          # Final health check
+          if ! curl -f -s http://localhost:$([ "$TARGET" = "blue" ] && echo "8001" || echo "8002")/api/v1/health > /dev/null; then
+            echo "❌ Health check failed after 60 seconds"
+            exit 1
+          fi
           
           # Switch traffic
           sed -i "s/upstream $CURRENT-api/upstream $TARGET-api/g" /etc/nginx/sites-available/china-car-parts
