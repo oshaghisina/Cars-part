@@ -1,0 +1,25 @@
+[Unit]
+Description=China Car Parts Telegram Bot
+After=network.target china-car-parts-api.service
+
+[Service]
+Type=simple
+User=sinaoshaghi
+WorkingDirectory=/Users/sinaoshaghi/Projects/China Car Parts
+Environment=PATH=/Users/sinaoshaghi/Projects/China Car Parts/venv/bin
+Environment=APP_ENV=production
+Environment=DEBUG=false
+Environment=DATABASE_URL=sqlite:///./data/app.db
+Environment=SECRET_KEY=your_production_secret_key_32_chars_long
+Environment=JWT_SECRET_KEY=your_production_jwt_secret_key_32_chars_long
+Environment=FRONTEND_ORIGIN=http://localhost:8001
+Environment=API_HOST=0.0.0.0
+Environment=API_PORT=8001
+ExecStart=/Users/sinaoshaghi/Projects/China Car Parts/venv/bin/python -m app.bot.bot
+Restart=always
+RestartSec=10
+StandardOutput=append:/Users/sinaoshaghi/Projects/China Car Parts/logs/bot.log
+StandardError=append:/Users/sinaoshaghi/Projects/China Car Parts/logs/bot-error.log
+
+[Install]
+WantedBy=multi-user.target

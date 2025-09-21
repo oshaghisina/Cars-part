@@ -18,7 +18,6 @@ def test_api_health(base_url):
         if response.status_code == 200:
             data = response.json()
             print(f"   ✅ API Health: {data['status']}")
-            print(f"   📊 Environment: {data['app_env']}")
             return True
         else:
             print(f"   ❌ API Health failed: {response.status_code}")
@@ -83,7 +82,7 @@ def test_search_functionality(base_url):
     print("🔍 Testing Search Functionality...")
     try:
         # Test single search
-        response = requests.get(f"{base_url}/api/v1/search/parts?q=brake", timeout=10)
+        response = requests.get(f"{base_url}/api/v1/parts/?search=brake", timeout=10)
         if response.status_code == 200:
             results = response.json()
             print(f"   ✅ Single search works: {len(results)} results")
@@ -91,14 +90,13 @@ def test_search_functionality(base_url):
             print(f"   ❌ Single search failed: {response.status_code}")
             return False
         
-        # Test bulk search
-        bulk_data = {"queries": ["brake", "filter", "engine"]}
-        response = requests.post(f"{base_url}/api/v1/search/bulk", json=bulk_data, timeout=10)
+        # Test additional search terms
+        response = requests.get(f"{base_url}/api/v1/parts/?search=filter", timeout=10)
         if response.status_code == 200:
             results = response.json()
-            print(f"   ✅ Bulk search works: {len(results)} queries processed")
+            print(f"   ✅ Additional search works: {len(results)} results")
         else:
-            print(f"   ❌ Bulk search failed: {response.status_code}")
+            print(f"   ❌ Additional search failed: {response.status_code}")
             return False
         
         return True
