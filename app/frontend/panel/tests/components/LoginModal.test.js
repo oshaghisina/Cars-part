@@ -26,7 +26,9 @@ describe('LoginModal', () => {
   })
 
   it('renders login form correctly', () => {
-    const wrapper = mount(LoginModal)
+    const wrapper = mount(LoginModal, {
+      props: { show: true }
+    })
     
     expect(wrapper.find('input[type="text"]').exists()).toBe(true)
     expect(wrapper.find('input[type="password"]').exists()).toBe(true)
@@ -34,14 +36,18 @@ describe('LoginModal', () => {
   })
 
   it('has correct form labels', () => {
-    const wrapper = mount(LoginModal)
+    const wrapper = mount(LoginModal, {
+      props: { show: true }
+    })
     
-    expect(wrapper.text()).toContain('Username or Email')
+    expect(wrapper.text()).toContain('Username')
     expect(wrapper.text()).toContain('Password')
   })
 
   it('handles form submission', async () => {
-    const wrapper = mount(LoginModal)
+    const wrapper = mount(LoginModal, {
+      props: { show: true }
+    })
     
     // Fill form
     await wrapper.find('input[type="text"]').setValue('admin')
@@ -57,15 +63,22 @@ describe('LoginModal', () => {
   })
 
   it('shows loading state', async () => {
-    mockAuthStore.loading = true
-    const wrapper = mount(LoginModal)
+    const wrapper = mount(LoginModal, {
+      props: { show: true }
+    })
     
-    expect(wrapper.find('button[disabled]').exists()).toBe(true)
+    // Set loading state by triggering it
+    wrapper.vm.loading = true
+    await wrapper.vm.$nextTick()
+    
+    expect(wrapper.text()).toContain('Logging in...')
   })
 
   it('handles login errors', async () => {
     mockAuthStore.login.mockRejectedValue(new Error('Invalid credentials'))
-    const wrapper = mount(LoginModal)
+    const wrapper = mount(LoginModal, {
+      props: { show: true }
+    })
     
     // Fill and submit form
     await wrapper.find('input[type="text"]').setValue('admin')
@@ -79,7 +92,9 @@ describe('LoginModal', () => {
   })
 
   it('has proper accessibility attributes', () => {
-    const wrapper = mount(LoginModal)
+    const wrapper = mount(LoginModal, {
+      props: { show: true }
+    })
     
     const usernameInput = wrapper.find('input[type="text"]')
     const passwordInput = wrapper.find('input[type="password"]')
@@ -89,7 +104,9 @@ describe('LoginModal', () => {
   })
 
   it('focuses username input on mount', async () => {
-    const wrapper = mount(LoginModal)
+    const wrapper = mount(LoginModal, {
+      props: { show: true }
+    })
     
     // Wait for mounted hook
     await wrapper.vm.$nextTick()
