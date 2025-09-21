@@ -67,15 +67,15 @@ async def intelligent_search(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"AI search failed: {str(e)})
+            detail=f"AI search failed: {str(e)}")
 
 
-@router.post(/intelligent/bulk, response_model=BulkIntelligentSearchResponse)
+@router.post("/intelligent/bulk", response_model=BulkIntelligentSearchResponse)
 async def bulk_intelligent_search(
     request: BulkIntelligentSearchRequest,
     db: Session = Depends(get_db)
 ):
-    Perform bulk intelligent search for multiple queries."
+    """Perform bulk intelligent search for multiple queries."""
     if not request.queries:
         raise HTTPException(
             status_code=400,
@@ -106,17 +106,17 @@ async def bulk_intelligent_search(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Bulk AI search failed: {str(e)})
+            detail=f"Bulk AI search failed: {str(e)}")
 
 
-@router.get(/recommendations/{part_id},
+@router.get("/recommendations/{part_id}",
             response_model=PartRecommendationResponse)
 async def get_part_recommendations(
     part_id: int,
-    limit: int = Query(5, description=Maximum number of recommendations),
+    limit: int = Query(5, description="Maximum number of recommendations"),
     db: Session = Depends(get_db)
 ):
-    Get AI-powered part recommendations based on a specific part."""
+    """Get AI-powered part recommendations based on a specific part."""
     if not settings.ai_enabled:
         raise HTTPException(
             status_code=503,
@@ -136,16 +136,16 @@ async def get_part_recommendations(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to get recommendations: {str(e)})
+            detail=f"Failed to get recommendations: {str(e)}")
 
 
-@router.get(/semantic, response_model=List[Dict[str, Any]])
+@router.get("/semantic", response_model=List[Dict[str, Any]])
 async def semantic_search(
-    q: str = Query(..., description=Search query),
-    limit: int = Query(10, description=Maximum number of results),
+    q: str = Query(..., description="Search query"),
+    limit: int = Query(10, description="Maximum number of results"),
     db: Session = Depends(get_db)
 ):
-    ""Perform semantic search using OpenAI embeddings."""
+    """Perform semantic search using OpenAI embeddings."""
     if not q.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
@@ -168,12 +168,12 @@ async def semantic_search(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Semantic search failed: {str(e)})
+            detail=f"Semantic search failed: {str(e)}")
 
 
-@router.get(/status)
+@router.get("/status")
 async def ai_status():
-    Check AI service status and configuration."
+    """Check AI service status and configuration."""
     return {
         "ai_enabled": settings.ai_enabled,
         "openai_configured": bool(settings.openai_api_key),
