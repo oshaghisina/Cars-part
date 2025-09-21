@@ -1,16 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from sqlalchemy import text
-from typing import List, Optional, Dict, Any
+from typing import Optional
 import pandas as pd
 import json
 import io
 from datetime import datetime
 
 from app.db.database import get_db
-from app.db.models import Part, VehicleBrand, VehicleModel, VehicleTrim, PartCategory, Order, Lead, User
+from app.db.models import Part, VehicleBrand, VehicleModel, PartCategory, Order, Lead
 from app.schemas.bulk_schemas import (
-    ImportRequest, ImportResponse, ImportResult,
+    ImportResponse, ImportResult,
     ExportRequest, ExportResponse,
     BatchOperationRequest, BatchOperationResponse
 )

@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_, desc, asc, text
-from typing import List, Optional, Dict, Any
+from sqlalchemy import func, and_, or_, desc
+from typing import Optional
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 
 from app.db.database import get_db
-from app.db.models import Part, VehicleBrand, VehicleModel, VehicleTrim, PartCategory, Order, OrderItem, Lead, User, Price, WizardSession
+from app.db.models import (
+    Part, VehicleBrand, VehicleModel, VehicleTrim, PartCategory, 
+    Order, OrderItem, Lead, User, Price, WizardSession
+)
 from app.schemas.analytics_schemas import (
     DashboardMetrics, SalesAnalytics, InventoryAnalytics,
     CustomerAnalytics, PerformanceMetrics, ReportRequest,
