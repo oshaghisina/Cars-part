@@ -132,7 +132,7 @@ async def get_search_suggestions(
                     'text': part.part_name,
                     'type': 'part',
                     'id': part.id,
-                    'description': f"{part.brand_oem} - {part.oem_code}
+                    'description': f"{part.brand_oem} - {part.oem_code}"
                 })
 
         if not module or module == 'vehicles':
@@ -166,14 +166,16 @@ async def get_search_suggestions(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=fSuggestions error: {str(e)})
+            detail=f"Suggestions error: {str(e)}")
 
 
 async def search_module(
         module: str,
         search_request: AdvancedSearchRequest,
         db: Session):
-    Search within a specific module"
+    """
+    Search within a specific module
+    """
     results = []
     count = 0
 
@@ -220,9 +222,9 @@ async def search_module(
                 id=str(part.id),
                 module='parts',
                 title=part.part_name,
-                description=f"{part.brand_oem} - {part.oem_code},
+                description=f"{part.brand_oem} - {part.oem_code}",
                 type='Part',
-                url=f/parts/{part.id},
+                url=f"/parts/{part.id}",
                 metadata={
                     'category': part.category.name if part.category else None,
                     'price': float(part.price) if part.price else None,
@@ -249,9 +251,9 @@ async def search_module(
                 id=str(brand.id),
                 module='vehicles',
                 title=brand.name,
-                description=fVehicle brand with {len(brand.models)} models,
+                description=f"Vehicle brand with {len(brand.models)} models",
                 type='Vehicle Brand',
-                url=f/vehicles/brands/{brand.id},
+                url=f"/vehicles/brands/{brand.id}",
                 metadata={
                     'model_count': len(brand.models),
                     'created_at': brand.created_at.isoformat() if brand.created_at else None
@@ -403,9 +405,9 @@ async def search_module_global(module: str, query: str, db: Session):
                 id=str(part.id),
                 module='parts',
                 title=part.part_name,
-                description=f"{part.brand_oem} - {part.oem_code},
+                description=f"{part.brand_oem} - {part.oem_code}",
                 type='Part',
-                url=f/parts/{part.id},
+                url=f"/parts/{part.id}",
                 metadata={'category': part.category.name if part.category else None},
                 relevance_score=1.0
             ))
