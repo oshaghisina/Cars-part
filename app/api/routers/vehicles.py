@@ -4,7 +4,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from app.db.database import get_db
-from app.db.models import VehicleBrand, VehicleModel, VehicleTrim
 from app.services.vehicle_service import VehicleService
 
 router = APIRouter()

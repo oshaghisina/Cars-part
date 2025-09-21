@@ -4,15 +4,14 @@ AI Service for enhanced search and part recommendations using OpenAI.
 
 import openai
 import numpy as np
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 import logging
-from datetime import datetime, timedelta
 import json
 import re
 
 from app.core.config import settings
-from app.db.models import Part, Price, Synonym
+from app.db.models import Part
 from app.services.search import SearchService
 
 logger = logging.getLogger(__name__)

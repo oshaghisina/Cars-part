@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func, distinct
+from sqlalchemy import or_, func, distinct
 from datetime import datetime
 import pandas as pd
 

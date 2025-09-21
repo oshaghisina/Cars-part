@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
+from datetime import datetime
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, func, text
-from datetime import datetime, timedelta
+from sqlalchemy import or_, func
 
 from app.db.database import get_db
-from app.db.models import Part, VehicleBrand, VehicleModel, VehicleTrim, PartCategory, Order, Lead, User
+from app.db.models import Part, VehicleBrand, PartCategory, Order, Lead, User
 from app.schemas.search_schemas import (
-    SearchRequest, SearchResponse, SearchResult,
+    SearchResult,
     AdvancedSearchRequest, AdvancedSearchResponse,
     GlobalSearchRequest, GlobalSearchResponse
 )

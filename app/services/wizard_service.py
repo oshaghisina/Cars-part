@@ -3,8 +3,6 @@
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 from app.db.models import Part, WizardSession
-from app.bot.wizard_states import WizardData
-import json
 
 
 class WizardService:

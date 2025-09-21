@@ -2,9 +2,12 @@
 
 import asyncio
 import logging
-from aiogram import Bot, Dispatcher, types, F
+from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, BotCommand
+from aiogram.types import (
+    Message, CallbackQuery, InlineKeyboardMarkup,
+    InlineKeyboardButton, BotCommand
+)
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -16,6 +19,15 @@ from app.bot.wizard_handlers import router as wizard_router
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Constants
+AI_ENABLED = "ai_enabled"
+on = "on"
+off = "off"
+orders = "orders"
+search = "search"
+confirm_part_ = "confirm_part_"
+search_again = "search_again"
 
 
 # FSM States
@@ -152,7 +164,6 @@ if dp:
     @dp.message(Command("ai"))
     async def cmd_ai(message: Message):
         """Handle /ai command for admin toggle."""
-        user_id = str(message.from_user.id)
 
         # Check if user is admin
         if message.from_user.id not in settings.admin_telegram_ids_list:
@@ -174,7 +185,7 @@ if dp:
             db = SessionLocal()
             try:
                 settings_service = SettingsService(db)
-                settings_service.set_setting(AI_ENABLED, true)
+                settings_service.set_setting(AI_ENABLED, True)
                 await message.answer("جستجوی هوش مصنوعی فعال شد ✅")
             except Exception as e:
                 await message.answer("خطا در فعال‌سازی جستجوی هوش مصنوعی ❌")
@@ -190,7 +201,7 @@ if dp:
             db = SessionLocal()
             try:
                 settings_service = SettingsService(db)
-                settings_service.set_setting(AI_ENABLED, false)
+                settings_service.set_setting(AI_ENABLED, False)
                 await message.answer("جستجوی هوش مصنوعی غیرفعال شد ❌")
             except Exception as e:
                 await message.answer("خطا در غیرفعال‌سازی جستجوی هوش مصنوعی ❌")
@@ -443,7 +454,7 @@ if dp:
                     await message.answer(result["message"], reply_markup=keyboard)
 
                     # Send additional details
-                    detail_text = f"📋 جزئیات:\n"
+                    detail_text = "📋 جزئیات:\n"
                     if part_data['oem_code']:
                         detail_text += f"• کد OEM: {part_data['oem_code']}\n"
                     detail_text += f"• دسته‌بندی: {part_data['category']}\n"
@@ -496,8 +507,8 @@ if dp:
             else:
                 # Create order directly
                 search_result = {
-                    found: True,
-                    part_data: {"id": int(part_id)},
+                    "found": True,
+                    "part_data": {"id": int(part_id)},
                     "original_query": original_query
                 }
 

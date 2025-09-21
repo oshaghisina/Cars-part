@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 from app.db.database import get_db
 from app.db.models import (
-    Part, VehicleBrand, VehicleModel, VehicleTrim, PartCategory, 
+    Part, VehicleBrand, VehicleModel, VehicleTrim, PartCategory,
     Order, OrderItem, Lead, User, Price, WizardSession
 )
 from app.schemas.analytics_schemas import (

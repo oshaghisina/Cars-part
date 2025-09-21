@@ -3,7 +3,6 @@
 from typing import Optional, Dict
 from sqlalchemy.orm import Session
 from app.db.models import Lead
-from app.core.config import settings
 
 
 class LeadService:

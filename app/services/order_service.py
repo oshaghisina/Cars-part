@@ -2,8 +2,7 @@
 
 from typing import List, Dict, Optional
 from sqlalchemy.orm import Session
-from app.db.models import Order, OrderItem, Lead, Part
-from datetime import datetime
+from app.db.models import Order, OrderItem
 
 
 class OrderService:

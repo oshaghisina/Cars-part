@@ -6,7 +6,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from app.db.database import get_db
-from app.db.models import Order, OrderItem
+from app.db.models import Order
 from app.services.order_service import OrderService
 
 router = APIRouter()
