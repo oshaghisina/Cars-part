@@ -76,17 +76,21 @@ async def bulk_export(
         if export_request.format == 'csv':
             output = data.to_csv(index=False)
             content_type = 'text/csv'
-            filename = f"{export_request.data_type}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            filename = (f"{export_request.data_type}_export_"
+                        f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv")
         elif export_request.format == 'xlsx':
             output = io.BytesIO()
             data.to_excel(output, index=False)
             output.seek(0)
-            content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            filename = f"{export_request.data_type}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            content_type = ('application/vnd.openxmlformats-officedocument.'
+                            'spreadsheetml.sheet')
+            filename = (f"{export_request.data_type}_export_"
+                        f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
         elif export_request.format == 'json':
             output = data.to_json(orient='records', date_format='iso')
             content_type = 'application/json'
-            filename = f"{export_request.data_type}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filename = (f"{export_request.data_type}_export_"
+                        f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
         else:
             raise HTTPException(
                 status_code=400,
@@ -141,15 +145,20 @@ async def process_import(
 
     try:
         if data_type == 'parts':
-            processed_count, error_count, errors = await import_parts(df, mode, validate_data, skip_errors, db)
+            processed_count, error_count, errors = await import_parts(
+                df, mode, validate_data, skip_errors, db)
         elif data_type == 'vehicles':
-            processed_count, error_count, errors = await import_vehicles(df, mode, validate_data, skip_errors, db)
+            processed_count, error_count, errors = await import_vehicles(
+                df, mode, validate_data, skip_errors, db)
         elif data_type == 'categories':
-            processed_count, error_count, errors = await import_categories(df, mode, validate_data, skip_errors, db)
+            processed_count, error_count, errors = await import_categories(
+                df, mode, validate_data, skip_errors, db)
         elif data_type == 'orders':
-            processed_count, error_count, errors = await import_orders(df, mode, validate_data, skip_errors, db)
+            processed_count, error_count, errors = await import_orders(
+                df, mode, validate_data, skip_errors, db)
         elif data_type == 'leads':
-            processed_count, error_count, errors = await import_leads(df, mode, validate_data, skip_errors, db)
+            processed_count, error_count, errors = await import_leads(
+                df, mode, validate_data, skip_errors, db)
         else:
             raise ValueError(f"Unsupported data type: {data_type}")
 

@@ -1,7 +1,7 @@
 """SQLAlchemy models based on data-model.md specifications."""
 
 from sqlalchemy import (
-    Column, Integer, String, Text, Boolean, DateTime, Date, 
+    Column, Integer, String, Text, Boolean, DateTime, Date,
     DECIMAL, Float, ForeignKey, JSON
 )
 from sqlalchemy.orm import relationship

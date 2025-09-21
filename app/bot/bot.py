@@ -233,7 +233,8 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order['matched_items'] > 0:
-                            status_text += f"قطعات یافت شده: {order['matched_items']}/{order['total_items']}\n"
+                            status_text += (f"قطعات یافت شده: "
+                                           f"{order['matched_items']}/{order['total_items']}\n")
 
                         await message.answer(status_text)
                 else:
@@ -315,7 +316,8 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order['matched_items'] > 0:
-                            status_text += f"قطعات یافت شده: {order['matched_items']}/{order['total_items']}\n"
+                            status_text += (f"قطعات یافت شده: "
+                                           f"{order['matched_items']}/{order['total_items']}\n")
 
                         await callback_query.message.answer(status_text)
                 else:
@@ -384,7 +386,8 @@ if dp:
             ]
         ])
 
-        await callback_query.message.answer(welcome_text, reply_markup=keyboard, parse_mode="Markdown")
+        await callback_query.message.answer(
+            welcome_text, reply_markup=keyboard, parse_mode="Markdown")
 
     @dp.message(lambda message: not message.text.startswith('/'))
     async def message_handler(message: Message):
@@ -414,9 +417,11 @@ if dp:
                         if "found" not in item:  # Found part
                             price_text = ""
                             if item["best_price"]:
-                                price_text = f" - قیمت: {item['best_price']:,.0f} {item['currency']}"
+                                price_text = (f" - قیمت: {item['best_price']:,.0f} "
+                                             f"{item['currency']}")
 
-                            detail_text = f"✅ {item['query']}\n{item['part_name']} {item['vehicle_model']}{price_text}"
+                            detail_text = (f"✅ {item['query']}\n"
+                                          f"{item['part_name']} {item['vehicle_model']}{price_text}")
                             await message.answer(detail_text)
                         else:
                             # Not found
@@ -519,14 +524,15 @@ if dp:
                 if order_result["success"]:
                     await callback_query.message.answer(order_result["message"])
                     await callback_query.message.answer(
-                        "تیم ما به زودی با شما تماس خواهد گرفت. برای پیگیری سفارش از دستور /orders استفاده کنید."
-                    )
+                        "تیم ما به زودی با شما تماس خواهد گرفت. "
+                        "برای پیگیری سفارش از دستور /orders استفاده کنید.")
                 else:
                     await callback_query.message.answer(order_result["message"])
 
         except Exception as e:
             logger.error(f"Error in part confirmation: {e}")
-            await callback_query.message.answer("خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید.")
+            await callback_query.message.answer(
+                "خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید.")
         finally:
             db.close()
 

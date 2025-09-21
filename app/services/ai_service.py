@@ -86,7 +86,9 @@ class AIService:
             part_data = []
 
             for part in parts:
-                description = f"{part.part_name} {part.brand_oem} {part.vehicle_make} {part.vehicle_model} {part.category}"
+                description = (f"{part.part_name} {part.brand_oem} "
+                               f"{part.vehicle_make} {part.vehicle_model} "
+                               f"{part.category}")
                 if part.oem_code:
                     description += f" {part.oem_code}"
                 if part.vehicle_trim:
@@ -303,7 +305,8 @@ Respond with just 3 queries, one per line, no explanations."""
         try:
             # Extract categories from results
             categories = list(set([result.get('category', '')
-                              for result in results if result.get('category')]))
+                                   for result in results
+                                   if result.get('category')]))
             brands = list(set([result.get('brand_oem', '')
                           for result in results if result.get('brand_oem')]))
 
@@ -347,7 +350,9 @@ Respond with just 3 suggestions, one per line, in the same language as the query
                 return []
 
             # Create part description for similarity search
-            part_description = f"{part.part_name} {part.brand_oem} {part.vehicle_make} {part.vehicle_model} {part.category}"
+            part_description = (f"{part.part_name} {part.brand_oem} "
+                               f"{part.vehicle_make} {part.vehicle_model} "
+                               f"{part.category}")
 
             # Find similar parts using semantic search
             similar_parts = self.semantic_search(part_description, limit * 2)
