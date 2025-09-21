@@ -39,10 +39,10 @@ class CategoryService:
 
         if search:
             search_filter = or_(
-                PartCategory.name.ilike(f"%{search}%),
-                PartCategory.name_fa.ilike(f%{search}%),
-                PartCategory.name_cn.ilike(f%{search}%),
-                PartCategory.description.ilike(f%{search}%)
+                PartCategory.name.ilike(f"%{search}%"),
+                PartCategory.name_fa.ilike(f"%{search}%"),
+                PartCategory.name_cn.ilike(f"%{search}%"),
+                PartCategory.description.ilike(f"%{search}%")
             )
             query = query.filter(search_filter)
 
@@ -53,7 +53,7 @@ class CategoryService:
             PartCategory.sort_order, PartCategory.name).offset(skip).limit(limit).all()
 
     def get_category_by_id(self, category_id: int) -> Optional[PartCategory]:
-        ""Get category by ID."""
+        """Get category by ID."""
         return self.db.query(PartCategory).filter(
             PartCategory.id == category_id).first()
 
@@ -139,12 +139,11 @@ class CategoryService:
                 if parent:
                     level = parent.level + 1
                     # type: ignore[comparison-overlap]
-                    path = f"{
-                        parent.path}/{category_data['name']} if parent.path else f/{category_data['name']}
+                    path = f"{parent.path}/{category_data['name']}" if parent.path else f"/{category_data['name']}"
                 else:
-                    raise ValueError(Invalid parent_id)
+                    raise ValueError("Invalid parent_id")
             else:
-                path = f/{category_data['name']}
+                path = f"/{category_data['name']}"
 
             category_data['level'] = level
             category_data['path'] = path
@@ -156,14 +155,14 @@ class CategoryService:
             return category
         except Exception as e:
             self.db.rollback()
-            logger.error(fError creating category: {e})
+            logger.error(f"Error creating category: {e}")
             return None
 
     def update_category(self,
                         category_id: int,
                         category_data: Dict[str,
                                             Any]) -> Optional[PartCategory]:
-        ""Update an existing category."""
+        """Update an existing category."""
         try:
             category = self.get_category_by_id(category_id)
             if not category:
@@ -182,14 +181,13 @@ class CategoryService:
                             category.level = parent.level + 1
                             # type: ignore[assignment]  # type:
                             # ignore[assignment]
-                            category.path = f"{
-                                parent.path}/{category.name} if parent.path else f/{category.name}
+                            category.path = f"{parent.path}/{category.name}" if parent.path else f"/{category.name}"
                         else:
-                            raise ValueError(Invalid parent_id)
+                            raise ValueError("Invalid parent_id")
                     else:
                         category.level = 0  # type: ignore[assignment]
                         # type: ignore[assignment]  # type: ignore[assignment]
-                        category.path = f/{category.name}
+                        category.path = f"/{category.name}"
 
                     # Update paths for all descendants
                     self._update_descendant_paths(
@@ -205,11 +203,11 @@ class CategoryService:
             return category
         except Exception as e:
             self.db.rollback()
-            logger.error(fError updating category: {e})
+            logger.error(f"Error updating category: {e}")
             return None
 
     def delete_category(self, category_id: int) -> bool:
-        ""Delete a category (soft delete by setting is_active=False)."""
+        """Delete a category (soft delete by setting is_active=False)."""
         try:
             category = self.get_category_by_id(category_id)
             if not category:
@@ -223,7 +221,7 @@ class CategoryService:
             return True
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error deleting category: {e})
+            logger.error(f"Error deleting category: {e}")
             return False
 
     def move_category(
@@ -232,7 +230,7 @@ class CategoryService:
         new_parent_id: Optional[int] = None,
         new_sort_order: Optional[int] = None
     ) -> bool:
-        Move a category to a new parent or change sort order.
+        """Move a category to a new parent or change sort order."""
         try:
             category = self.get_category_by_id(category_id)
             if not category:
@@ -250,13 +248,12 @@ class CategoryService:
                     category.level = parent.level + \
                         1  # type: ignore[assignment]
                     # type: ignore[assignment]
-                    category.path = f"{
-                        parent.path}/{category.name} if parent.path else f/{category.name}
+                    category.path = f"{parent.path}/{category.name}" if parent.path else f"/{category.name}"
                 else:
                     category.parent_id = None  # type: ignore[assignment]
                     category.level = 0  # type: ignore[assignment]
                     # type: ignore[assignment]
-                    category.path = f/{category.name}
+                    category.path = f"/{category.name}"
 
                 # Update paths for all descendants
                 self._update_descendant_paths(
@@ -271,7 +268,7 @@ class CategoryService:
             return True
         except Exception as e:
             self.db.rollback()
-            logger.error(fError moving category: {e}")
+            logger.error(f"Error moving category: {e}")
             return False
 
     # type: ignore[arg-type]
@@ -280,12 +277,12 @@ class CategoryService:
         children = self.get_category_children(category_id)
         for child in children:
             # type: ignore[assignment]
-            child.path = f"{parent_path}/{child.name}
+            child.path = f"{parent_path}/{child.name}"
             self._update_descendant_paths(
                 child.id, child.path)  # type: ignore[arg-type]
 
     def _soft_delete_category_and_children(self, category_id: int):
-        Soft delete a category and all its children.
+        """Soft delete a category and all its children."""
         category = self.get_category_by_id(category_id)
         if category:
             category.is_active = False  # type: ignore[assignment]
@@ -303,17 +300,17 @@ class CategoryService:
         categories = self.db.query(PartCategory).filter(
             PartCategory.is_active,
             or_(
-                PartCategory.name.ilike(f"%{query}%),
-                PartCategory.name_fa.ilike(f%{query}%),
-                PartCategory.name_cn.ilike(f%{query}%),
-                PartCategory.description.ilike(f%{query}%)
+                PartCategory.name.ilike(f"%{query}%"),
+                PartCategory.name_fa.ilike(f"%{query}%"),
+                PartCategory.name_cn.ilike(f"%{query}%"),
+                PartCategory.description.ilike(f"%{query}%")
             )
         ).limit(limit).all()
 
         results = []
         for category in categories:
             results.append({
-                id": category.id,
+                "id": category.id,
                 "name": category.name,
                 "name_fa": category.name_fa,
                 "name_cn": category.name_cn,
@@ -342,12 +339,12 @@ class CategoryService:
                 PartCategory.is_active
             ).count()
             if count > 0:
-                level_stats[f"level_{level}] = count
+                level_stats[f"level_{level}"] = count
 
         return {
-            total_categories: total_categories,
-            active_categories: active_categories,
-            inactive_categories: total_categories - active_categories,
+            "total_categories": total_categories,
+            "active_categories": active_categories,
+            "inactive_categories": total_categories - active_categories,
             "root_categories": root_categories,
             "level_distribution": level_stats
         }
