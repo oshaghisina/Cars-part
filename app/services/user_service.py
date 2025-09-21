@@ -210,13 +210,13 @@ class UserService:
         # Check if account is locked
         if user.is_locked():
             logger.warning(
-                fAuthentication failed: Account locked - {user.username})
+                f"Authentication failed: Account locked - {user.username}")
             return None
 
         # Check if account is active
         if not user.is_active:  # type: ignore[comparison-overlap]
             logger.warning(
-                fAuthentication failed: Account inactive - {user.username})
+                f"Authentication failed: Account inactive - {user.username}")
             return None
 
         # Verify password
@@ -232,7 +232,7 @@ class UserService:
         user.last_login = func.now()  # type: ignore[assignment]
         self.db.commit()
 
-        logger.info(f"User authenticated successfully: {user.username})
+        logger.info(f"User authenticated successfully: {user.username}")
         return user
 
     async def create_session(
@@ -241,7 +241,7 @@ class UserService:
             ip_address: Optional[str] = None,
             user_agent: Optional[str] = None,
             expires_hours: int = 24):
-        Create a new user session with basic tracking.
+        """Create a new user session with basic tracking."""
         # Generate session token
         session_token = secrets.token_urlsafe(32)
 
@@ -260,8 +260,7 @@ class UserService:
         # In a real implementation, you would store this in a UserSession table
         # For now, we'll log it and return the token
         logger.info(
-            f"Session created for user: {
-                user.username} (IP: {ip_address}))
+            f"Session created for user: {user.username} (IP: {ip_address})")
 
         # Update user's last login
         user.last_login = func.now()  # type: ignore[assignment]
@@ -274,7 +273,7 @@ class UserService:
 
     # Utility Methods
     async def get_user_statistics(self) -> Dict[str, Any]:
-        Get user statistics."
+        """Get user statistics."""
         total_users = self.db.query(User).count()
         active_users = self.db.query(User).filter(User.is_active).count()
         verified_users = self.db.query(User).filter(User.is_verified).count()
