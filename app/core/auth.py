@@ -185,14 +185,14 @@ class RoleChecker:
         if not current_user.has_role(self.required_role):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=fInsufficient permissions. Required role: {self.required_role})
+                detail=f"Insufficient permissions. Required role: {self.required_role}")
         return current_user
 
 
 # Common permission checkers
-users_read = PermissionChecker(users.read)
-users_create = PermissionChecker(users.create)
-users_update = PermissionChecker(users.update")
+users_read = PermissionChecker("users.read")
+users_create = PermissionChecker("users.create")
+users_update = PermissionChecker("users.update")
 users_delete = PermissionChecker("users.delete")
 
 roles_read = PermissionChecker("roles.read")
