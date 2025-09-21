@@ -32,9 +32,9 @@ class VehicleService:
 
         if search:
             search_filter = or_(
-                VehicleBrand.name.ilike(f"%{search}%),
-                VehicleBrand.name_fa.ilike(f%{search}%),
-                VehicleBrand.name_cn.ilike(f%{search}%)
+                VehicleBrand.name.ilike(f"%{search}%"),
+                VehicleBrand.name_fa.ilike(f"%{search}%"),
+                VehicleBrand.name_cn.ilike(f"%{search}%")
             )
             query = query.filter(search_filter)
 
@@ -42,7 +42,7 @@ class VehicleService:
                               VehicleBrand.name).offset(skip).limit(limit).all()
 
     def get_brand_by_id(self, brand_id: int) -> Optional[VehicleBrand]:
-        Get brand by ID.""
+        """Get brand by ID."""
         return self.db.query(VehicleBrand).filter(
             VehicleBrand.id == brand_id).first()
 
@@ -58,14 +58,14 @@ class VehicleService:
             return brand
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error creating brand: {e})
+            logger.error(f"Error creating brand: {e}")
             return None
 
     def update_brand(self,
                      brand_id: int,
                      brand_data: Dict[str,
                                       Any]) -> Optional[VehicleBrand]:
-        Update an existing brand.
+        """Update an existing brand."""
         try:
             brand = self.get_brand_by_id(brand_id)
             if not brand:
@@ -80,11 +80,11 @@ class VehicleService:
             return brand
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error updating brand: {e})
+            logger.error(f"Error updating brand: {e}")
             return None
 
     def delete_brand(self, brand_id: int) -> bool:
-        Delete a brand (soft delete by setting is_active=False).""
+        """Delete a brand (soft delete by setting is_active=False)."""
         try:
             brand = self.get_brand_by_id(brand_id)
             if not brand:
@@ -95,7 +95,7 @@ class VehicleService:
             return True
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error deleting brand: {e})
+            logger.error(f"Error deleting brand: {e}")
             return False
 
     # Model operations
@@ -107,7 +107,7 @@ class VehicleService:
         is_active: Optional[bool] = None,
         search: Optional[str] = None
     ) -> List[VehicleModel]:
-        Get models with filtering options.
+        """Get models with filtering options."""
         query = self.db.query(VehicleModel)
 
         if brand_id:
@@ -118,9 +118,9 @@ class VehicleService:
 
         if search:
             search_filter = or_(
-                VehicleModel.name.ilike(f"%{search}%),
-                VehicleModel.name_fa.ilike(f%{search}%),
-                VehicleModel.name_cn.ilike(f%{search}%)
+                VehicleModel.name.ilike(f"%{search}%"),
+                VehicleModel.name_fa.ilike(f"%{search}%"),
+                VehicleModel.name_cn.ilike(f"%{search}%")
             )
             query = query.filter(search_filter)
 
@@ -151,14 +151,14 @@ class VehicleService:
             return model
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error creating model: {e})
+            logger.error(f"Error creating model: {e}")
             return None
 
     def update_model(self,
                      model_id: int,
                      model_data: Dict[str,
                                       Any]) -> Optional[VehicleModel]:
-        Update an existing model.
+        """Update an existing model."""
         try:
             model = self.get_model_by_id(model_id)
             if not model:
@@ -173,11 +173,11 @@ class VehicleService:
             return model
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error updating model: {e})
+            logger.error(f"Error updating model: {e}")
             return None
 
     def delete_model(self, model_id: int) -> bool:
-        Delete a model (soft delete by setting is_active=False).""
+        """Delete a model (soft delete by setting is_active=False)."""
         try:
             model = self.get_model_by_id(model_id)
             if not model:
@@ -188,7 +188,7 @@ class VehicleService:
             return True
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error deleting model: {e})
+            logger.error(f"Error deleting model: {e}")
             return False
 
     # Trim operations
@@ -201,7 +201,7 @@ class VehicleService:
         is_active: Optional[bool] = None,
         search: Optional[str] = None
     ) -> List[VehicleTrim]:
-        Get trims with filtering options.
+        """Get trims with filtering options."""
         query = self.db.query(VehicleTrim)
 
         if model_id:
@@ -216,9 +216,9 @@ class VehicleService:
 
         if search:
             search_filter = or_(
-                VehicleTrim.name.ilike(f"%{search}%),
-                VehicleTrim.name_fa.ilike(f%{search}%),
-                VehicleTrim.engine_type.ilike(f%{search}%)
+                VehicleTrim.name.ilike(f"%{search}%"),
+                VehicleTrim.name_fa.ilike(f"%{search}%"),
+                VehicleTrim.engine_type.ilike(f"%{search}%")
             )
             query = query.filter(search_filter)
 
@@ -247,14 +247,14 @@ class VehicleService:
             return trim
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error creating trim: {e})
+            logger.error(f"Error creating trim: {e}")
             return None
 
     def update_trim(self,
                     trim_id: int,
                     trim_data: Dict[str,
                                     Any]) -> Optional[VehicleTrim]:
-        Update an existing trim.
+        """Update an existing trim."""
         try:
             trim = self.get_trim_by_id(trim_id)
             if not trim:
@@ -269,11 +269,11 @@ class VehicleService:
             return trim
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error updating trim: {e})
+            logger.error(f"Error updating trim: {e}")
             return None
 
     def delete_trim(self, trim_id: int) -> bool:
-        Delete a trim (soft delete by setting is_active=False).""
+        """Delete a trim (soft delete by setting is_active=False)."""
         try:
             trim = self.get_trim_by_id(trim_id)
             if not trim:
@@ -284,12 +284,12 @@ class VehicleService:
             return True
         except Exception as e:
             self.db.rollback()
-            logger.error(f"Error deleting trim: {e})
+            logger.error(f"Error deleting trim: {e}")
             return False
 
     # Utility methods
     def get_brand_model_trim_tree(self) -> List[Dict[str, Any]]:
-        Get complete brand -> model -> trim hierarchy.
+        """Get complete brand -> model -> trim hierarchy."""
         brands = self.db.query(VehicleBrand).filter(
             VehicleBrand.is_active).all()
 
@@ -349,18 +349,18 @@ class VehicleService:
         brands = self.db.query(VehicleBrand).filter(
             VehicleBrand.is_active,
             or_(
-                VehicleBrand.name.ilike(f"%{query}%),
-                VehicleBrand.name_fa.ilike(f%{query}%)
+                VehicleBrand.name.ilike(f"%{query}%"),
+                VehicleBrand.name_fa.ilike(f"%{query}%")
             )
         ).limit(limit).all()
 
         for brand in brands:
             results.append({
-                type: brand",
+                "type": "brand",
                 "id": brand.id,
                 "name": brand.name,
                 "name_fa": brand.name_fa,
-                "description": f"Brand: {brand.name}
+                "description": f"Brand: {brand.name}"
             })
 
         # Search models
@@ -368,19 +368,19 @@ class VehicleService:
             VehicleModel.is_active,
             VehicleBrand.is_active,
             or_(
-                VehicleModel.name.ilike(f%{query}%),
-                VehicleModel.name_fa.ilike(f%{query}%)
+                VehicleModel.name.ilike(f"%{query}%"),
+                VehicleModel.name_fa.ilike(f"%{query}%")
             )
         ).limit(limit).all()
 
         for model in models:
             results.append({
-                type: model,
+                "type": "model",
                 "id": model.id,
                 "name": model.name,
                 "name_fa": model.name_fa,
                 "brand_name": model.brand.name,
-                "description": f"{model.brand.name} {model.name}
+                "description": f"{model.brand.name} {model.name}"
             })
 
         # Search trims
@@ -390,22 +390,22 @@ class VehicleService:
             VehicleBrand.is_active,
             or_(
                 VehicleTrim.name.ilike(
-                    f%{query}%),
+                    f"%{query}%"),
                 VehicleTrim.name_fa.ilike(
-                    f%{query}%),
+                    f"%{query}%"),
                 VehicleTrim.engine_type.ilike(
-                    f%{query}%))).limit(limit).all()
+                    f"%{query}%"))).limit(limit).all()
 
         for trim in trims:
             results.append({
-                type": "trim",
+                "type": "trim",
                 "id": trim.id,
                 "name": trim.name,
                 "name_fa": trim.name_fa,
                 "brand_name": trim.model.brand.name,
                 "model_name": trim.model.name,
                 "engine_type": trim.engine_type,
-                "description": f"{trim.model.brand.name} {trim.model.name} {trim.name}""
+                "description": f"{trim.model.brand.name} {trim.model.name} {trim.name}"
             })
 
         return results
