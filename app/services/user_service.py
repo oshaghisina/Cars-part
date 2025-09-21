@@ -164,7 +164,7 @@ class UserService:
 
         self.db.commit()
 
-        logger.info(f"User deactivated: {user.username} (ID: {user.id}))
+        logger.info(f"User deactivated: {user.username} (ID: {user.id})")
         return True
 
     async def change_password(
@@ -172,7 +172,7 @@ class UserService:
             user_id: int,
             current_password: str,
             new_password: str) -> bool:
-        Change user password.
+        """Change user password."""
         user = await self.get_user_by_id(user_id)
         if not user:
             return False
@@ -186,9 +186,7 @@ class UserService:
         self.db.commit()
 
         logger.info(
-            f"Password changed for user: {
-                user.username} (ID: {
-                user.id}))
+            f"Password changed for user: {user.username} (ID: {user.id})")
         return True
 
     # Authentication Operations
@@ -198,7 +196,7 @@ class UserService:
             password: str,
             ip_address: Optional[str] = None,
             user_agent: Optional[str] = None) -> Optional[User]:
-        Authenticate user with username/email and password.
+        """Authenticate user with username/email and password."""
         # Find user by username or email
         user = self.db.query(User).filter(
             or_(User.username == username_or_email, User.email == username_or_email)
@@ -206,7 +204,7 @@ class UserService:
 
         if not user:
             logger.warning(
-                fAuthentication failed: User not found - {username_or_email})
+                f"Authentication failed: User not found - {username_or_email}")
             return None
 
         # Check if account is locked
@@ -226,7 +224,7 @@ class UserService:
             user.increment_login_attempts()
             self.db.commit()
             logger.warning(
-                fAuthentication failed: Invalid password - {user.username}")
+                f"Authentication failed: Invalid password - {user.username}")
             return None
 
         # Reset login attempts on successful login
