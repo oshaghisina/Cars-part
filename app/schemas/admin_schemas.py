@@ -1,6 +1,6 @@
 """Admin API schemas."""
 
-from typing import Dict, Any, Optional, List
+from typing import Dict, Optional, List
 from pydantic import BaseModel
 from datetime import datetime
 
