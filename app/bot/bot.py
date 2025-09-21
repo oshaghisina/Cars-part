@@ -234,7 +234,7 @@ if dp:
 
                         if order['matched_items'] > 0:
                             status_text += (f"قطعات یافت شده: "
-                                           f"{order['matched_items']}/{order['total_items']}\n")
+                                            f"{order['matched_items']}/{order['total_items']}\n")
 
                         await message.answer(status_text)
                 else:
@@ -317,7 +317,7 @@ if dp:
 
                         if order['matched_items'] > 0:
                             status_text += (f"قطعات یافت شده: "
-                                           f"{order['matched_items']}/{order['total_items']}\n")
+                                            f"{order['matched_items']}/{order['total_items']}\n")
 
                         await callback_query.message.answer(status_text)
                 else:
@@ -418,10 +418,11 @@ if dp:
                             price_text = ""
                             if item["best_price"]:
                                 price_text = (f" - قیمت: {item['best_price']:,.0f} "
-                                             f"{item['currency']}")
+                                              f"{item['currency']}")
 
                             detail_text = (f"✅ {item['query']}\n"
-                                          f"{item['part_name']} {item['vehicle_model']}{price_text}")
+                                           f"{item['part_name']} {item['vehicle_model']}"
+                                           f"{price_text}")
                             await message.answer(detail_text)
                         else:
                             # Not found

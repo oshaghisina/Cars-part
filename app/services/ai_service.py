@@ -310,7 +310,10 @@ Respond with just 3 queries, one per line, no explanations."""
             brands = list(set([result.get('brand_oem', '')
                           for result in results if result.get('brand_oem')]))
 
-            prompt = f"""Based on this car parts search query and results, generate 3 helpful suggestions:
+            # Based on this car parts search query and results, generate 3 helpful suggestions:
+            intro = ("Based on this car parts search query and results, "
+                     "generate 3 helpful suggestions:")
+            prompt = f"""{intro}
 
 Query: {query}
 Found categories: {', '.join(categories)}
@@ -351,8 +354,8 @@ Respond with just 3 suggestions, one per line, in the same language as the query
 
             # Create part description for similarity search
             part_description = (f"{part.part_name} {part.brand_oem} "
-                               f"{part.vehicle_make} {part.vehicle_model} "
-                               f"{part.category}")
+                                f"{part.vehicle_make} {part.vehicle_model} "
+                                f"{part.category}")
 
             # Find similar parts using semantic search
             similar_parts = self.semantic_search(part_description, limit * 2)
