@@ -39,7 +39,7 @@ class SearchService:
                     if ai_results:
                         return ai_results
             except Exception as e:
-                print(f"AI search failed, falling back to basic search: {e})
+                print(f"AI search failed, falling back to basic search: {e}")
 
         # Fallback to basic search strategies
         results = []
@@ -63,13 +63,13 @@ class SearchService:
         return unique_results[:limit]
 
     def _search_by_oem_code(self, query: str) -> List[dict]:
-        Search by exact OEM code match.
+        """Search by exact OEM code match."""
         parts = self.db.query(Part).filter(
             or_(
-                Part.oem_code.ilike(f"%{query}%),
-                Part.alt_codes.ilike(f%{query}%)
+                Part.oem_code.ilike(f"%{query}%"),
+                Part.alt_codes.ilike(f"%{query}%")
             ),
-            Part.status == active"
+            Part.status == "active"
         ).all()
 
         results = []
@@ -87,14 +87,14 @@ class SearchService:
         """Search using synonyms table."""
         # Search Persian synonyms
         persian_synonyms = self.db.query(Synonym).filter(
-            Synonym.keyword.ilike(f"%{query}%),
-            Synonym.lang == fa
+            Synonym.keyword.ilike(f"%{query}%"),
+            Synonym.lang == "fa"
         ).all()
 
         # Search English synonyms
         english_synonyms = self.db.query(Synonym).filter(
-            Synonym.keyword.ilike(f%{query}%),
-            Synonym.lang == en
+            Synonym.keyword.ilike(f"%{query}%"),
+            Synonym.lang == "en"
         ).all()
 
         results = []
@@ -104,7 +104,7 @@ class SearchService:
             if synonym.part_id:
                 part = self.db.query(Part).filter(
                     Part.id == synonym.part_id,
-                    Part.status == active"
+                    Part.status == "active"
                 ).first()
 
                 if part:
