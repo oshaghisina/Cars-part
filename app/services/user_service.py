@@ -82,10 +82,10 @@ class UserService:
 
         if search:
             search_filter = or_(
-                User.username.ilike(f"%{search}%),
-                User.email.ilike(f%{search}%),
-                User.first_name.ilike(f%{search}%),
-                User.last_name.ilike(f%{search}%)
+                User.username.ilike(f"%{search}%"),
+                User.email.ilike(f"%{search}%"),
+                User.first_name.ilike(f"%{search}%"),
+                User.last_name.ilike(f"%{search}%")
             )
             query = query.filter(search_filter)
 
@@ -95,7 +95,7 @@ class UserService:
             self,
             user_id: int,
             user_data: UserUpdate) -> Optional[User]:
-        ""Update user information."""
+        """Update user information."""
         user = await self.get_user_by_id(user_id)
         if not user:
             return None
@@ -146,11 +146,11 @@ class UserService:
         self.db.commit()
         self.db.refresh(user)
 
-        logger.info(f"User updated: {user.username} (ID: {user.id}))
+        logger.info(f"User updated: {user.username} (ID: {user.id})")
         return user
 
     async def delete_user(self, user_id: int) -> bool:
-        Delete user (soft delete by deactivating).
+        """Delete user (soft delete by deactivating)."""
         user = await self.get_user_by_id(user_id)
         if not user:
             return False
