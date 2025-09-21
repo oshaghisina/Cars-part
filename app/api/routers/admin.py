@@ -61,10 +61,8 @@ async def update_settings(
         settings, int(current_user.id))
 
     logger.info(
-        f"Settings updated by user {
-            current_user.username}: {
-            list(
-                settings.keys())}")
+        f"Settings updated by user {current_user.username}: "
+        f"{list(settings.keys())}")
 
     return {
         "message": "Settings updated successfully",
