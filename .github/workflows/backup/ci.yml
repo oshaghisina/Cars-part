@@ -119,7 +119,7 @@ jobs:
           cache-dependency-path: app/frontend/panel/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci || npm install
 
       - name: Run linting (ESLint)
         run: npm run lint
