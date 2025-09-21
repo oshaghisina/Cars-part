@@ -106,15 +106,15 @@ async def get_dashboard_metrics(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error fetching dashboard metrics: {str(e)})
+            detail=f"Error fetching dashboard metrics: {str(e)}")
 
 
-@router.get(/sales/analytics, response_model=SalesAnalytics)
+@router.get("/sales/analytics", response_model=SalesAnalytics)
 async def get_sales_analytics(
-    period: str = Query(30d, regex=^(7d|30d|90d|1y)$),
+    period: str = Query("30d", regex="^(7d|30d|90d|1y)$"),
     db: Session = Depends(get_db)
 ):
-    ""
+    """
     Get sales analytics for the specified period
     """
     try:
@@ -260,16 +260,16 @@ async def get_sales_analytics(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error fetching sales analytics: {str(e)})
+            detail=f"Error fetching sales analytics: {str(e)}")
 
 
-@router.get(/inventory/analytics, response_model=InventoryAnalytics)
+@router.get("/inventory/analytics", response_model=InventoryAnalytics)
 async def get_inventory_analytics(
     db: Session = Depends(get_db)
 ):
-    
+    """
     Get inventory analytics
-    "
+    """
     try:
         # Parts by category
         parts_by_category = db.query(
@@ -358,15 +358,15 @@ async def get_inventory_analytics(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error fetching inventory analytics: {str(e)})
+            detail=f"Error fetching inventory analytics: {str(e)}")
 
 
-@router.get(/customers/analytics, response_model=CustomerAnalytics)
+@router.get("/customers/analytics", response_model=CustomerAnalytics)
 async def get_customer_analytics(
-    period: str = Query(30d, regex=^(7d|30d|90d|1y)$),
+    period: str = Query("30d", regex="^(7d|30d|90d|1y)$"),
     db: Session = Depends(get_db)
 ):
-    ""
+    """
     Get customer analytics
     """
     try:
@@ -460,16 +460,16 @@ async def get_customer_analytics(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error fetching customer analytics: {str(e)})
+            detail=f"Error fetching customer analytics: {str(e)}")
 
 
-@router.get(/performance/metrics, response_model=PerformanceMetrics)
+@router.get("/performance/metrics", response_model=PerformanceMetrics)
 async def get_performance_metrics(
     db: Session = Depends(get_db)
 ):
-    
+    """
     Get system performance metrics
-    "
+    """
     try:
         # API response times (mock data for now)
         api_metrics = {
@@ -507,17 +507,17 @@ async def get_performance_metrics(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error fetching performance metrics: {str(e)})
+            detail=f"Error fetching performance metrics: {str(e)}")
 
 
-@router.post(/reports/generate, response_model=ReportResponse)
+@router.post("/reports/generate", response_model=ReportResponse)
 async def generate_report(
     report_request: ReportRequest,
     db: Session = Depends(get_db)
 ):
-    
+    """
     Generate comprehensive reports
-    "
+    """
     try:
         # Set default date range if not provided
         if not report_request.date_to:
@@ -566,23 +566,23 @@ async def generate_report(
 
         return ReportResponse(
             success=True,
-            report_id=f"report_{int(datetime.now().timestamp())},
+            report_id=f"report_{int(datetime.now().timestamp())}",
             summary=summary,
             data=report_data,
-            download_url=f/api/v1/analytics/reports/download/{summary['report_id']}
+            download_url=f"/api/v1/analytics/reports/download/{summary['report_id']}"
         )
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=fError generating report: {str(e)})
+            detail=f"Error generating report: {str(e)}")
 
 
-@router.get(/charts/parts-by-category, response_model=ChartData)
+@router.get("/charts/parts-by-category", response_model=ChartData)
 async def get_parts_by_category_chart(
     db: Session = Depends(get_db)
 ):
-    Get parts distribution by category chart data"""
+    """Get parts distribution by category chart data"""
     try:
         categories = db.query(
             PartCategory.name,
@@ -607,15 +607,15 @@ async def get_parts_by_category_chart(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error fetching chart data: {str(e)})
+            detail=f"Error fetching chart data: {str(e)}")
 
 
-@router.get(/charts/sales-trend, response_model=TimeSeriesData)
+@router.get("/charts/sales-trend", response_model=TimeSeriesData)
 async def get_sales_trend_chart(
-    period: str = Query(30d, regex=^(7d|30d|90d|1y)$),
+    period: str = Query("30d", regex="^(7d|30d|90d|1y)$"),
     db: Session = Depends(get_db)
 ):
-    ""Get sales trend chart data"""
+    """Get sales trend chart data"""
     try:
         # Calculate date range
         end_date = date.today()
