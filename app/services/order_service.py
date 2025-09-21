@@ -54,14 +54,14 @@ class OrderService:
             return {
                 "success": True,
                 "order": new_order,
-                "message": f"سفارش شما با موفقیت ثبت شد. شماره سفارش: #ORD-{new_order.id:05d}
+                "message": f"سفارش شما با موفقیت ثبت شد. شماره سفارش: #ORD-{new_order.id:05d}"
             }
 
         except Exception as e:
             self.db.rollback()
             return {
-                success: False,
-                message: خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید.,
+                "success": False,
+                "message": "خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید.",
                 "error": str(e)}
 
     def get_order_by_id(self, order_id: int) -> Optional[Order]:

@@ -254,14 +254,14 @@ class User(Base):
 
     def get_full_name(self) -> str:
         """Get user's full name."""
-        return f"{self.first_name} {self.last_name}.strip()
+        return f"{self.first_name} {self.last_name}".strip()
 
     def has_role(self, role_name: str) -> bool:
-        Check if user has a specific role.
+        """Check if user has a specific role."""
         return self.role == role_name
 
     def has_permission(self, permission_name: str) -> bool:
-        ""Check if user has a specific permission based on role."""
+        """Check if user has a specific permission based on role."""
         # Simple permission mapping for now
         role_permissions = {
             'super_admin': ['*'],  # All permissions

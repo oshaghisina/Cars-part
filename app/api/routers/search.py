@@ -295,10 +295,10 @@ async def search_module(
             results.append(SearchResult(
                 id=str(order.id),
                 module='orders',
-                title=fOrder #{order.id},
-                description=f{order.customer_name} - {order.status},
+                title=f"Order #{order.id}",
+                description=f"{order.customer_name} - {order.status}",
                 type='Order',
-                url=f"/orders/{order.id},
+                url=f"/orders/{order.id}",
                 metadata={
                     'status': order.status,
                     'total': float(order.total) if order.total else None,
@@ -333,10 +333,10 @@ async def search_module(
             results.append(SearchResult(
                 id=str(lead.id),
                 module='leads',
-                title=f{lead.first_name} {lead.last_name},
-                description=f{lead.city} - {lead.phone_e164},
+                title=f"{lead.first_name} {lead.last_name}",
+                description=f"{lead.city} - {lead.phone_e164}",
                 type='Lead',
-                url=f/leads/{lead.id}",
+                url=f"/leads/{lead.id}",
                 metadata={
                     'city': lead.city,
                     'phone': lead.phone_e164,
@@ -371,10 +371,10 @@ async def search_module(
             results.append(SearchResult(
                 id=str(user.id),
                 module='users',
-                title=f"{user.first_name} {user.last_name},
-                description=f{user.username} - {user.role},
+                title=f"{user.first_name} {user.last_name}",
+                description=f"{user.username} - {user.role}",
                 type='User',
-                url=f/users/{user.id},
+                url=f"/users/{user.id}",
                 metadata={
                     'username': user.username,
                     'email': user.email,
@@ -388,7 +388,9 @@ async def search_module(
 
 
 async def search_module_global(module: str, query: str, db: Session):
-    Global search within a specific module""
+    """
+    Global search within a specific module
+    """
     results = []
 
     if module == 'parts':
@@ -418,7 +420,9 @@ async def search_module_global(module: str, query: str, db: Session):
 
 
 def apply_global_filters(results: List[SearchResult], filters):
-    Apply global filters to search results"
+    """
+    Apply global filters to search results
+    """
     filtered_results = []
 
     for result in results:

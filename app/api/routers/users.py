@@ -179,10 +179,10 @@ async def get_users(
         from sqlalchemy import or_
         total = db.query(User).filter(
             or_(
-                User.username.ilike(f"%{search}%),
-                User.email.ilike(f%{search}%),
-                User.first_name.ilike(f%{search}%),
-                User.last_name.ilike(f%{search}%)
+                User.username.ilike(f"%{search}%"),
+                User.email.ilike(f"%{search}%"),
+                User.first_name.ilike(f"%{search}%"),
+                User.last_name.ilike(f"%{search}%")
             )
         ).count()
 
