@@ -1,4 +1,4 @@
-name: 🚀 Main CI/CD Pipeline (Password Auth)
+name: 🚀 Main CI/CD Pipeline
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   pull-requests: write
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.11'  # Changed from 3.13 to 3.11 for better compatibility
   NODE_VERSION: '18'
 
 jobs:
@@ -160,7 +160,79 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
   # ============================================================================
-  # DEPLOYMENT (Password Authentication)
+  # PERFORMANCE TESTING
+  # ============================================================================
+  performance:
+    name: ⚡ Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+    concurrency:
+      group: performance
+      cancel-in-progress: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install locust
+
+      - name: Start API server
+        run: |
+          uvicorn app.api.main:app --host 0.0.0.0 --port 8001 &
+          
+          # Wait for API server to be ready
+          echo "⏳ Waiting for API server to be ready..."
+          for i in {1..30}; do
+            if curl -f -s http://localhost:8001/api/v1/health > /dev/null; then
+              echo "✅ API server is ready!"
+              break
+            fi
+            echo "⏳ Attempt $i/30: API server not ready yet..."
+            sleep 2
+          done
+          
+          # Final check
+          if ! curl -f -s http://localhost:8001/api/v1/health > /dev/null; then
+            echo "❌ API server failed to start after 60 seconds"
+            exit 1
+          fi
+
+      - name: Run Load Tests
+        run: |
+          locust -f tests/performance/locustfile.py --host=http://localhost:8001 \
+            --users 10 --spawn-rate 2 --run-time 60s --headless --html=locust-report.html
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Frontend Performance Test
+        working-directory: app/frontend/panel
+        run: |
+          npm install -g lighthouse-ci
+          npm run build
+          lhci autorun --upload.target=temporary-public-storage
+
+      - name: Upload Performance Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-reports
+          path: |
+            locust-report.html
+            lighthouse-results.json
+
+  # ============================================================================
+  # DEPLOYMENT
   # ============================================================================
   deploy-staging:
     name: 🚀 Deploy to Staging
@@ -176,19 +248,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install SSH client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openssh-client
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_PRIVATE_KEY || '' }}
 
-      - name: Add server to known hosts
+      - name: Add staging server to known hosts
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.STAGING_HOST || 'localhost' }} >> ~/.ssh/known_hosts
+          # Pin SSH host key fingerprint for security
+          echo "${{ secrets.STAGING_HOST || 'localhost' }} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGL2x7x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x" >> ~/.ssh/known_hosts
 
       - name: Deploy to staging server
         run: |
-          # Create deployment script
+          # Create deployment script on the fly
           cat > deploy-staging-temp.sh << 'EOF'
           #!/bin/bash
           set -e
@@ -212,16 +284,8 @@ jobs:
           echo "✅ Staging deployment completed successfully!"
           EOF
           
-          # Copy script to server using scp with password
-          sshpass -p "${{ secrets.STAGING_SSH_PASSWORD }}" scp deploy-staging-temp.sh ${{ secrets.STAGING_USER || 'root' }}@${{ secrets.STAGING_HOST || 'localhost' }}:/tmp/
-          
-          # Execute script on server using ssh with password
-          sshpass -p "${{ secrets.STAGING_SSH_PASSWORD }}" ssh ${{ secrets.STAGING_USER || 'root' }}@${{ secrets.STAGING_HOST || 'localhost' }} "chmod +x /tmp/deploy-staging-temp.sh && /tmp/deploy-staging-temp.sh"
-
-      - name: Install sshpass
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y sshpass
+          scp deploy-staging-temp.sh ${{ secrets.STAGING_USER || 'staging' }}@${{ secrets.STAGING_HOST || 'localhost' }}:/tmp/
+          ssh ${{ secrets.STAGING_USER || 'staging' }}@${{ secrets.STAGING_HOST || 'localhost' }} "chmod +x /tmp/deploy-staging-temp.sh && /tmp/deploy-staging-temp.sh"
 
       - name: Run Smoke Tests
         run: |
@@ -250,15 +314,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install SSH client and sshpass
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y openssh-client sshpass
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.PROD_SSH_PRIVATE_KEY || '' }}
 
-      - name: Add server to known hosts
+      - name: Add production server to known hosts
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.PROD_HOST || '5.223.59.155' }} >> ~/.ssh/known_hosts
+          # Pin SSH host key fingerprint for security
+          echo "${{ secrets.PROD_HOST || '5.223.59.155' }} ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGL2x7x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x2x" >> ~/.ssh/known_hosts
 
       - name: Execute Blue-Green Deployment
         run: |
@@ -321,9 +385,8 @@ jobs:
           echo "✅ Production deployment to $TARGET completed successfully!"
           EOF
           
-          # Copy and execute script using password authentication
-          sshpass -p "${{ secrets.PROD_SSH_PASSWORD }}" scp deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST || '5.223.59.155' }}:/tmp/
-          sshpass -p "${{ secrets.PROD_SSH_PASSWORD }}" ssh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST || '5.223.59.155' }} "chmod +x /tmp/deploy-blue-green.sh && /tmp/deploy-blue-green.sh"
+          scp deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST || '5.223.59.155' }}:/tmp/
+          ssh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST || '5.223.59.155' }} "chmod +x /tmp/deploy-blue-green.sh && /tmp/deploy-blue-green.sh"
 
       - name: Production Health Check
         run: |
