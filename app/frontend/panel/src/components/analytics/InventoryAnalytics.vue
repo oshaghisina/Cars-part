@@ -245,7 +245,7 @@ import PartsByCategoryChart from './charts/PartsByCategoryChart.vue'
 import PartsByBrandChart from './charts/PartsByBrandChart.vue'
 
 // Props
-defineProps({
+const props = defineProps({
   analytics: {
     type: Object,
     required: true
