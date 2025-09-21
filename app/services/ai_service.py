@@ -2,13 +2,14 @@
 AI Service for enhanced search and part recommendations using OpenAI.
 """
 
-import openai
-import numpy as np
-from typing import List, Dict, Any, Optional
-from sqlalchemy.orm import Session
-import logging
 import json
+import logging
 import re
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+import openai
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db.models import Part

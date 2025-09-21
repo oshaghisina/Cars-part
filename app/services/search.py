@@ -1,11 +1,13 @@
 """Search service for parts lookup."""
 
 from typing import List
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
+
 from rapidfuzz import fuzz
-from app.db.models import Part, Price, Synonym
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Session
+
 from app.core.config import settings
+from app.db.models import Part, Price, Synonym
 
 
 class SearchService:

@@ -1,13 +1,15 @@
 """User management service with authentication and authorization."""
 
-from typing import List, Optional, Dict, Any
+import logging
+import secrets
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
+
 from app.db.models import User
 from app.schemas.user_schemas import UserCreate, UserUpdate
-import secrets
-import logging
 
 logger = logging.getLogger(__name__)
 

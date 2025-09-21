@@ -1,7 +1,9 @@
 """Order service for managing orders and order items."""
 
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
 from sqlalchemy.orm import Session
+
 from app.db.models import Order, OrderItem
 
 

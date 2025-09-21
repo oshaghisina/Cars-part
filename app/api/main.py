@@ -2,21 +2,22 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import settings
-from app.api.routers import (
-    search,
-    orders,
-    leads,
-    users,
-    bulk_operations,
-    analytics,
-    admin,
-)
-import app.api.routers.parts as parts_module
+
 import app.api.routers.ai_search as ai_search_module
-import app.api.routers.wizard as wizard_module
-import app.api.routers.vehicles as vehicles_module
 import app.api.routers.categories as categories_module
+import app.api.routers.parts as parts_module
+import app.api.routers.vehicles as vehicles_module
+import app.api.routers.wizard as wizard_module
+from app.api.routers import (
+    admin,
+    analytics,
+    bulk_operations,
+    leads,
+    orders,
+    search,
+    users,
+)
+from app.core.config import settings
 
 # Create FastAPI application
 app = FastAPI(

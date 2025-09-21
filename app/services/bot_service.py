@@ -1,13 +1,15 @@
 """Bot service for handling Telegram bot business logic."""
 
-from typing import List, Dict
+from typing import Dict, List
+
 from sqlalchemy.orm import Session
-from app.services.search import SearchService
+
+from app.bot.utils import format_part_confirmation
+from app.core.config import settings
 from app.services.ai_service import AIService
 from app.services.lead_service import LeadService
 from app.services.order_service import OrderService
-from app.bot.utils import format_part_confirmation
-from app.core.config import settings
+from app.services.search import SearchService
 
 
 class BotService:

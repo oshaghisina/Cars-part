@@ -1,26 +1,28 @@
 """User management API endpoints."""
 
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
-from app.db.database import get_db
-from app.services.user_service import UserService
-from app.schemas.user_schemas import (
-    UserCreate,
-    UserUpdate,
-    UserResponse,
-    UserSummary,
-    UserLogin,
-    UserStatistics,
-    LoginResponse,
-    UserListResponse,
-    PasswordChange,
-    BulkUserCreate,
-)
-from app.core.auth import create_access_token, verify_token, get_current_user
-from app.db.models import User
 import logging
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
+
+from app.core.auth import create_access_token, get_current_user, verify_token
+from app.db.database import get_db
+from app.db.models import User
+from app.schemas.user_schemas import (
+    BulkUserCreate,
+    LoginResponse,
+    PasswordChange,
+    UserCreate,
+    UserListResponse,
+    UserLogin,
+    UserResponse,
+    UserStatistics,
+    UserSummary,
+    UserUpdate,
+)
+from app.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 

@@ -1,24 +1,26 @@
 """SQLAlchemy models based on data-model.md specifications."""
 
+import hashlib
+import json
+import secrets
+
 from sqlalchemy import (
+    DECIMAL,
+    JSON,
+    Boolean,
     Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
     Integer,
     String,
     Text,
-    Boolean,
-    DateTime,
-    Date,
-    DECIMAL,
-    Float,
-    ForeignKey,
-    JSON,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from app.db.database import Base
-import json
-import hashlib
-import secrets
 
 
 class Part(Base):

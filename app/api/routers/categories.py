@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import func
 from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.db.models import PartCategory, Part
+from app.db.models import Part, PartCategory
 from app.services.category_service import CategoryService
 
 router = APIRouter()
@@ -103,7 +104,8 @@ async def list_categories(
 
     # Get children counts
     from sqlalchemy import func
-    from app.db.models import PartCategory, Part
+
+    from app.db.models import Part, PartCategory
 
     children_counts = (
         db.query(PartCategory.parent_id, func.count(PartCategory.id).label("count"))

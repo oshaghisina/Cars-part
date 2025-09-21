@@ -1,9 +1,10 @@
 """Category service for managing hierarchical part categories."""
 
-from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import or_
-from typing import List, Optional, Dict, Any
 import logging
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import or_
+from sqlalchemy.orm import Session, selectinload
 
 from app.db.models import PartCategory
 

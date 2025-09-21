@@ -1,7 +1,9 @@
 """Wizard service for managing guided part search flow."""
 
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
+
 from app.db.models import Part, WizardSession
 
 

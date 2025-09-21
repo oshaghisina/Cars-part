@@ -1,9 +1,10 @@
 """Wizard API endpoints for guided part search flow."""
 
+from typing import Any, Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.services.wizard_service import WizardService

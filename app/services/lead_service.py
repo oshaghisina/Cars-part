@@ -1,7 +1,9 @@
 """Lead service for managing customer information."""
 
-from typing import Optional, Dict
+from typing import Dict, Optional
+
 from sqlalchemy.orm import Session
+
 from app.db.models import Lead
 
 

@@ -1,8 +1,9 @@
 """Admin API schemas."""
 
-from typing import Dict, Optional, List
-from pydantic import BaseModel
 from datetime import datetime
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel
 
 
 class SettingResponse(BaseModel):

@@ -1,8 +1,9 @@
-from typing import List, Dict, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, func, distinct
 from datetime import datetime
+from typing import Dict, List, Optional
+
 import pandas as pd
+from sqlalchemy import distinct, func, or_
+from sqlalchemy.orm import Session
 
 from app.db.models import Part, Price, Synonym
 

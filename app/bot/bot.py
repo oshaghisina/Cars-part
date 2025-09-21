@@ -2,22 +2,24 @@
 
 import asyncio
 import logging
+
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import (
-    Message,
-    CallbackQuery,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-    BotCommand,
-)
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import (
+    BotCommand,
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
+
+from app.bot.wizard_handlers import router as wizard_router
 from app.core.config import settings
 from app.db.database import SessionLocal
 from app.services.bot_service import BotService
-from app.bot.wizard_handlers import router as wizard_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -1,10 +1,12 @@
 """Settings management service."""
 
-from typing import Dict, Any, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-from app.db.models import Setting
 import logging
+from typing import Any, Dict, Optional
+
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+from app.db.models import Setting
 
 logger = logging.getLogger(__name__)
 

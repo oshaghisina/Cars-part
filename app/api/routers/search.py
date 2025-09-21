@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, func
 
 from app.db.database import get_db
-from app.db.models import Part, VehicleBrand, PartCategory, Order, Lead, User
+from app.db.models import Lead, Order, Part, PartCategory, User, VehicleBrand
 from app.schemas.search_schemas import (
-    SearchResult,
     AdvancedSearchRequest,
     AdvancedSearchResponse,
     GlobalSearchRequest,
     GlobalSearchResponse,
+    SearchResult,
 )
 
 router = APIRouter()

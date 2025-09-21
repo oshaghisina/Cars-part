@@ -1,17 +1,19 @@
 """Authentication and authorization core module."""
 
+import logging
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import HTTPException, status, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from app.db.database import get_db
-from app.services.user_service import UserService
-from app.schemas.user_schemas import TokenData
+
 from app.core.config import settings
-import logging
+from app.db.database import get_db
+from app.schemas.user_schemas import TokenData
+from app.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 

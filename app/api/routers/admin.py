@@ -1,22 +1,24 @@
 """Admin API endpoints."""
 
+import logging
 from typing import Dict
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.db.database import get_db
+from sqlalchemy.orm import Session
+
 from app.core.auth import get_current_user
+from app.db.database import get_db
 from app.db.models import User
-from app.services.settings_service import SettingsService
-from app.services.user_service import UserService
 from app.schemas.admin_schemas import (
-    SettingsResponse,
-    AdminUserResponse,
-    AdminUserListResponse,
     AdminUserCreate,
+    AdminUserListResponse,
+    AdminUserResponse,
+    SettingsResponse,
     SystemStatusResponse,
 )
-import logging
+from app.services.settings_service import SettingsService
+from app.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -168,7 +170,7 @@ async def get_system_status(
         )
 
     # Get basic statistics
-    from app.db.models import Part, Order
+    from app.db.models import Order, Part
 
     total_users = db.query(func.count(User.id)).scalar()
     total_parts = db.query(func.count(Part.id)).scalar()

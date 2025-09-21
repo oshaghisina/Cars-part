@@ -1,13 +1,14 @@
 """AI-enhanced search API endpoints."""
 
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel
+from typing import Any, Dict, List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
 from app.db.database import get_db
 from app.services.ai_service import AIService
-from app.core.config import settings
 
 router = APIRouter()
 

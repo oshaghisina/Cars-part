@@ -1,9 +1,10 @@
 """Vehicle service for managing brands, models, and trims."""
 
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from typing import List, Optional, Dict, Any
 import logging
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import or_
+from sqlalchemy.orm import Session
 
 from app.db.models import VehicleBrand, VehicleModel, VehicleTrim
 

@@ -1,19 +1,21 @@
 """Wizard bot handlers for guided part search flow."""
 
 import logging
-from aiogram import Router, F
-from aiogram.types import (
-    Message,
-    CallbackQuery,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-)
+from typing import Any, Dict, List
+
+import requests
+from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
-from typing import List, Dict, Any
-import requests
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
+
 from app.bot.wizard_states import PartsWizard
 
 logger = logging.getLogger(__name__)
