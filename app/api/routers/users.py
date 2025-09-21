@@ -8,7 +8,7 @@ from app.db.database import get_db
 from app.services.user_service import UserService
 from app.schemas.user_schemas import (
     UserCreate, UserUpdate, UserResponse, UserSummary, UserLogin,
-    UserStatistics, LoginResponse, UserListResponse, 
+    UserStatistics, LoginResponse, UserListResponse,
     PasswordChange, BulkUserCreate
 )
 from app.core.auth import create_access_token, verify_token, get_current_user
@@ -35,11 +35,11 @@ async def login(
 ):
     """Authenticate user and create session."""
     user_service = UserService(db)
-    
+
     # Get client IP and user agent
     ip_address = request.client.host if request.client else None
     user_agent = request.headers.get("user-agent")
-    
+
     # Authenticate user
     user = await user_service.authenticate_user(
         login_data.username_or_email,
@@ -47,16 +47,16 @@ async def login(
         ip_address,
         user_agent
     )
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username/email or password"
         )
-    
+
     # Create session (placeholder - session management not fully implemented)
     await user_service.create_session(user, ip_address, user_agent)
-    
+
     # Create JWT token
     access_token = create_access_token(
         data={
@@ -65,12 +65,12 @@ async def login(
             "role": user.role
         }
     )
-    
+
     # Update last login time
     from datetime import datetime
     user.last_login = datetime.utcnow()  # type: ignore[assignment]
     db.commit()
-    
+
     return LoginResponse(
         access_token=access_token,
         expires_in=86400,  # 24 hours
@@ -91,10 +91,10 @@ async def logout(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
-    
+
     # For JWT, we can't invalidate the token itself
     # Session invalidation would be handled by client-side token removal
-    
+
     return {"message": "Logged out successfully"}
 
 
@@ -114,16 +114,17 @@ async def update_current_user(
 ):
     """Update current user information."""
     user_service = UserService(db)
-    
-    updated_user = await user_service.update_user(int(current_user.id), user_update)  # type: ignore[arg-type]
+
+    # type: ignore[arg-type]
+    updated_user = await user_service.update_user(int(current_user.id), user_update)
     if not updated_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
+
     # Activity logging not implemented yet
-    
+
     return UserResponse.from_orm(updated_user)
 
 
@@ -135,21 +136,21 @@ async def change_password(
 ):
     """Change user password."""
     user_service = UserService(db)
-    
+
     success = await user_service.change_password(
         int(current_user.id),  # type: ignore[arg-type]
         password_data.current_password,
         password_data.new_password
     )
-    
+
     if not success:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Failed to change password"
         )
-    
+
     # Activity logging not implemented yet
-    
+
     return {"message": "Password changed successfully"}
 
 
@@ -168,23 +169,23 @@ async def get_users(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions"
         )
-    
+
     user_service = UserService(db)
     users = await user_service.get_users(skip, limit, search)
-    
+
     # Get total count
     total = db.query(User).count()
     if search:
         from sqlalchemy import or_
         total = db.query(User).filter(
             or_(
-                User.username.ilike(f"%{search}%"),
-                User.email.ilike(f"%{search}%"),
-                User.first_name.ilike(f"%{search}%"),
-                User.last_name.ilike(f"%{search}%")
+                User.username.ilike(f"%{search}"%"),
+                User.email.ilike(f"%{search}"%"),
+                User.first_name.ilike(f"%{search}"%"),
+                User.last_name.ilike(f"%{search}"%")
             )
         ).count()
-    
+
     return UserListResponse(
         users=[UserSummary.from_orm(user) for user in users],
         total=total,
@@ -207,14 +208,14 @@ async def create_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions"
         )
-    
+
     user_service = UserService(db)
-    
+
     try:
         user = await user_service.create_user(user_data)
-        
+
         # Activity logging not implemented yet
-        
+
         return UserResponse.from_orm(user)
     except ValueError as e:
         raise HTTPException(
@@ -236,16 +237,16 @@ async def get_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions"
         )
-    
+
     user_service = UserService(db)
     user = await user_service.get_user_by_id(user_id)
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
+
     return UserResponse.from_orm(user)
 
 
@@ -263,9 +264,9 @@ async def update_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions"
         )
-    
+
     user_service = UserService(db)
-    
+
     try:
         updated_user = await user_service.update_user(user_id, user_update)
         if not updated_user:
@@ -273,9 +274,9 @@ async def update_user(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
+
         # Activity logging not implemented yet
-        
+
         return UserResponse.from_orm(updated_user)
     except ValueError as e:
         raise HTTPException(
@@ -297,16 +298,16 @@ async def delete_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions"
         )
-    
+
     # Don't allow users to delete themselves
     if user_id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot delete your own account"
         )
-    
+
     user_service = UserService(db)
-    
+
     try:
         success = await user_service.delete_user(user_id)
         if not success:
@@ -314,9 +315,9 @@ async def delete_user(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
+
         # Activity logging not implemented yet
-        
+
         return {"message": "User deleted successfully"}
     except ValueError as e:
         raise HTTPException(
@@ -340,19 +341,19 @@ async def delete_user(
 #             status_code=status.HTTP_403_FORBIDDEN,
 #             detail="Insufficient permissions"
 #         )
-#     
+#
 #     user_service = UserService(db)
-#     
+#
 #     success = await user_service.assign_role_to_user(user_id, role_name)
 #     if not success:
 #         raise HTTPException(
 #             status_code=status.HTTP_400_BAD_REQUEST,
 #             detail="Failed to assign role"
 #         )
-#     
+#
 #     # Activity logging not implemented yet
-#     
-#     return {"message": f"Role '{role_name}' assigned successfully"}
+#
+#     return {"message": f"Role '{role_name}"' assigned successfully"}
 
 
 # @router.delete("/{user_id}/roles/{role_name}")
@@ -369,9 +370,9 @@ async def delete_user(
 #             status_code=status.HTTP_403_FORBIDDEN,
 #             detail="Insufficient permissions"
 #         )
-#     
+#
 #     user_service = UserService(db)
-#     
+#
 #     try:
 #         success = await user_service.remove_role_from_user(user_id, role_name)
 #         if not success:
@@ -379,10 +380,10 @@ async def delete_user(
 #                 status_code=status.HTTP_400_BAD_REQUEST,
 #                 detail="Failed to remove role"
 #             )
-#         
+#
 #         # Activity logging not implemented yet
-#         
-#         return {"message": f"Role '{role_name}' removed successfully"}
+#
+#         return {"message": f"Role '{role_name}"' removed successfully"}
 #     except ValueError as e:
 #         raise HTTPException(
 #             status_code=status.HTTP_400_BAD_REQUEST,
@@ -405,10 +406,10 @@ async def get_user_statistics(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions"
         )
-    
+
     user_service = UserService(db)
     stats = await user_service.get_user_statistics()
-    
+
     return UserStatistics(**stats)
 
 
@@ -425,21 +426,22 @@ async def create_users_bulk(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions"
         )
-    
+
     user_service = UserService(db)
     created_users = []
-    
+
     for user_data in bulk_data.users:
         try:
             user = await user_service.create_user(user_data)
             created_users.append(user)
         except ValueError as e:
-            logger.error(f"Failed to create user {user_data.username}: {e}")
+            logger.error(f"Failed to create user {user_data.username}: {e}"")
             continue
-    
+
     # Activity logging not implemented yet
-    
+
     return [UserResponse.from_orm(user) for user in created_users]
 
 
-# Bulk role assignment endpoint temporarily disabled - BulkRoleAssignment schema not available
+# Bulk role assignment endpoint temporarily disabled - BulkRoleAssignment
+# schema not available

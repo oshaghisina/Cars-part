@@ -10,6 +10,8 @@ from app.services.vehicle_service import VehicleService
 router = APIRouter()
 
 # Pydantic Models
+
+
 class VehicleBrandResponse(BaseModel):
     id: int
     name: str
@@ -25,6 +27,7 @@ class VehicleBrandResponse(BaseModel):
     updated_at: str
     models_count: Optional[int] = 0
 
+
 class VehicleBrandCreateRequest(BaseModel):
     name: str
     name_fa: Optional[str] = None
@@ -35,6 +38,7 @@ class VehicleBrandCreateRequest(BaseModel):
     description: Optional[str] = None
     is_active: bool = True
     sort_order: int = 0
+
 
 class VehicleModelResponse(BaseModel):
     id: int
@@ -53,6 +57,7 @@ class VehicleModelResponse(BaseModel):
     updated_at: str
     trims_count: Optional[int] = 0
 
+
 class VehicleModelCreateRequest(BaseModel):
     brand_id: int
     name: str
@@ -64,6 +69,7 @@ class VehicleModelCreateRequest(BaseModel):
     image_url: Optional[str] = None
     is_active: bool = True
     sort_order: int = 0
+
 
 class VehicleTrimResponse(BaseModel):
     id: int
@@ -85,6 +91,7 @@ class VehicleTrimResponse(BaseModel):
     created_at: str
     updated_at: str
 
+
 class VehicleTrimCreateRequest(BaseModel):
     model_id: int
     name: str
@@ -101,24 +108,24 @@ class VehicleTrimCreateRequest(BaseModel):
     is_active: bool = True
     sort_order: int = 0
 
+
 # Brand Endpoints
+
+
 @router.get("/brands", response_model=List[VehicleBrandResponse])
 async def list_brands(
     skip: int = 0,
     limit: int = 100,
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     search: Optional[str] = Query(None, description="Search in brand name"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List all vehicle brands with optional filtering."""
     vehicle_service = VehicleService(db)
     brands = vehicle_service.get_brands(
-        skip=skip,
-        limit=limit,
-        is_active=is_active,
-        search=search
+        skip=skip, limit=limit, is_active=is_active, search=search
     )
-    
+
     return [
         VehicleBrandResponse(
             id=brand.id,
@@ -133,23 +140,23 @@ async def list_brands(
             sort_order=brand.sort_order,
             created_at=brand.created_at.isoformat(),
             updated_at=brand.updated_at.isoformat(),
-            models_count=len(brand.models) if hasattr(brand, 'models') else 0
+            models_count=len(brand.models) if hasattr(brand, "models") else 0,
         )
         for brand in brands
     ]
 
+
 @router.post("/brands", response_model=VehicleBrandResponse)
 async def create_brand(
-    request: VehicleBrandCreateRequest,
-    db: Session = Depends(get_db)
+    request: VehicleBrandCreateRequest, db: Session = Depends(get_db)
 ):
     """Create a new vehicle brand."""
     vehicle_service = VehicleService(db)
     brand = vehicle_service.create_brand(request.dict())
-    
+
     if not brand:
         raise HTTPException(status_code=400, detail="Failed to create brand")
-    
+
     return VehicleBrandResponse(
         id=brand.id,
         name=brand.name,
@@ -163,18 +170,19 @@ async def create_brand(
         sort_order=brand.sort_order,
         created_at=brand.created_at.isoformat(),
         updated_at=brand.updated_at.isoformat(),
-        models_count=0
+        models_count=0,
     )
+
 
 @router.get("/brands/{brand_id}", response_model=VehicleBrandResponse)
 async def get_brand(brand_id: int, db: Session = Depends(get_db)):
     """Get a specific vehicle brand by ID."""
     vehicle_service = VehicleService(db)
     brand = vehicle_service.get_brand_by_id(brand_id)
-    
+
     if not brand:
         raise HTTPException(status_code=404, detail="Brand not found")
-    
+
     return VehicleBrandResponse(
         id=brand.id,
         name=brand.name,
@@ -188,10 +196,13 @@ async def get_brand(brand_id: int, db: Session = Depends(get_db)):
         sort_order=brand.sort_order,
         created_at=brand.created_at.isoformat(),
         updated_at=brand.updated_at.isoformat(),
-        models_count=len(brand.models)
+        models_count=len(brand.models),
     )
 
+
 # Model Endpoints
+
+
 @router.get("/models", response_model=List[VehicleModelResponse])
 async def list_models(
     skip: int = 0,
@@ -199,18 +210,14 @@ async def list_models(
     brand_id: Optional[int] = Query(None, description="Filter by brand ID"),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     search: Optional[str] = Query(None, description="Search in model name"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List all vehicle models with optional filtering."""
     vehicle_service = VehicleService(db)
     models = vehicle_service.get_models(
-        skip=skip,
-        limit=limit,
-        brand_id=brand_id,
-        is_active=is_active,
-        search=search
+        skip=skip, limit=limit, brand_id=brand_id, is_active=is_active, search=search
     )
-    
+
     return [
         VehicleModelResponse(
             id=model.id,
@@ -227,23 +234,23 @@ async def list_models(
             sort_order=model.sort_order,
             created_at=model.created_at.isoformat(),
             updated_at=model.updated_at.isoformat(),
-            trims_count=len(model.trims) if hasattr(model, 'trims') else 0
+            trims_count=len(model.trims) if hasattr(model, "trims") else 0,
         )
         for model in models
     ]
 
+
 @router.post("/models", response_model=VehicleModelResponse)
 async def create_model(
-    request: VehicleModelCreateRequest,
-    db: Session = Depends(get_db)
+    request: VehicleModelCreateRequest, db: Session = Depends(get_db)
 ):
     """Create a new vehicle model."""
     vehicle_service = VehicleService(db)
     model = vehicle_service.create_model(request.dict())
-    
+
     if not model:
         raise HTTPException(status_code=400, detail="Failed to create model")
-    
+
     return VehicleModelResponse(
         id=model.id,
         brand_id=model.brand_id,
@@ -259,10 +266,13 @@ async def create_model(
         sort_order=model.sort_order,
         created_at=model.created_at.isoformat(),
         updated_at=model.updated_at.isoformat(),
-        trims_count=0
+        trims_count=0,
     )
 
+
 # Trim Endpoints
+
+
 @router.get("/trims", response_model=List[VehicleTrimResponse])
 async def list_trims(
     skip: int = 0,
@@ -271,7 +281,7 @@ async def list_trims(
     brand_id: Optional[int] = Query(None, description="Filter by brand ID"),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     search: Optional[str] = Query(None, description="Search in trim name"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List all vehicle trims with optional filtering."""
     vehicle_service = VehicleService(db)
@@ -281,9 +291,9 @@ async def list_trims(
         model_id=model_id,
         brand_id=brand_id,
         is_active=is_active,
-        search=search
+        search=search,
     )
-    
+
     return [
         VehicleTrimResponse(
             id=trim.id,
@@ -303,23 +313,21 @@ async def list_trims(
             is_active=trim.is_active,
             sort_order=trim.sort_order,
             created_at=trim.created_at.isoformat(),
-            updated_at=trim.updated_at.isoformat()
+            updated_at=trim.updated_at.isoformat(),
         )
         for trim in trims
     ]
 
+
 @router.post("/trims", response_model=VehicleTrimResponse)
-async def create_trim(
-    request: VehicleTrimCreateRequest,
-    db: Session = Depends(get_db)
-):
+async def create_trim(request: VehicleTrimCreateRequest, db: Session = Depends(get_db)):
     """Create a new vehicle trim."""
     vehicle_service = VehicleService(db)
     trim = vehicle_service.create_trim(request.dict())
-    
+
     if not trim:
         raise HTTPException(status_code=400, detail="Failed to create trim")
-    
+
     return VehicleTrimResponse(
         id=trim.id,
         model_id=trim.model_id,
@@ -338,16 +346,19 @@ async def create_trim(
         is_active=trim.is_active,
         sort_order=trim.sort_order,
         created_at=trim.created_at.isoformat(),
-        updated_at=trim.updated_at.isoformat()
+        updated_at=trim.updated_at.isoformat(),
     )
 
+
 # Hierarchical Data Endpoints
+
+
 @router.get("/brands/{brand_id}/models", response_model=List[VehicleModelResponse])
 async def get_brand_models(brand_id: int, db: Session = Depends(get_db)):
     """Get all models for a specific brand."""
     vehicle_service = VehicleService(db)
     models = vehicle_service.get_models_by_brand(brand_id)
-    
+
     return [
         VehicleModelResponse(
             id=model.id,
@@ -364,17 +375,18 @@ async def get_brand_models(brand_id: int, db: Session = Depends(get_db)):
             sort_order=model.sort_order,
             created_at=model.created_at.isoformat(),
             updated_at=model.updated_at.isoformat(),
-            trims_count=len(model.trims)
+            trims_count=len(model.trims),
         )
         for model in models
     ]
+
 
 @router.get("/models/{model_id}/trims", response_model=List[VehicleTrimResponse])
 async def get_model_trims(model_id: int, db: Session = Depends(get_db)):
     """Get all trims for a specific model."""
     vehicle_service = VehicleService(db)
     trims = vehicle_service.get_trims_by_model(model_id)
-    
+
     return [
         VehicleTrimResponse(
             id=trim.id,
@@ -394,7 +406,7 @@ async def get_model_trims(model_id: int, db: Session = Depends(get_db)):
             is_active=trim.is_active,
             sort_order=trim.sort_order,
             created_at=trim.created_at.isoformat(),
-            updated_at=trim.updated_at.isoformat()
+            updated_at=trim.updated_at.isoformat(),
         )
         for trim in trims
     ]

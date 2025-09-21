@@ -29,7 +29,7 @@ class WizardBotService:
                        state: str = "start") -> Dict[str, Any]:
         """Create wizard session."""
         try:
-            response = requests.post(f"{self.api_base}/wizard/sessions", json={
+            response = requests.post(f"{self.api_base}"/wizard/sessions", json={
                 "user_id": user_id,
                 "state": state
             })
@@ -37,54 +37,54 @@ class WizardBotService:
                 return response.json()
             return {}
         except Exception as e:
-            logger.error(f"Error creating session: {e}")
+            logger.error(f"Error creating session: {e}"")
             return {}
 
     def get_session(self, user_id: str) -> Dict[str, Any]:
         """Get wizard session."""
         try:
             response = requests.get(
-                f"{self.api_base}/wizard/sessions/{user_id}")
+                f"{self.api_base}/wizard/sessions/{user_id}"")
             if response.status_code == 200:
                 return response.json()
             return {}
         except Exception as e:
-            logger.error(f"Error getting session: {e}")
+            logger.error(f"Error getting session: {e}"")
             return {}
 
     def update_session(self, user_id: str, **kwargs) -> Dict[str, Any]:
         """Update wizard session."""
         try:
             response = requests.put(
-                f"{self.api_base}/wizard/sessions/{user_id}", json=kwargs)
+                f"{self.api_base}/wizard/sessions/{user_id}"", json=kwargs)
             if response.status_code == 200:
                 return response.json()
             return {}
         except Exception as e:
-            logger.error(f"Error updating session: {e}")
+            logger.error(f"Error updating session: {e}"")
             return {}
 
     def get_brands(self) -> List[str]:
         """Get available brands."""
         try:
-            response = requests.get(f"{self.api_base}/wizard/brands")
+            response = requests.get(f"{self.api_base}"/wizard/brands")
             if response.status_code == 200:
                 return response.json()
             return []
         except Exception as e:
-            logger.error(f"Error getting brands: {e}")
+            logger.error(f"Error getting brands: {e}"")
             return []
 
     def get_models(self, brand: str) -> List[str]:
         """Get available models for brand."""
         try:
             response = requests.get(
-                f"{self.api_base}/wizard/models?brand={brand}")
+                f"{self.api_base}/wizard/models?brand={brand}"")
             if response.status_code == 200:
                 return response.json()
             return []
         except Exception as e:
-            logger.error(f"Error getting models: {e}")
+            logger.error(f"Error getting models: {e}"")
             return []
 
     def get_categories(
@@ -99,16 +99,16 @@ class WizardBotService:
             if model:
                 params['model'] = model
 
-            url = f"{self.api_base}/wizard/categories"
+            url = f"{self.api_base}"/wizard/categories"
             if params:
-                url += "?" + "&".join([f"{k}={v}" for k, v in params.items()])
+                url += "?" + "&".join([f"{k}={v}"" for k, v in params.items()])
 
             response = requests.get(url)
             if response.status_code == 200:
                 return response.json()
             return []
         except Exception as e:
-            logger.error(f"Error getting categories: {e}")
+            logger.error(f"Error getting categories: {e}"")
             return []
 
     def get_parts(self, brand: str | None = None, model: str |
@@ -123,16 +123,16 @@ class WizardBotService:
             if category:
                 params['category'] = category
 
-            url = f"{self.api_base}/wizard/parts"
+            url = f"{self.api_base}"/wizard/parts"
             if params:
-                url += "?" + "&".join([f"{k}={v}" for k, v in params.items()])
+                url += "?" + "&".join([f"{k}={v}"" for k, v in params.items()])
 
             response = requests.get(url)
             if response.status_code == 200:
                 return response.json()
             return []
         except Exception as e:
-            logger.error(f"Error getting parts: {e}")
+            logger.error(f"Error getting parts: {e}"")
             return []
 
     def search_parts(self,
@@ -143,7 +143,7 @@ class WizardBotService:
                                                         Any]]:
         """Search parts by criteria."""
         try:
-            response = requests.post(f"{self.api_base}/wizard/search", json={
+            response = requests.post(f"{self.api_base}"/wizard/search", json={
                 "vehicle_data": vehicle_data,
                 "part_data": part_data
             })
@@ -151,17 +151,17 @@ class WizardBotService:
                 return response.json()
             return []
         except Exception as e:
-            logger.error(f"Error searching parts: {e}")
+            logger.error(f"Error searching parts: {e}"")
             return []
 
     def clear_session(self, user_id: str) -> bool:
         """Clear wizard session."""
         try:
             response = requests.delete(
-                f"{self.api_base}/wizard/sessions/{user_id}")
+                f"{self.api_base}/wizard/sessions/{user_id}"")
             return response.status_code == 200
         except Exception as e:
-            logger.error(f"Error clearing session: {e}")
+            logger.error(f"Error clearing session: {e}"")
             return False
 
 
@@ -200,7 +200,7 @@ def create_inline_keyboard(
     for item in items:
         buttons.append([InlineKeyboardButton(
             text=item,
-            callback_data=f"{prefix}:{item}"
+            callback_data=f"{prefix}:{item}""
         )])
 
     # Add navigation buttons
@@ -294,7 +294,7 @@ async def handle_brand_selection(callback: CallbackQuery, state: FSMContext):
     if not models:
         await safe_edit_message(
             callback,
-            f"❌ برای برند {brand} هیچ مدلی یافت نشد.",
+            f"❌ برای برند {brand}" هیچ مدلی یافت نشد.",
             reply_markup=None
         )
         return
@@ -303,7 +303,7 @@ async def handle_brand_selection(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit_message(
         callback,
-        f"🚗 **برند انتخاب شده: {brand}**\n\n"
+        f"🚗 **برند انتخاب شده: {brand}"**\n\n"
         "لطفاً مدل خودروی خود را انتخاب کنید:",
         reply_markup=keyboard,
         parse_mode="Markdown"
@@ -349,7 +349,7 @@ async def handle_model_selection(callback: CallbackQuery, state: FSMContext):
     if not categories:
         await safe_edit_message(
             callback,
-            f"❌ برای {vehicle_data.get('brand')} {model} هیچ دسته‌بندی قطعه‌ای یافت نشد.",
+            f"❌ برای {vehicle_data.get('brand')} {model}" هیچ دسته‌بندی قطعه‌ای یافت نشد.",
             reply_markup=None
         )
         return
@@ -358,7 +358,7 @@ async def handle_model_selection(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit_message(
         callback,
-        f"🚗 **خودرو: {vehicle_data.get('brand')} {model}**\n\n"
+        f"🚗 **خودرو: {vehicle_data.get('brand')} {model}"**\n\n"
         "لطفاً نوع قطعه مورد نظر خود را انتخاب کنید:",
         reply_markup=keyboard,
         parse_mode="Markdown"
@@ -403,8 +403,8 @@ async def handle_category_selection(
     if not parts:
         await safe_edit_message(
             callback,
-            f"❌ برای {vehicle_data.get('brand')} {vehicle_data.get('model')} "
-            f"در دسته‌بندی {category} هیچ قطعه‌ای یافت نشد.",
+            f"❌ برای {vehicle_data.get('brand')} {vehicle_data.get('model')}" "
+            f"در دسته‌بندی {category}" هیچ قطعه‌ای یافت نشد.",
             reply_markup=None
         )
         return
@@ -416,13 +416,13 @@ async def handle_category_selection(
     for part in parts_display:
         part_name = part.get("part_name", "نامشخص")
         position = part.get("position", "")
-        display_text = f"{part_name}"
+        display_text = f"{part_name}""
         if position:
-            display_text += f" ({position})"
+            display_text += f" ({position}")"
 
         buttons.append([InlineKeyboardButton(
             text=display_text,
-            callback_data=f"part:{part.get('id')}"
+            callback_data=f"part:{part.get('id')}""
         )])
 
     # Add navigation buttons
@@ -435,8 +435,8 @@ async def handle_category_selection(
 
     await safe_edit_message(
         callback,
-        f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}**\n"
-        f"🔧 **دسته‌بندی: {category}**\n\n"
+        f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}"**\n"
+        f"🔧 **دسته‌بندی: {category}"**\n\n"
         "لطفاً قطعه مورد نظر خود را انتخاب کنید:",
         reply_markup=keyboard,
         parse_mode="Markdown"
@@ -483,9 +483,9 @@ async def handle_part_selection(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit_message(
         callback,
-        f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}**\n"
-        f"🔧 **دسته‌بندی: {part_data.get('category')}**\n"
-        f"⚙️ **قطعه انتخاب شده: {part_id}**\n\n"
+        f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}"**\n"
+        f"🔧 **دسته‌بندی: {part_data.get('category')}"**\n"
+        f"⚙️ **قطعه انتخاب شده: {part_id}"**\n\n"
         "آیا می‌خواهید ادامه دهید؟",
         reply_markup=keyboard,
         parse_mode="Markdown"
@@ -519,9 +519,9 @@ async def handle_confirmation(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit_message(
         callback,
-        f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}**\n"
-        f"🔧 **دسته‌بندی: {part_data.get('category')}**\n"
-        f"⚙️ **قطعه: {part_data.get('selected_part_id')}**\n\n"
+        f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}"**\n"
+        f"🔧 **دسته‌بندی: {part_data.get('category')}"**\n"
+        f"⚙️ **قطعه: {part_data.get('selected_part_id')}"**\n\n"
         "برای دریافت قیمت و اطلاعات بیشتر، لطفاً شماره تلفن خود را ارسال کنید:",
         reply_markup=keyboard,
         parse_mode="Markdown"
@@ -581,10 +581,10 @@ async def handle_contact_received(message: Message, state: FSMContext):
 
     await message.answer(
         f"✅ **درخواست شما ثبت شد!**\n\n"
-        f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}**\n"
-        f"🔧 **دسته‌بندی: {part_data.get('category')}**\n"
-        f"⚙️ **قطعه: {part_data.get('selected_part_id')}**\n"
-        f"📱 **شماره تماس: {contact.phone_number}**\n\n"
+        f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}"**\n"
+        f"🔧 **دسته‌بندی: {part_data.get('category')}"**\n"
+        f"⚙️ **قطعه: {part_data.get('selected_part_id')}"**\n"
+        f"📱 **شماره تماس: {contact.phone_number}"**\n\n"
         "کارشناسان ما به زودی با شما تماس خواهند گرفت.\n"
         "متشکریم! 🙏",
         parse_mode="Markdown"
@@ -629,7 +629,7 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
                 keyboard = create_inline_keyboard(models, "model", "model")
                 await safe_edit_message(
                     callback,
-                    f"🚗 **برند انتخاب شده: {brand}**\n\n"
+                    f"🚗 **برند انتخاب شده: {brand}"**\n\n"
                     "لطفاً مدل خودروی خود را انتخاب کنید:",
                     reply_markup=keyboard,
                     parse_mode="Markdown"
@@ -648,7 +648,7 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
                 categories, "category", "category")
             await safe_edit_message(
                 callback,
-                f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}**\n\n"
+                f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}"**\n\n"
                 "لطفاً نوع قطعه مورد نظر خود را انتخاب کنید:",
                 reply_markup=keyboard,
                 parse_mode="Markdown"
@@ -668,13 +668,13 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
             for part in parts_display:
                 part_name = part.get("part_name", "نامشخص")
                 position = part.get("position", "")
-                display_text = f"{part_name}"
+                display_text = f"{part_name}""
                 if position:
-                    display_text += f" ({position})"
+                    display_text += f" ({position}")"
 
                 buttons.append([InlineKeyboardButton(
                     text=display_text,
-                    callback_data=f"part:{part.get('id')}"
+                    callback_data=f"part:{part.get('id')}""
                 )])
 
             buttons.append([InlineKeyboardButton(
@@ -686,8 +686,8 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
 
             await safe_edit_message(
                 callback,
-                f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}**\n"
-                f"🔧 **دسته‌بندی: {part_data.get('category')}**\n\n"
+                f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}"**\n"
+                f"🔧 **دسته‌بندی: {part_data.get('category')}"**\n\n"
                 "لطفاً قطعه مورد نظر خود را انتخاب کنید:",
                 reply_markup=keyboard,
                 parse_mode="Markdown"
@@ -707,9 +707,9 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
 
         await safe_edit_message(
             callback,
-            f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}**\n"
-            f"🔧 **دسته‌بندی: {part_data.get('category')}**\n"
-            f"⚙️ **قطعه انتخاب شده: {part_data.get('selected_part_id')}**\n\n"
+            f"🚗 **خودرو: {vehicle_data.get('brand')} {vehicle_data.get('model')}"**\n"
+            f"🔧 **دسته‌بندی: {part_data.get('category')}"**\n"
+            f"⚙️ **قطعه انتخاب شده: {part_data.get('selected_part_id')}"**\n\n"
             "آیا می‌خواهید ادامه دهید؟",
             reply_markup=keyboard,
             parse_mode="Markdown"

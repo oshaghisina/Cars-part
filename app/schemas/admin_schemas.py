@@ -7,6 +7,7 @@ from datetime import datetime
 
 class SettingResponse(BaseModel):
     """Setting response schema."""
+
     key: str
     value: str
     updated_at: datetime
@@ -15,17 +16,20 @@ class SettingResponse(BaseModel):
 
 class SettingUpdate(BaseModel):
     """Setting update schema."""
+
     value: str
 
 
 class SettingsResponse(BaseModel):
     """Multiple settings response schema."""
+
     settings: Dict[str, str]
     total: int
 
 
 class AdminUserResponse(BaseModel):
     """Admin user response schema."""
+
     id: int
     username: str
     email: str
@@ -39,6 +43,7 @@ class AdminUserResponse(BaseModel):
 
 class AdminUserListResponse(BaseModel):
     """Admin users list response schema."""
+
     users: List[AdminUserResponse]
     total: int
     page: int
@@ -48,6 +53,7 @@ class AdminUserListResponse(BaseModel):
 
 class AdminUserCreate(BaseModel):
     """Admin user creation schema."""
+
     username: str
     email: str
     first_name: str
@@ -58,6 +64,7 @@ class AdminUserCreate(BaseModel):
 
 class SystemStatusResponse(BaseModel):
     """System status response schema."""
+
     status: str
     version: str
     environment: str

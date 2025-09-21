@@ -21,19 +21,20 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """Schema for creating a new user."""
     password: str
-    
+
     @validator('password')
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
         return v
-    
+
     @validator('username')
     def validate_username(cls, v):
         if len(v) < 3:
             raise ValueError('Username must be at least 3 characters long')
         if not v.replace('_', '').replace('-', '').isalnum():
-            raise ValueError('Username can only contain letters, numbers, underscores, and hyphens')
+            raise ValueError(
+                'Username can only contain letters, numbers, underscores, and hyphens')
         return v
 
 
@@ -50,14 +51,15 @@ class UserUpdate(BaseModel):
     timezone: Optional[str] = None
     language: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
-    
+
     @validator('username')
     def validate_username(cls, v):
         if v is not None:
             if len(v) < 3:
                 raise ValueError('Username must be at least 3 characters long')
             if not v.replace('_', '').replace('-', '').isalnum():
-                raise ValueError('Username can only contain letters, numbers, underscores, and hyphens')
+                raise ValueError(
+                    'Username can only contain letters, numbers, underscores, and hyphens')
         return v
 
 
@@ -71,7 +73,7 @@ class PasswordChange(BaseModel):
     """Schema for password change."""
     current_password: str
     new_password: str
-    
+
     @validator('new_password')
     def validate_password(cls, v):
         if len(v) < 8:
@@ -91,7 +93,7 @@ class UserResponse(UserBase):
     created_at: datetime
     updated_at: datetime
     avatar_url: Optional[str] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -107,11 +109,11 @@ class UserSummary(BaseModel):
     is_active: bool
     last_login: Optional[datetime] = None
     created_at: datetime
-    
+
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}".strip()
-    
+
     class Config:
         from_attributes = True
 
@@ -127,12 +129,13 @@ class UserSessionResponse(BaseModel):
     expires_at: datetime
     last_activity: datetime
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
 
-# Note: Role and permission management has been simplified to use string-based roles
+# Note: Role and permission management has been simplified to use
+# string-based roles
 
 
 class UserActivityLogResponse(BaseModel):
@@ -148,7 +151,7 @@ class UserActivityLogResponse(BaseModel):
     user_agent: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
@@ -186,8 +189,6 @@ class UserListResponse(BaseModel):
     total_pages: int
 
 
-
-
 class UserActivityListResponse(BaseModel):
     """Schema for user activity list response."""
     activities: List[UserActivityLogResponse]
@@ -219,7 +220,7 @@ class SystemInit(BaseModel):
     admin_password: str
     admin_first_name: str
     admin_last_name: str
-    
+
     @validator('admin_password')
     def validate_password(cls, v):
         if len(v) < 8:
@@ -230,7 +231,7 @@ class SystemInit(BaseModel):
 class BulkUserCreate(BaseModel):
     """Schema for bulk user creation."""
     users: List[UserCreate]
-    
+
     @validator('users')
     def validate_users_list(cls, v):
         if len(v) == 0:
@@ -244,11 +245,12 @@ class BulkRoleAssignment(BaseModel):
     """Schema for bulk role assignment."""
     user_ids: List[int]
     role: str
-    
+
     @validator('user_ids')
     def validate_user_ids(cls, v):
         if len(v) == 0:
             raise ValueError('User IDs list cannot be empty')
         if len(v) > 100:
-            raise ValueError('Cannot assign roles to more than 100 users at once')
+            raise ValueError(
+                'Cannot assign roles to more than 100 users at once')
         return v
