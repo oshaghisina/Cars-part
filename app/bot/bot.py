@@ -5,8 +5,11 @@ import logging
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import (
-    Message, CallbackQuery, InlineKeyboardMarkup,
-    InlineKeyboardButton, BotCommand
+    Message,
+    CallbackQuery,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    BotCommand,
 )
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -33,6 +36,7 @@ search_again = "search_again"
 # FSM States
 class OrderStates(StatesGroup):
     """States for order creation workflow."""
+
     waiting_for_confirmation = State()
     waiting_for_contact = State()
     order_created = State()
@@ -40,6 +44,7 @@ class OrderStates(StatesGroup):
 
 class SearchStates(StatesGroup):
     """States for search workflow."""
+
     waiting_for_search = State()
     showing_results = State()
 
@@ -57,6 +62,7 @@ except Exception as e:
 
 
 if dp:
+
     async def setup_bot_commands():
         """Set up bot commands menu."""
         commands = [
@@ -86,26 +92,26 @@ if dp:
 """
 
         # Create main menu keyboard
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [
-                InlineKeyboardButton(text="🧙‍♂️ راهنمای گام به گام", callback_data="start_wizard"),
-                InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts")
-            ],
-            [
-                InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
-                InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help")
-            ],
-            [
-                InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings")
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="🧙‍♂️ راهنمای گام به گام", callback_data="start_wizard"
+                    ),
+                    InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
+                ],
+                [
+                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
+                    InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
+                ],
+                [InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings")],
             ]
-        ])
+        )
 
         await message.answer(welcome_text, reply_markup=keyboard, parse_mode="Markdown")
 
     @dp.callback_query(F.data == "start_wizard")
-    async def callback_start_wizard(
-            callback: CallbackQuery,
-            state: FSMContext):
+    async def callback_start_wizard(callback: CallbackQuery, state: FSMContext):
         """Handle wizard start from callback."""
         from app.bot.wizard_handlers import start_wizard_direct
 
@@ -149,15 +155,15 @@ if dp:
 """
 
         # Create help menu keyboard
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [
-                InlineKeyboardButton(text="🔍 شروع جستجو", callback_data="search_parts"),
-                InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders")
-            ],
-            [
-                InlineKeyboardButton(text="🏠 منوی اصلی", callback_data="main_menu")
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="🔍 شروع جستجو", callback_data="search_parts"),
+                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
+                ],
+                [InlineKeyboardButton(text="🏠 منوی اصلی", callback_data="main_menu")],
             ]
-        ])
+        )
 
         await message.answer(help_text, reply_markup=keyboard, parse_mode="Markdown")
 
@@ -232,9 +238,11 @@ if dp:
                         status_text += f"تاریخ: {order['created_at'].strftime('%Y-%m-%d %H:%M')}\n"
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
-                        if order['matched_items'] > 0:
-                            status_text += (f"قطعات یافت شده: "
-                                            f"{order['matched_items']}/{order['total_items']}\n")
+                        if order["matched_items"] > 0:
+                            status_text += (
+                                f"قطعات یافت شده: "
+                                f"{order['matched_items']}/{order['total_items']}\n"
+                            )
 
                         await message.answer(status_text)
                 else:
@@ -250,7 +258,7 @@ if dp:
 
     @dp.message(Command(search))
     async def cmd_search(message: Message, state: FSMContext):
-        "Handle /search command."""
+        "Handle /search command." ""
         await state.set_state(SearchStates.waiting_for_search)
         await message.answer(
             "🔍 **جستجوی قطعات**\n\n"
@@ -259,7 +267,7 @@ if dp:
             "• لنت ترمز جلو تیگو ۸\n"
             "• فیلتر روغن X22\n"
             "• لامپ چراغ عقب آریزو ۵",
-            parse_mode="Markdown"
+            parse_mode="Markdown",
         )
 
     @dp.message(Command("menu"))
@@ -267,32 +275,29 @@ if dp:
         """Handle /menu command."""
         menu_text = "🏠 **منوی اصلی**\n\nلطفاً یکی از گزینه‌های زیر را انتخاب کنید:"
 
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [
-                InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
-                InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders")
-            ],
-            [
-                InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
-                InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings")
-            ],
-            [
-                InlineKeyboardButton(text="📞 تماس با پشتیبانی", callback_data="support")
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
+                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
+                ],
+                [
+                    InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
+                    InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings"),
+                ],
+                [InlineKeyboardButton(text="📞 تماس با پشتیبانی", callback_data="support")],
             ]
-        ])
+        )
 
         await message.answer(menu_text, reply_markup=keyboard, parse_mode="Markdown")
 
     # Callback handlers for inline keyboards
     @dp.callback_query(lambda c: c.data == "search_parts")
-    async def handle_search_parts(
-            callback_query: CallbackQuery,
-            state: FSMContext):
+    async def handle_search_parts(callback_query: CallbackQuery, state: FSMContext):
         await callback_query.answer()
         await state.set_state(SearchStates.waiting_for_search)
         await callback_query.message.answer(
-            "🔍 **جستجوی قطعات**\n\n"
-            "لطفاً نام قطعه مورد نظر خود را ارسال کنید:"
+            "🔍 **جستجوی قطعات**\n\n" "لطفاً نام قطعه مورد نظر خود را ارسال کنید:"
         )
 
     @dp.callback_query(lambda c: c.data == "my_orders")
@@ -315,9 +320,11 @@ if dp:
                         status_text += f"تاریخ: {order['created_at'].strftime('%Y-%m-%d %H:%M')}\n"
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
-                        if order['matched_items'] > 0:
-                            status_text += (f"قطعات یافت شده: "
-                                            f"{order['matched_items']}/{order['total_items']}\n")
+                        if order["matched_items"] > 0:
+                            status_text += (
+                                f"قطعات یافت شده: "
+                                f"{order['matched_items']}/{order['total_items']}\n"
+                            )
 
                         await callback_query.message.answer(status_text)
                 else:
@@ -375,21 +382,24 @@ if dp:
 لطفاً یکی از گزینه‌های زیر را انتخاب کنید:
 """
 
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [
-                InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
-                InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders")
-            ],
-            [
-                InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
-                InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings")
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
+                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
+                ],
+                [
+                    InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
+                    InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings"),
+                ],
             ]
-        ])
+        )
 
         await callback_query.message.answer(
-            welcome_text, reply_markup=keyboard, parse_mode="Markdown")
+            welcome_text, reply_markup=keyboard, parse_mode="Markdown"
+        )
 
-    @dp.message(lambda message: not message.text.startswith('/'))
+    @dp.message(lambda message: not message.text.startswith("/"))
     async def message_handler(message: Message):
         """Handle all other messages with part search."""
         query = message.text.strip()
@@ -399,7 +409,7 @@ if dp:
             return
 
         # Check if it's a multi-line query (bulk search)
-        lines = [line.strip() for line in query.split('\n') if line.strip()]
+        lines = [line.strip() for line in query.split("\n") if line.strip()]
 
         if len(lines) > 1:
             # Bulk search
@@ -417,12 +427,15 @@ if dp:
                         if "found" not in item:  # Found part
                             price_text = ""
                             if item["best_price"]:
-                                price_text = (f" - قیمت: {item['best_price']:,.0f} "
-                                              f"{item['currency']}")
+                                price_text = (
+                                    f" - قیمت: {item['best_price']:,.0f} " f"{item['currency']}"
+                                )
 
-                            detail_text = (f"✅ {item['query']}\n"
-                                           f"{item['part_name']} {item['vehicle_model']}"
-                                           f"{price_text}")
+                            detail_text = (
+                                f"✅ {item['query']}\n"
+                                f"{item['part_name']} {item['vehicle_model']}"
+                                f"{price_text}"
+                            )
                             await message.answer(detail_text)
                         else:
                             # Not found
@@ -452,21 +465,25 @@ if dp:
                             [
                                 InlineKeyboardButton(
                                     text="✅ بله، این همان قطعه است",
-                                    callback_data=f"confirm_part_{part_data['id']}_{query}"),
+                                    callback_data=f"confirm_part_{part_data['id']}_{query}",
+                                ),
                                 InlineKeyboardButton(
-                                    text="❌ خیر، جستجوی جدید",
-                                    callback_data="search_again")]])
+                                    text="❌ خیر، جستجوی جدید", callback_data="search_again"
+                                ),
+                            ]
+                        ]
+                    )
 
                     await message.answer(result["message"], reply_markup=keyboard)
 
                     # Send additional details
                     detail_text = "📋 جزئیات:\n"
-                    if part_data['oem_code']:
+                    if part_data["oem_code"]:
                         detail_text += f"• کد OEM: {part_data['oem_code']}\n"
                     detail_text += f"• دسته‌بندی: {part_data['category']}\n"
-                    if part_data['position']:
+                    if part_data["position"]:
                         detail_text += f"• موقعیت: {part_data['position']}\n"
-                    if part_data['pack_size']:
+                    if part_data["pack_size"]:
                         detail_text += f"• بسته‌بندی: {part_data['pack_size']} عدد\n"
 
                     await message.answer(detail_text)
@@ -500,22 +517,28 @@ if dp:
 
             if not lead_result["lead"] or lead_result.get("requires_contact"):
                 # Request contact
-                contact_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-                    [InlineKeyboardButton(text="📱 ارسال شماره تماس",
-                                          request_contact=True,
-                                          callback_data=f"send_contact_{part_id}_{original_query}")]
-                ])
+                contact_keyboard = InlineKeyboardMarkup(
+                    inline_keyboard=[
+                        [
+                            InlineKeyboardButton(
+                                text="📱 ارسال شماره تماس",
+                                request_contact=True,
+                                callback_data=f"send_contact_{part_id}_{original_query}",
+                            )
+                        ]
+                    ]
+                )
 
                 await callback_query.message.answer(
                     "برای ثبت سفارش، لطفاً شماره تماس خود را ارسال کنید:",
-                    reply_markup=contact_keyboard
+                    reply_markup=contact_keyboard,
                 )
             else:
                 # Create order directly
                 search_result = {
                     "found": True,
                     "part_data": {"id": int(part_id)},
-                    "original_query": original_query
+                    "original_query": original_query,
                 }
 
                 order_result = bot_service.create_order_from_search_results(
@@ -526,20 +549,22 @@ if dp:
                     await callback_query.message.answer(order_result["message"])
                     await callback_query.message.answer(
                         "تیم ما به زودی با شما تماس خواهد گرفت. "
-                        "برای پیگیری سفارش از دستور /orders استفاده کنید.")
+                        "برای پیگیری سفارش از دستور /orders استفاده کنید."
+                    )
                 else:
                     await callback_query.message.answer(order_result["message"])
 
         except Exception as e:
             logger.error(f"Error in part confirmation: {e}")
             await callback_query.message.answer(
-                "خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید.")
+                "خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید."
+            )
         finally:
             db.close()
 
     @dp.callback_query(lambda c: c.data == search_again)
     async def handle_search_again(callback_query: CallbackQuery):
-        "Handle search again callback."""
+        "Handle search again callback." ""
         await callback_query.answer()
         await callback_query.message.answer("لطفاً نام قطعه مورد نظر خود را وارد کنید:")
 
@@ -558,7 +583,7 @@ if dp:
                 telegram_user_id=telegram_user_id,
                 phone_number=contact.phone_number,
                 first_name=contact.first_name,
-                last_name=contact.last_name
+                last_name=contact.last_name,
             )
 
             if result["lead"]:
@@ -577,8 +602,7 @@ if dp:
 async def main():
     """Main bot function."""
     if bot is None or dp is None:
-        logger.error(
-            "Bot not initialized. Please check your TELEGRAM_BOT_TOKEN.")
+        logger.error("Bot not initialized. Please check your TELEGRAM_BOT_TOKEN.")
         return
 
     logger.info("Starting Telegram bot...")

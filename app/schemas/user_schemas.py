@@ -7,6 +7,7 @@ from pydantic import BaseModel, EmailStr, validator
 
 class UserBase(BaseModel):
     """Base user schema."""
+
     username: str
     email: EmailStr
     first_name: str
@@ -20,26 +21,27 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """Schema for creating a new user."""
+
     password: str
 
-    @validator('password')
+    @validator("password")
     def validate_password(cls, v):
         if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
+            raise ValueError("Password must be at least 8 characters long")
         return v
 
-    @validator('username')
+    @validator("username")
     def validate_username(cls, v):
         if len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
-        if not v.replace('_', '').replace('-', '').isalnum():
-            raise ValueError(
-                'Username can only contain letters, numbers, underscores, and hyphens')
+            raise ValueError("Username must be at least 3 characters long")
+        if not v.replace("_", "").replace("-", "").isalnum():
+            raise ValueError("Username can only contain letters, numbers, underscores, and hyphens")
         return v
 
 
 class UserUpdate(BaseModel):
     """Schema for updating user information."""
+
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     first_name: Optional[str] = None
@@ -52,37 +54,41 @@ class UserUpdate(BaseModel):
     language: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
 
-    @validator('username')
+    @validator("username")
     def validate_username(cls, v):
         if v is not None:
             if len(v) < 3:
-                raise ValueError('Username must be at least 3 characters long')
-            if not v.replace('_', '').replace('-', '').isalnum():
+                raise ValueError("Username must be at least 3 characters long")
+            if not v.replace("_", "").replace("-", "").isalnum():
                 raise ValueError(
-                    'Username can only contain letters, numbers, underscores, and hyphens')
+                    "Username can only contain letters, numbers, underscores, and hyphens"
+                )
         return v
 
 
 class UserLogin(BaseModel):
     """Schema for user login."""
+
     username_or_email: str
     password: str
 
 
 class PasswordChange(BaseModel):
     """Schema for password change."""
+
     current_password: str
     new_password: str
 
-    @validator('new_password')
+    @validator("new_password")
     def validate_password(cls, v):
         if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
+            raise ValueError("Password must be at least 8 characters long")
         return v
 
 
 class UserResponse(UserBase):
     """Schema for user response."""
+
     id: int
     is_active: bool
     is_verified: bool
@@ -100,6 +106,7 @@ class UserResponse(UserBase):
 
 class UserSummary(BaseModel):
     """Summary user information."""
+
     id: int
     username: str
     email: EmailStr
@@ -120,6 +127,7 @@ class UserSummary(BaseModel):
 
 class UserSessionResponse(BaseModel):
     """Schema for user session response."""
+
     id: int
     user_id: int
     session_token: str
@@ -140,6 +148,7 @@ class UserSessionResponse(BaseModel):
 
 class UserActivityLogResponse(BaseModel):
     """Schema for user activity log response."""
+
     id: int
     user_id: int
     action: str
@@ -158,6 +167,7 @@ class UserActivityLogResponse(BaseModel):
 
 class UserStatistics(BaseModel):
     """Schema for user statistics."""
+
     total_users: int
     active_users: int
     verified_users: int
@@ -167,6 +177,7 @@ class UserStatistics(BaseModel):
 
 class LoginResponse(BaseModel):
     """Schema for login response."""
+
     access_token: str
     token_type: str = "bearer"
     expires_in: int
@@ -175,6 +186,7 @@ class LoginResponse(BaseModel):
 
 class TokenResponse(BaseModel):
     """Schema for token response."""
+
     access_token: str
     token_type: str = "bearer"
     expires_in: int
@@ -182,6 +194,7 @@ class TokenResponse(BaseModel):
 
 class UserListResponse(BaseModel):
     """Schema for user list response."""
+
     users: List[UserSummary]
     total: int
     page: int
@@ -191,6 +204,7 @@ class UserListResponse(BaseModel):
 
 class UserActivityListResponse(BaseModel):
     """Schema for user activity list response."""
+
     activities: List[UserActivityLogResponse]
     total: int
     page: int
@@ -201,12 +215,14 @@ class UserActivityListResponse(BaseModel):
 # JWT Token schemas
 class Token(BaseModel):
     """JWT token schema."""
+
     access_token: str
     token_type: str
 
 
 class TokenData(BaseModel):
     """JWT token data schema."""
+
     username: Optional[str] = None
     user_id: Optional[int] = None
     role: Optional[str] = None
@@ -215,42 +231,44 @@ class TokenData(BaseModel):
 # System initialization schemas
 class SystemInit(BaseModel):
     """Schema for system initialization."""
+
     admin_username: str
     admin_email: EmailStr
     admin_password: str
     admin_first_name: str
     admin_last_name: str
 
-    @validator('admin_password')
+    @validator("admin_password")
     def validate_password(cls, v):
         if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
+            raise ValueError("Password must be at least 8 characters long")
         return v
 
 
 class BulkUserCreate(BaseModel):
     """Schema for bulk user creation."""
+
     users: List[UserCreate]
 
-    @validator('users')
+    @validator("users")
     def validate_users_list(cls, v):
         if len(v) == 0:
-            raise ValueError('Users list cannot be empty')
+            raise ValueError("Users list cannot be empty")
         if len(v) > 100:
-            raise ValueError('Cannot create more than 100 users at once')
+            raise ValueError("Cannot create more than 100 users at once")
         return v
 
 
 class BulkRoleAssignment(BaseModel):
     """Schema for bulk role assignment."""
+
     user_ids: List[int]
     role: str
 
-    @validator('user_ids')
+    @validator("user_ids")
     def validate_user_ids(cls, v):
         if len(v) == 0:
-            raise ValueError('User IDs list cannot be empty')
+            raise ValueError("User IDs list cannot be empty")
         if len(v) > 100:
-            raise ValueError(
-                'Cannot assign roles to more than 100 users at once')
+            raise ValueError("Cannot assign roles to more than 100 users at once")
         return v

@@ -71,8 +71,7 @@ class Settings(BaseSettings):
     @property
     def admin_telegram_ids_list(self) -> List[int]:
         """Parse admin telegram IDs from comma-separated string."""
-        return [int(id.strip())
-                for id in self.admin_telegram_ids.split(',') if id.strip()]
+        return [int(id.strip()) for id in self.admin_telegram_ids.split(",") if id.strip()]
 
     class Config:
         env_file = ".env"

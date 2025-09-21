@@ -45,20 +45,21 @@ class BotService:
         if not results:
             return {
                 "found": False,
-                "message": ("متأسفانه قطعه مورد نظر یافت نشد. "
-                            "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."),
-                "suggestions": []}
+                "message": (
+                    "متأسفانه قطعه مورد نظر یافت نشد. "
+                    "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."
+                ),
+                "suggestions": [],
+            }
 
         best_result = results[0]
-        formatted_result = self.search_service.format_search_result(
-            best_result)
+        formatted_result = self.search_service.format_search_result(best_result)
 
         # Create confirmation message in Persian
         part_name = formatted_result["part_name"]
         vehicle_model = formatted_result["vehicle_model"]
 
-        confirmation_message = format_part_confirmation(
-            part_name, vehicle_model)
+        confirmation_message = format_part_confirmation(part_name, vehicle_model)
 
         # Add price information if available
         if formatted_result["prices"]:
@@ -70,7 +71,7 @@ class BotService:
             "found": True,
             "message": confirmation_message,
             "part_data": formatted_result,
-            "search_score": best_result["score"]
+            "search_score": best_result["score"],
         }
 
     def search_multiple_parts(self, queries: List[str]) -> Dict:
@@ -86,8 +87,10 @@ class BotService:
         if len(queries) > 10:  # Bulk limit
             return {
                 "success": False,
-                "message": ("تعداد قطعات بیش از حد مجاز است (حداکثر ۱۰ قطعه). "
-                            "لطفاً لیست را کوتاه‌تر کنید.")
+                "message": (
+                    "تعداد قطعات بیش از حد مجاز است (حداکثر ۱۰ قطعه). "
+                    "لطفاً لیست را کوتاه‌تر کنید."
+                ),
             }
 
         results_summary = []
@@ -103,19 +106,21 @@ class BotService:
             if part_result["found"]:
                 found_count += 1
                 part_data = part_result["part_data"]
-                results_summary.append({
-                    "query": query,
-                    "part_name": part_data["part_name"],
-                    "vehicle_model": part_data["vehicle_model"],
-                    "best_price": part_data["best_price"],
-                    "currency": part_data["prices"][0]["currency"] if part_data["prices"] else None
-                })
+                results_summary.append(
+                    {
+                        "query": query,
+                        "part_name": part_data["part_name"],
+                        "vehicle_model": part_data["vehicle_model"],
+                        "best_price": part_data["best_price"],
+                        "currency": part_data["prices"][0]["currency"]
+                        if part_data["prices"]
+                        else None,
+                    }
+                )
             else:
-                results_summary.append({
-                    "query": query,
-                    "found": False,
-                    "message": part_result["message"]
-                })
+                results_summary.append(
+                    {"query": query, "found": False, "message": part_result["message"]}
+                )
 
         # Create summary message
         if found_count == 0:
@@ -123,23 +128,25 @@ class BotService:
         elif found_count == len([q for q in queries if q.strip()]):
             summary_message = f"✅ تمام {found_count} قطعه یافت شد."
         else:
-            summary_message = (f"✅ {found_count} از "
-                               f"{len([q for q in queries if q.strip()])} قطعه یافت شد.")
+            summary_message = (
+                f"✅ {found_count} از " f"{len([q for q in queries if q.strip()])} قطعه یافت شد."
+            )
 
         return {
             "success": True,
             "message": summary_message,
             "found_count": found_count,
             "total_queries": len([q for q in queries if q.strip()]),
-            "results": results_summary
+            "results": results_summary,
         }
 
     def handle_contact_capture(
-            self,
-            telegram_user_id: str,
-            phone_number: str = None,
-            first_name: str = None,
-            last_name: str = None) -> Dict:
+        self,
+        telegram_user_id: str,
+        phone_number: str = None,
+        first_name: str = None,
+        last_name: str = None,
+    ) -> Dict:
         """
         Handle contact capture and lead creation/update.
 
@@ -156,13 +163,14 @@ class BotService:
             telegram_user_id=telegram_user_id,
             phone_number=phone_number,
             first_name=first_name,
-            last_name=last_name
+            last_name=last_name,
         )
 
         return result
 
-    def create_order_from_search_results(self, telegram_user_id: str,
-                                         search_results: List[Dict]) -> Dict:
+    def create_order_from_search_results(
+        self, telegram_user_id: str, search_results: List[Dict]
+    ) -> Dict:
         """
         Create order from confirmed search results.
 
@@ -180,7 +188,7 @@ class BotService:
             return {
                 "success": False,
                 "message": lead_result["message"],
-                "requires_contact": lead_result.get("requires_contact", False)
+                "requires_contact": lead_result.get("requires_contact", False),
             }
 
         # Prepare order items
@@ -188,32 +196,27 @@ class BotService:
         for result in search_results:
             if result["found"]:
                 part_data = result["part_data"]
-                order_items.append({
-                    "query_text": result.get("original_query", ""),
-                    "matched_part_id": part_data["id"],
-                    "qty": 1,
-                    "unit": "pcs",
-                    "notes": f"Part: {part_data['part_name']} - {part_data['vehicle_model']}"
-                })
+                order_items.append(
+                    {
+                        "query_text": result.get("original_query", ""),
+                        "matched_part_id": part_data["id"],
+                        "qty": 1,
+                        "unit": "pcs",
+                        "notes": f"Part: {part_data['part_name']} - {part_data['vehicle_model']}",
+                    }
+                )
 
         if not order_items:
-            return {
-                "success": False,
-                "message": "هیچ قطعه معتبری برای ثبت سفارش یافت نشد."
-            }
+            return {"success": False, "message": "هیچ قطعه معتبری برای ثبت سفارش یافت نشد."}
 
         # Create order
         order_result = self.order_service.create_order(
-            lead_id=lead_result["lead"].id,
-            order_items=order_items
+            lead_id=lead_result["lead"].id, order_items=order_items
         )
 
         return order_result
 
-    def get_order_status(
-            self,
-            telegram_user_id: str,
-            order_id: int = None) -> Dict:
+    def get_order_status(self, telegram_user_id: str, order_id: int = None) -> Dict:
         """
         Get order status for a user.
 
@@ -229,42 +232,34 @@ class BotService:
         if not lead:
             return {
                 "success": False,
-                "message": "اطلاعات شما یافت نشد. لطفاً ابتدا سفارشی ثبت کنید."
+                "message": "اطلاعات شما یافت نشد. لطفاً ابتدا سفارشی ثبت کنید.",
             }
 
         if order_id:
             # Get specific order
             order = self.order_service.get_order_by_id(order_id)
             if not order or order.lead_id != lead.id:
-                return {
-                    "success": False,
-                    "message": "سفارش مورد نظر یافت نشد."
-                }
+                return {"success": False, "message": "سفارش مورد نظر یافت نشد."}
 
             summary = self.order_service.get_order_summary(order)
             return {
                 "success": True,
                 "order": summary,
-                "message": f"وضعیت سفارش #{order.id:05d}: {order.status}"
+                "message": f"وضعیت سفارش #{order.id:05d}: {order.status}",
             }
         else:
             # Get all orders
             orders = self.order_service.get_orders_by_lead(lead.id)
 
             if not orders:
-                return {
-                    "success": True,
-                    "orders": [],
-                    "message": "هنوز سفارشی ثبت نکرده‌اید."
-                }
+                return {"success": True, "orders": [], "message": "هنوز سفارشی ثبت نکرده‌اید."}
 
-            summaries = [self.order_service.get_order_summary(
-                order) for order in orders]
+            summaries = [self.order_service.get_order_summary(order) for order in orders]
 
             return {
                 "success": True,
                 "orders": summaries,
-                "message": f"شما {len(orders)} سفارش دارید."
+                "message": f"شما {len(orders)} سفارش دارید.",
             }
 
     def _format_ai_search_result(self, ai_result: Dict) -> Dict:
@@ -272,11 +267,12 @@ class BotService:
         if not ai_result["success"] or not ai_result["parts"]:
             return {
                 "found": False,
-                "message": ("متأسفانه قطعه مورد نظر یافت نشد. "
-                            "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."),
-                "suggestions": ai_result.get(
-                    "suggestions",
-                    [])}
+                "message": (
+                    "متأسفانه قطعه مورد نظر یافت نشد. "
+                    "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."
+                ),
+                "suggestions": ai_result.get("suggestions", []),
+            }
 
         best_part = ai_result["parts"][0]
         query_analysis = ai_result.get("query_analysis", {})
@@ -291,23 +287,24 @@ class BotService:
         confirmation_message += f"**{part_name}** ({vehicle_model})\n"
         confirmation_message += f"برند: {best_part['brand_oem']}\n"
 
-        if best_part.get('oem_code'):
+        if best_part.get("oem_code"):
             confirmation_message += f"کد OEM: {best_part['oem_code']}\n"
 
         confirmation_message += f"دسته بندی: {best_part['category']}\n"
 
-        if best_part.get('best_price'):
-            confirmation_message += (f"💰 قیمت: {best_part['best_price']:,} "
-                                     f"{best_part['prices'][0]['currency']}\n")
+        if best_part.get("best_price"):
+            confirmation_message += (
+                f"💰 قیمت: {best_part['best_price']:,} " f"{best_part['prices'][0]['currency']}\n"
+            )
 
         # Add AI insights
         if query_analysis:
             confirmation_message += "\n🤖 **تحلیل هوشمند:**\n"
-            if query_analysis.get('car_brand'):
+            if query_analysis.get("car_brand"):
                 confirmation_message += f"• برند تشخیص داده شده: {query_analysis['car_brand']}\n"
-            if query_analysis.get('part_type'):
+            if query_analysis.get("part_type"):
                 confirmation_message += f"• نوع قطعه: {query_analysis['part_type']}\n"
-            if query_analysis.get('position'):
+            if query_analysis.get("position"):
                 confirmation_message += f"• موقعیت: {query_analysis['position']}\n"
 
         # Add suggestions if available
@@ -322,5 +319,5 @@ class BotService:
             "message": confirmation_message,
             "suggestions": suggestions,
             "search_type": search_type,
-            "query_analysis": query_analysis
+            "query_analysis": query_analysis,
         }

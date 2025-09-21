@@ -1,8 +1,17 @@
 """SQLAlchemy models based on data-model.md specifications."""
 
 from sqlalchemy import (
-    Column, Integer, String, Text, Boolean, DateTime, Date,
-    DECIMAL, Float, ForeignKey, JSON
+    Column,
+    Integer,
+    String,
+    Text,
+    Boolean,
+    DateTime,
+    Date,
+    DECIMAL,
+    Float,
+    ForeignKey,
+    JSON,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -14,6 +23,7 @@ import secrets
 
 class Part(Base):
     """Parts table - Core part definitions."""
+
     __tablename__ = "parts"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -28,21 +38,16 @@ class Part(Base):
     position = Column(String(50), nullable=True)
     category = Column(String(100), nullable=False, index=True)
     subcategory = Column(String(100), nullable=True)
-    category_id = Column(Integer, ForeignKey(
-        "part_categories.id"), nullable=True)
+    category_id = Column(Integer, ForeignKey("part_categories.id"), nullable=True)
     oem_code = Column(String(100), nullable=True, index=True)
     alt_codes = Column(Text, nullable=True)
     dimensions_specs = Column(Text, nullable=True)
     compatibility_notes = Column(Text, nullable=True)
-    unit = Column(String(20), nullable=False, default='pcs')
+    unit = Column(String(20), nullable=False, default="pcs")
     pack_size = Column(Integer, nullable=True, default=1)
-    status = Column(String(20), nullable=False, default='active', index=True)
+    status = Column(String(20), nullable=False, default="active", index=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     # Relationships
     prices = relationship("Price", back_populates="part")
@@ -50,33 +55,26 @@ class Part(Base):
     order_items = relationship("OrderItem", back_populates="matched_part")
     category_obj = relationship("PartCategory", back_populates="parts")
     specifications = relationship(
-        "PartSpecification",
-        back_populates="part",
-        cascade="all, delete-orphan")
-    images = relationship(
-        "PartImage",
-        back_populates="part",
-        cascade="all, delete-orphan")
+        "PartSpecification", back_populates="part", cascade="all, delete-orphan"
+    )
+    images = relationship("PartImage", back_populates="part", cascade="all, delete-orphan")
 
 
 class Price(Base):
     """Prices table - Multiple price points per part."""
+
     __tablename__ = "prices"
 
     id = Column(Integer, primary_key=True, index=True)
-    part_id = Column(
-        Integer,
-        ForeignKey("parts.id"),
-        nullable=False,
-        index=True)
+    part_id = Column(Integer, ForeignKey("parts.id"), nullable=False, index=True)
     seller_name = Column(String(255), nullable=False)
     seller_url = Column(String(500), nullable=True)
-    currency = Column(String(3), nullable=False, default='IRR')
+    currency = Column(String(3), nullable=False, default="IRR")
     price = Column(DECIMAL(12, 2), nullable=False)
     min_order_qty = Column(Integer, nullable=True, default=1)
     available_qty = Column(Integer, nullable=True)
     warranty = Column(String(100), nullable=True)
-    source_type = Column(String(20), nullable=False, default='manual')
+    source_type = Column(String(20), nullable=False, default="manual")
     scraped_at = Column(DateTime, nullable=True)
     valid_from = Column(Date, nullable=True, index=True)
     valid_to = Column(Date, nullable=True, index=True)
@@ -89,16 +87,13 @@ class Price(Base):
 
 class Synonym(Base):
     """Synonyms table - Keywords and aliases for search."""
+
     __tablename__ = "synonyms"
 
     id = Column(Integer, primary_key=True, index=True)
-    part_id = Column(
-        Integer,
-        ForeignKey("parts.id"),
-        nullable=True,
-        index=True)
+    part_id = Column(Integer, ForeignKey("parts.id"), nullable=True, index=True)
     keyword = Column(String(255), nullable=False, index=True)
-    lang = Column(String(2), nullable=False, default='fa', index=True)
+    lang = Column(String(2), nullable=False, default="fa", index=True)
     weight = Column(Float, nullable=False, default=1.0)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
 
@@ -108,14 +103,11 @@ class Synonym(Base):
 
 class Lead(Base):
     """Leads table - Customer information."""
+
     __tablename__ = "leads"
 
     id = Column(Integer, primary_key=True, index=True)
-    telegram_user_id = Column(
-        String(50),
-        nullable=False,
-        unique=True,
-        index=True)
+    telegram_user_id = Column(String(50), nullable=False, unique=True, index=True)
     first_name = Column(String(100), nullable=True)
     last_name = Column(String(100), nullable=True)
     phone_e164 = Column(String(20), nullable=False, unique=True, index=True)
@@ -123,11 +115,7 @@ class Lead(Base):
     notes = Column(Text, nullable=True)
     consent = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     # Relationships
     orders = relationship("Order", back_populates="lead")
@@ -135,26 +123,15 @@ class Lead(Base):
 
 class Order(Base):
     """Orders table - Formal purchase requests."""
+
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    lead_id = Column(
-        Integer,
-        ForeignKey("leads.id"),
-        nullable=False,
-        index=True)
-    status = Column(String(20), nullable=False, default='new', index=True)
+    lead_id = Column(Integer, ForeignKey("leads.id"), nullable=False, index=True)
+    status = Column(String(20), nullable=False, default="new", index=True)
     notes = Column(Text, nullable=True)
-    created_at = Column(
-        DateTime,
-        nullable=False,
-        server_default=func.now(),
-        index=True)
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        server_default=func.now(),
-        onupdate=func.now())
+    created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
+    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
 
     # Relationships
     lead = relationship("Lead", back_populates="orders")
@@ -163,18 +140,15 @@ class Order(Base):
 
 class OrderItem(Base):
     """Order items table - Individual line items within orders."""
+
     __tablename__ = "order_items"
 
     order_id = Column(Integer, ForeignKey("orders.id"), primary_key=True)
     line_no = Column(Integer, primary_key=True)
     query_text = Column(Text, nullable=False)
-    matched_part_id = Column(
-        Integer,
-        ForeignKey("parts.id"),
-        nullable=True,
-        index=True)
+    matched_part_id = Column(Integer, ForeignKey("parts.id"), nullable=True, index=True)
     qty = Column(Integer, nullable=False, default=1)
-    unit = Column(String(20), nullable=False, default='pcs')
+    unit = Column(String(20), nullable=False, default="pcs")
     notes = Column(Text, nullable=True)
 
     # Relationships
@@ -184,20 +158,18 @@ class OrderItem(Base):
 
 class Setting(Base):
     """Settings table - System configuration and feature flags."""
+
     __tablename__ = "settings"
 
     key = Column(String(100), primary_key=True)
     value = Column(Text, nullable=False)
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        server_default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, server_default=func.now(), onupdate=func.now())
     updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
 
 
 class User(Base):
     """Users table - System users with authentication and profile information."""
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -208,11 +180,7 @@ class User(Base):
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
     phone = Column(String(20), nullable=True)
-    role = Column(
-        String(20),
-        nullable=False,
-        index=True,
-        default='user')  # Simple role field
+    role = Column(String(20), nullable=False, index=True, default="user")  # Simple role field
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     last_login = Column(DateTime, nullable=True)
@@ -220,26 +188,19 @@ class User(Base):
     locked_until = Column(DateTime, nullable=True)
     password_changed_at = Column(DateTime, nullable=False, default=func.now())
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     # Profile information
     avatar_url = Column(String(500), nullable=True)
-    timezone = Column(String(50), default='UTC', nullable=False)
-    language = Column(String(10), default='en', nullable=False)
+    timezone = Column(String(50), default="UTC", nullable=False)
+    language = Column(String(10), default="en", nullable=False)
     preferences = Column(JSON, nullable=True)  # User preferences as JSON
 
     def set_password(self, password: str) -> None:
         """Set password with salt and hash."""
         self.salt = secrets.token_hex(16)
         self.password_hash = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            self.salt.encode('utf-8'),
-            100000
+            "sha256", password.encode("utf-8"), self.salt.encode("utf-8"), 100000
         ).hex()
         self.password_changed_at = func.now()
 
@@ -248,10 +209,7 @@ class User(Base):
         if not self.password_hash or not self.salt:
             return False
         hash_to_check = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            self.salt.encode('utf-8'),
-            100000
+            "sha256", password.encode("utf-8"), self.salt.encode("utf-8"), 100000
         ).hex()
         return hash_to_check == self.password_hash
 
@@ -267,19 +225,42 @@ class User(Base):
         """Check if user has a specific permission based on role."""
         # Simple permission mapping for now
         role_permissions = {
-            'super_admin': ['*'],  # All permissions
-            'admin': ['users.read', 'users.create', 'users.update', 'users.delete',
-                      'parts.read', 'parts.create', 'parts.update', 'parts.delete',
-                      'orders.read', 'orders.create', 'orders.update', 'orders.delete',
-                      'leads.read', 'leads.create', 'leads.update', 'leads.delete'],
-            'manager': ['users.read', 'parts.read', 'parts.create', 'parts.update',
-                        'orders.read', 'orders.create', 'orders.update',
-                        'leads.read', 'leads.create', 'leads.update'],
-            'user': ['parts.read', 'orders.read', 'leads.read']
+            "super_admin": ["*"],  # All permissions
+            "admin": [
+                "users.read",
+                "users.create",
+                "users.update",
+                "users.delete",
+                "parts.read",
+                "parts.create",
+                "parts.update",
+                "parts.delete",
+                "orders.read",
+                "orders.create",
+                "orders.update",
+                "orders.delete",
+                "leads.read",
+                "leads.create",
+                "leads.update",
+                "leads.delete",
+            ],
+            "manager": [
+                "users.read",
+                "parts.read",
+                "parts.create",
+                "parts.update",
+                "orders.read",
+                "orders.create",
+                "orders.update",
+                "leads.read",
+                "leads.create",
+                "leads.update",
+            ],
+            "user": ["parts.read", "orders.read", "leads.read"],
         }
 
         permissions = role_permissions.get(self.role, [])
-        return '*' in permissions or permission_name in permissions
+        return "*" in permissions or permission_name in permissions
 
     def is_locked(self) -> bool:
         """Check if user account is locked."""
@@ -292,6 +273,7 @@ class User(Base):
         self.login_attempts += 1
         if self.login_attempts >= 5:  # Lock after 5 failed attempts
             from datetime import datetime, timedelta
+
             self.locked_until = datetime.utcnow() + timedelta(minutes=30)
 
     def reset_login_attempts(self) -> None:
@@ -302,20 +284,17 @@ class User(Base):
 
 class WizardSession(Base):
     """Wizard sessions table - Stores wizard state and data."""
+
     __tablename__ = "wizard_sessions"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(String(50), nullable=False, index=True)
     state = Column(String(50), nullable=False)
     vehicle_data = Column(Text, nullable=True)  # JSON string
-    part_data = Column(Text, nullable=True)     # JSON string
+    part_data = Column(Text, nullable=True)  # JSON string
     contact_data = Column(Text, nullable=True)  # JSON string
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     def get_vehicle_data(self):
         """Parse vehicle data from JSON string."""
@@ -351,6 +330,7 @@ class WizardSession(Base):
 # Enhanced Vehicle Models
 class VehicleBrand(Base):
     """Vehicle brands/manufacturers table."""
+
     __tablename__ = "vehicle_brands"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -364,21 +344,15 @@ class VehicleBrand(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     # Relationships
-    models = relationship(
-        "VehicleModel",
-        back_populates="brand",
-        cascade="all, delete-orphan")
+    models = relationship("VehicleModel", back_populates="brand", cascade="all, delete-orphan")
 
 
 class VehicleModel(Base):
     """Vehicle models table."""
+
     __tablename__ = "vehicle_models"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -394,22 +368,16 @@ class VehicleModel(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     # Relationships
     brand = relationship("VehicleBrand", back_populates="models")
-    trims = relationship(
-        "VehicleTrim",
-        back_populates="model",
-        cascade="all, delete-orphan")
+    trims = relationship("VehicleTrim", back_populates="model", cascade="all, delete-orphan")
 
 
 class VehicleTrim(Base):
     """Vehicle trims/variants table."""
+
     __tablename__ = "vehicle_trims"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -429,11 +397,7 @@ class VehicleTrim(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     # Relationships
     model = relationship("VehicleModel", back_populates="trims")
@@ -442,13 +406,11 @@ class VehicleTrim(Base):
 # Enhanced Parts Categories
 class PartCategory(Base):
     """Hierarchical parts categories table."""
+
     __tablename__ = "part_categories"
 
     id = Column(Integer, primary_key=True, index=True)
-    parent_id = Column(
-        Integer,
-        ForeignKey("part_categories.id"),
-        nullable=True)
+    parent_id = Column(Integer, ForeignKey("part_categories.id"), nullable=True)
     name = Column(String(100), nullable=False, index=True)
     name_fa = Column(String(100), nullable=True)  # Persian name
     name_cn = Column(String(100), nullable=True)  # Chinese name
@@ -462,11 +424,7 @@ class PartCategory(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     sort_order = Column(Integer, default=0)
     created_at = Column(DateTime, nullable=False, default=func.now())
-    updated_at = Column(
-        DateTime,
-        nullable=False,
-        default=func.now(),
-        onupdate=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     # Relationships
     children = relationship("PartCategory", backref="parent", remote_side=[id])
@@ -475,6 +433,7 @@ class PartCategory(Base):
 
 class PartSpecification(Base):
     """Part specifications and attributes table."""
+
     __tablename__ = "part_specifications"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -496,6 +455,7 @@ class PartSpecification(Base):
 
 class PartImage(Base):
     """Part images table."""
+
     __tablename__ = "part_images"
 
     id = Column(Integer, primary_key=True, index=True)

@@ -33,6 +33,7 @@ class SearchService:
         if settings.ai_enabled:
             try:
                 from app.services.ai_service import AIService
+
                 ai_service = AIService(self.db)
                 if ai_service.is_available():
                     ai_results = ai_service.semantic_search(query, limit)
@@ -64,81 +65,87 @@ class SearchService:
 
     def _search_by_oem_code(self, query: str) -> List[dict]:
         """Search by exact OEM code match."""
-        parts = self.db.query(Part).filter(
-            or_(
-                Part.oem_code.ilike(f"%{query}%"),
-                Part.alt_codes.ilike(f"%{query}%")
-            ),
-            Part.status == "active"
-        ).all()
+        parts = (
+            self.db.query(Part)
+            .filter(
+                or_(Part.oem_code.ilike(f"%{query}%"), Part.alt_codes.ilike(f"%{query}%")),
+                Part.status == "active",
+            )
+            .all()
+        )
 
         results = []
         for part in parts:
-            results.append({
-                "part": part,
-                "score": 1.0,
-                "match_type": "oem_code",
-                "matched_field": "oem_code"
-            })
+            results.append(
+                {"part": part, "score": 1.0, "match_type": "oem_code", "matched_field": "oem_code"}
+            )
 
         return results
 
     def _search_by_synonyms(self, query: str) -> List[dict]:
         """Search using synonyms table."""
         # Search Persian synonyms
-        persian_synonyms = self.db.query(Synonym).filter(
-            Synonym.keyword.ilike(f"%{query}%"),
-            Synonym.lang == "fa"
-        ).all()
+        persian_synonyms = (
+            self.db.query(Synonym)
+            .filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "fa")
+            .all()
+        )
 
         # Search English synonyms
-        english_synonyms = self.db.query(Synonym).filter(
-            Synonym.keyword.ilike(f"%{query}%"),
-            Synonym.lang == "en"
-        ).all()
+        english_synonyms = (
+            self.db.query(Synonym)
+            .filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "en")
+            .all()
+        )
 
         results = []
 
         # Process Persian matches (higher priority)
         for synonym in persian_synonyms:
             if synonym.part_id:
-                part = self.db.query(Part).filter(
-                    Part.id == synonym.part_id,
-                    Part.status == "active"
-                ).first()
+                part = (
+                    self.db.query(Part)
+                    .filter(Part.id == synonym.part_id, Part.status == "active")
+                    .first()
+                )
 
                 if part:
                     # Calculate score based on synonym weight and match quality
                     match_score = fuzz.ratio(query, synonym.keyword) / 100.0
                     score = synonym.weight * match_score
 
-                    results.append({
-                        "part": part,
-                        "score": score,
-                        "match_type": "synonym",
-                        "matched_field": "persian_synonym",
-                        "synonym": synonym.keyword
-                    })
+                    results.append(
+                        {
+                            "part": part,
+                            "score": score,
+                            "match_type": "synonym",
+                            "matched_field": "persian_synonym",
+                            "synonym": synonym.keyword,
+                        }
+                    )
 
         # Process English matches (lower priority)
         for synonym in english_synonyms:
             if synonym.part_id:
-                part = self.db.query(Part).filter(
-                    Part.id == synonym.part_id,
-                    Part.status == "active"
-                ).first()
+                part = (
+                    self.db.query(Part)
+                    .filter(Part.id == synonym.part_id, Part.status == "active")
+                    .first()
+                )
 
                 if part:
                     match_score = fuzz.ratio(query, synonym.keyword) / 100.0
                     score = synonym.weight * match_score * 0.8  # Lower weight for English
 
-                    results.append({
-                        "part": part,
-                        "score": score,
-                        "match_type": "synonym",
-                        "matched_field": "english_synonym",
-                        "synonym": synonym.keyword
-                    })
+                    results.append(
+                        {
+                            "part": part,
+                            "score": score,
+                            "match_type": "synonym",
+                            "matched_field": "english_synonym",
+                            "synonym": synonym.keyword,
+                        }
+                    )
 
         return results
 
@@ -167,13 +174,15 @@ class SearchService:
                 elif category_score == max_score:
                     matched_field = "category"
 
-                results.append({
-                    "part": part,
-                    "score": normalized_score,
-                    "match_type": "fuzzy",
-                    "matched_field": matched_field,
-                    "raw_score": max_score
-                })
+                results.append(
+                    {
+                        "part": part,
+                        "score": normalized_score,
+                        "match_type": "fuzzy",
+                        "matched_field": matched_field,
+                        "raw_score": max_score,
+                    }
+                )
 
         return results
 
@@ -202,18 +211,23 @@ class SearchService:
         from datetime import date
 
         today = date.today()
-        prices = self.db.query(Price).filter(
-            Price.part_id == part_id,
-            or_(
-                Price.valid_to.is_(None),
-                and_(
-                    Price.valid_from.isnot(None),
-                    Price.valid_to.isnot(None),
-                    Price.valid_from <= today,
-                    Price.valid_to >= today
-                )
+        prices = (
+            self.db.query(Price)
+            .filter(
+                Price.part_id == part_id,
+                or_(
+                    Price.valid_to.is_(None),
+                    and_(
+                        Price.valid_from.isnot(None),
+                        Price.valid_to.isnot(None),
+                        Price.valid_from <= today,
+                        Price.valid_to >= today,
+                    ),
+                ),
             )
-        ).order_by(Price.price.asc()).all()
+            .order_by(Price.price.asc())
+            .all()
+        )
 
         return [
             {
@@ -225,7 +239,7 @@ class SearchService:
                 "available_qty": price.available_qty,
                 "warranty": price.warranty,
                 "source_type": price.source_type,
-                "note": price.note
+                "note": price.note,
             }
             for price in prices
         ]
@@ -251,6 +265,5 @@ class SearchService:
             "match_type": result["match_type"],
             "matched_field": result["matched_field"],
             "prices": prices,
-            "best_price": min(
-                prices,
-                key=lambda p: p["price"])["price"] if prices else None}
+            "best_price": min(prices, key=lambda p: p["price"])["price"] if prices else None,
+        }

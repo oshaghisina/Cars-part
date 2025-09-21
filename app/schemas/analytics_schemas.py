@@ -151,9 +151,7 @@ class PerformanceMetrics(BaseModel):
 class ReportRequest(BaseModel):
     """Report generation request"""
 
-    sections: List[Literal["sales", "inventory", "customers", "performance"]] = Field(
-        ...
-    )
+    sections: List[Literal["sales", "inventory", "customers", "performance"]] = Field(...)
     date_from: Optional[date] = None
     date_to: Optional[date] = None
     format: Literal["json", "pdf", "excel"] = Field(default="json")
@@ -210,9 +208,7 @@ class AnalyticsFilter(BaseModel):
 class ExportRequest(BaseModel):
     """Analytics data export request"""
 
-    data_type: Literal[
-        "dashboard", "sales", "inventory", "customers", "performance"
-    ] = Field(...)
+    data_type: Literal["dashboard", "sales", "inventory", "customers", "performance"] = Field(...)
     format: Literal["csv", "xlsx", "json"] = Field(default="xlsx")
     filters: Optional[AnalyticsFilter] = None
     include_charts: bool = Field(default=False)

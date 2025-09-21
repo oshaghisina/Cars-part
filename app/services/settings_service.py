@@ -31,11 +31,7 @@ class SettingsService:
         # type: ignore[misc]
         return {setting.key: setting.value for setting in settings}
 
-    def set_setting(
-            self,
-            key: str,
-            value: str,
-            updated_by: Optional[int] = None) -> Setting:
+    def set_setting(self, key: str, value: str, updated_by: Optional[int] = None) -> Setting:
         """Set a setting value."""
         setting = self.db.query(Setting).filter(Setting.key == key).first()
 
@@ -44,11 +40,7 @@ class SettingsService:
             setting.updated_at = func.now()  # type: ignore[assignment]
             setting.updated_by = updated_by  # type: ignore[assignment]
         else:
-            setting = Setting(
-                key=key,
-                value=value,
-                updated_by=updated_by
-            )
+            setting = Setting(key=key, value=value, updated_by=updated_by)
             self.db.add(setting)
 
         self.db.commit()
@@ -57,11 +49,9 @@ class SettingsService:
         logger.info(f"Setting updated: {key} = {value}")
         return setting
 
-    def set_settings(self,
-                     settings: Dict[str,
-                                    str],
-                     updated_by: Optional[int] = None) -> Dict[str,
-                                                               str]:
+    def set_settings(
+        self, settings: Dict[str, str], updated_by: Optional[int] = None
+    ) -> Dict[str, str]:
         """Set multiple settings."""
         results = {}
 
@@ -72,15 +62,17 @@ class SettingsService:
 
     def get_system_settings(self) -> Dict[str, Any]:
         """Get common system settings with proper types."""
-        raw_settings = self.get_settings([
-            "AI_ENABLED",
-            "BULK_LIMIT_DEFAULT",
-            "MAX_UPLOAD_SIZE",
-            "SESSION_TIMEOUT",
-            "MAINTENANCE_MODE",
-            "BACKUP_ENABLED",
-            "BACKUP_INTERVAL_HOURS"
-        ])
+        raw_settings = self.get_settings(
+            [
+                "AI_ENABLED",
+                "BULK_LIMIT_DEFAULT",
+                "MAX_UPLOAD_SIZE",
+                "SESSION_TIMEOUT",
+                "MAINTENANCE_MODE",
+                "BACKUP_ENABLED",
+                "BACKUP_INTERVAL_HOURS",
+            ]
+        )
 
         # Convert to appropriate types
         system_settings = {}
@@ -89,15 +81,15 @@ class SettingsService:
         bool_keys = ["AI_ENABLED", "MAINTENANCE_MODE", "BACKUP_ENABLED"]
         for key in bool_keys:
             if key in raw_settings:
-                system_settings[key] = raw_settings[key].lower() in (
-                    "true", "1", "yes", "on")
+                system_settings[key] = raw_settings[key].lower() in ("true", "1", "yes", "on")
 
         # Integer settings
         int_keys = [
             "BULK_LIMIT_DEFAULT",
             "MAX_UPLOAD_SIZE",
             "SESSION_TIMEOUT",
-            "BACKUP_INTERVAL_HOURS"]
+            "BACKUP_INTERVAL_HOURS",
+        ]
         for key in int_keys:
             if key in raw_settings:
                 try:
@@ -116,7 +108,7 @@ class SettingsService:
             "SESSION_TIMEOUT": "86400",  # 24 hours
             "MAINTENANCE_MODE": "false",
             "BACKUP_ENABLED": "true",
-            "BACKUP_INTERVAL_HOURS": "24"
+            "BACKUP_INTERVAL_HOURS": "24",
         }
 
         for key, value in default_settings.items():

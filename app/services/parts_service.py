@@ -12,13 +12,14 @@ class PartsService:
         self.db = db
 
     def get_parts(
-            self,
-            skip: int = 0,
-            limit: int = 100,
-            status: Optional[str] = None,
-            category: Optional[str] = None,
-            vehicle_make: Optional[str] = None,
-            search: Optional[str] = None) -> List[Part]:
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        status: Optional[str] = None,
+        category: Optional[str] = None,
+        vehicle_make: Optional[str] = None,
+        search: Optional[str] = None,
+    ) -> List[Part]:
         """Get parts with filtering and search capabilities."""
         query = self.db.query(Part)
 
@@ -38,7 +39,7 @@ class PartsService:
                     Part.part_name.ilike(search_term),
                     Part.oem_code.ilike(search_term),
                     Part.vehicle_model.ilike(search_term),
-                    Part.brand_oem.ilike(search_term)
+                    Part.brand_oem.ilike(search_term),
                 )
             )
 
@@ -52,20 +53,20 @@ class PartsService:
         """Create a new part."""
         try:
             part = Part(
-                part_name=part_data['part_name'],
-                brand_oem=part_data['brand_oem'],
-                vehicle_make=part_data['vehicle_make'],
-                vehicle_model=part_data['vehicle_model'],
-                vehicle_trim=part_data.get('vehicle_trim'),
-                oem_code=part_data.get('oem_code'),
-                category=part_data['category'],
-                subcategory=part_data.get('subcategory'),
-                position=part_data.get('position'),
-                unit=part_data.get('unit', 'pcs'),
-                pack_size=part_data.get('pack_size'),
-                status=part_data.get('status', 'active'),
+                part_name=part_data["part_name"],
+                brand_oem=part_data["brand_oem"],
+                vehicle_make=part_data["vehicle_make"],
+                vehicle_model=part_data["vehicle_model"],
+                vehicle_trim=part_data.get("vehicle_trim"),
+                oem_code=part_data.get("oem_code"),
+                category=part_data["category"],
+                subcategory=part_data.get("subcategory"),
+                position=part_data.get("position"),
+                unit=part_data.get("unit", "pcs"),
+                pack_size=part_data.get("pack_size"),
+                status=part_data.get("status", "active"),
                 created_at=datetime.now(),
-                updated_at=datetime.now()
+                updated_at=datetime.now(),
             )
 
             self.db.add(part)
@@ -106,7 +107,7 @@ class PartsService:
                 return False
 
             # Soft delete by setting status to inactive
-            part.status = 'inactive'
+            part.status = "inactive"
             part.updated_at = datetime.now()
             self.db.commit()
             return True
@@ -131,11 +132,11 @@ class PartsService:
 
         # Required columns mapping
         required_columns = {
-            'part_name': 'Part Name',
-            'brand_oem': 'Brand OEM',
-            'vehicle_make': 'Vehicle Make',
-            'vehicle_model': 'Vehicle Model',
-            'category': 'Category'
+            "part_name": "Part Name",
+            "brand_oem": "Brand OEM",
+            "vehicle_make": "Vehicle Make",
+            "vehicle_model": "Vehicle Model",
+            "category": "Category",
         }
 
         # Check for required columns
@@ -146,118 +147,98 @@ class PartsService:
 
         if missing_columns:
             return {
-                "imported": 0, "errors": 1, "details": [
-                    f"Missing required columns: {', '.join(missing_columns)}"]
+                "imported": 0,
+                "errors": 1,
+                "details": [f"Missing required columns: {', '.join(missing_columns)}"],
             }
 
         for index, row in df.iterrows():
             try:
                 # Prepare part data
                 part_data = {
-                    'part_name': str(
-                        row['part_name']).strip(),
-                    'brand_oem': str(
-                        row['brand_oem']).strip(),
-                    'vehicle_make': str(
-                        row['vehicle_make']).strip(),
-                    'vehicle_model': str(
-                        row['vehicle_model']).strip(),
-                    'vehicle_trim': str(
-                        row.get(
-                            'vehicle_trim',
-                            '')).strip() if pd.notna(
-                                row.get('vehicle_trim')) else None,
-                    'oem_code': str(
-                        row.get(
-                            'oem_code',
-                            '')).strip() if pd.notna(
-                        row.get('oem_code')) else None,
-                    'category': str(
-                        row['category']).strip(),
-                    'subcategory': str(
-                        row.get(
-                            'subcategory',
-                            '')).strip() if pd.notna(
-                        row.get('subcategory')) else None,
-                    'position': str(
-                        row.get(
-                            'position',
-                            '')).strip() if pd.notna(
-                        row.get('position')) else None,
-                    'unit': str(
-                        row.get(
-                            'unit',
-                            'pcs')).strip(),
-                    'pack_size': int(
-                        row['pack_size']) if pd.notna(
-                        row.get('pack_size')) else None,
-                    'status': 'active'}
+                    "part_name": str(row["part_name"]).strip(),
+                    "brand_oem": str(row["brand_oem"]).strip(),
+                    "vehicle_make": str(row["vehicle_make"]).strip(),
+                    "vehicle_model": str(row["vehicle_model"]).strip(),
+                    "vehicle_trim": str(row.get("vehicle_trim", "")).strip()
+                    if pd.notna(row.get("vehicle_trim"))
+                    else None,
+                    "oem_code": str(row.get("oem_code", "")).strip()
+                    if pd.notna(row.get("oem_code"))
+                    else None,
+                    "category": str(row["category"]).strip(),
+                    "subcategory": str(row.get("subcategory", "")).strip()
+                    if pd.notna(row.get("subcategory"))
+                    else None,
+                    "position": str(row.get("position", "")).strip()
+                    if pd.notna(row.get("position"))
+                    else None,
+                    "unit": str(row.get("unit", "pcs")).strip(),
+                    "pack_size": int(row["pack_size"]) if pd.notna(row.get("pack_size")) else None,
+                    "status": "active",
+                }
 
                 # Create part
                 part = self.create_part(part_data)
                 if part:
                     imported += 1
-                    details.append(
-                        f"Row {index + 2}: Part '{part.part_name}' created successfully")
+                    details.append(f"Row {index + 2}: Part '{part.part_name}' created successfully")
                 else:
                     errors += 1
                     details.append(
-                        f"Row {index + 2}: Failed to create part '{part_data['part_name']}'")
+                        f"Row {index + 2}: Failed to create part '{part_data['part_name']}'"
+                    )
 
             except Exception as e:
                 errors += 1
                 details.append(f"Row {index + 2}: Error - {str(e)}")
 
-        return {
-            "imported": imported,
-            "errors": errors,
-            "details": details
-        }
+        return {"imported": imported, "errors": errors, "details": details}
 
     def get_categories(self) -> List[str]:
         """Get all unique categories."""
-        categories = self.db.query(distinct(Part.category)).filter(
-            Part.category.isnot(None),
-            Part.status == 'active'
-        ).all()
+        categories = (
+            self.db.query(distinct(Part.category))
+            .filter(Part.category.isnot(None), Part.status == "active")
+            .all()
+        )
         return [cat[0] for cat in categories if cat[0]]
 
     def get_vehicle_makes(self) -> List[str]:
         """Get all unique vehicle makes."""
-        makes = self.db.query(distinct(Part.vehicle_make)).filter(
-            Part.vehicle_make.isnot(None),
-            Part.status == 'active'
-        ).all()
+        makes = (
+            self.db.query(distinct(Part.vehicle_make))
+            .filter(Part.vehicle_make.isnot(None), Part.status == "active")
+            .all()
+        )
         return [make[0] for make in makes if make[0]]
 
     def get_parts_stats(self) -> Dict:
         """Get parts statistics."""
         total_parts = self.db.query(Part).count()
-        active_parts = self.db.query(Part).filter(
-            Part.status == 'active').count()
-        inactive_parts = self.db.query(Part).filter(
-            Part.status == 'inactive').count()
+        active_parts = self.db.query(Part).filter(Part.status == "active").count()
+        inactive_parts = self.db.query(Part).filter(Part.status == "inactive").count()
 
         # Count by category
-        category_stats = self.db.query(
-            Part.category,
-            func.count(Part.id).label('count')
-        ).filter(
-            Part.status == 'active'
-        ).group_by(Part.category).all()
+        category_stats = (
+            self.db.query(Part.category, func.count(Part.id).label("count"))
+            .filter(Part.status == "active")
+            .group_by(Part.category)
+            .all()
+        )
 
         # Count by vehicle make
-        make_stats = self.db.query(
-            Part.vehicle_make,
-            func.count(Part.id).label('count')
-        ).filter(
-            Part.status == 'active'
-        ).group_by(Part.vehicle_make).all()
+        make_stats = (
+            self.db.query(Part.vehicle_make, func.count(Part.id).label("count"))
+            .filter(Part.status == "active")
+            .group_by(Part.vehicle_make)
+            .all()
+        )
 
         return {
             "total_parts": total_parts,
             "active_parts": active_parts,
             "inactive_parts": inactive_parts,
             "category_stats": [{"category": cat, "count": count} for cat, count in category_stats],
-            "make_stats": [{"make": make, "count": count} for make, count in make_stats]
+            "make_stats": [{"make": make, "count": count} for make, count in make_stats],
         }

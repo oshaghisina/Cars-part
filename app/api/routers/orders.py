@@ -99,9 +99,7 @@ async def create_order(request: OrderCreateRequest, db: Session = Depends(get_db
     """Create a new order."""
     order_service = OrderService(db)
 
-    result = order_service.create_order(
-        lead_id=request.lead_id, order_items=request.items
-    )
+    result = order_service.create_order(lead_id=request.lead_id, order_items=request.items)
 
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
@@ -163,9 +161,7 @@ async def get_order(order_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{order_id}", response_model=OrderResponse)
-async def update_order(
-    order_id: int, request: OrderUpdateRequest, db: Session = Depends(get_db)
-):
+async def update_order(order_id: int, request: OrderUpdateRequest, db: Session = Depends(get_db)):
     """Update order by ID."""
     order_service = OrderService(db)
 

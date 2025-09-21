@@ -27,8 +27,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 
-def create_access_token(
-        data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Create JWT access token."""
     to_encode = data.copy()
 
@@ -54,11 +53,7 @@ def verify_token(token: str) -> Optional[TokenData]:
         if username is None or user_id is None:
             return None
 
-        return TokenData(
-            username=username,
-            user_id=user_id,
-            role=role
-        )
+        return TokenData(username=username, user_id=user_id, role=role)
     except JWTError:
         return None
 
@@ -74,8 +69,7 @@ def get_password_hash(password: str) -> str:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)
 ):
     """Get current authenticated user."""
     credentials_exception = HTTPException(
@@ -107,21 +101,19 @@ async def get_current_user(
 async def get_current_active_user(current_user=Depends(get_current_user)):
     """Get current active user."""
     if not current_user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
     return current_user
 
 
 def require_permission(permission: str):
     """Decorator to require specific permission."""
-    async def permission_dependency(
-            current_user=Depends(get_current_active_user)):
+
+    async def permission_dependency(current_user=Depends(get_current_active_user)):
         if not current_user.has_permission(permission):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required: {permission}")
+                detail=f"Insufficient permissions. Required: {permission}",
+            )
         return current_user
 
     return permission_dependency
@@ -129,11 +121,12 @@ def require_permission(permission: str):
 
 def require_role(role: str):
     """Decorator to require specific role."""
+
     async def role_dependency(current_user=Depends(get_current_active_user)):
         if not current_user.has_role(role):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required role: {role}"
+                detail=f"Insufficient permissions. Required role: {role}",
             )
         return current_user
 
@@ -142,12 +135,8 @@ def require_role(role: str):
 
 def require_admin(current_user=Depends(get_current_active_user)):
     """Require admin role."""
-    if not (current_user.has_role("admin")
-            or current_user.has_role("super_admin")):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin access required"
-        )
+    if not (current_user.has_role("admin") or current_user.has_role("super_admin")):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return current_user
 
 
@@ -155,8 +144,7 @@ def require_super_admin(current_user=Depends(get_current_active_user)):
     """Require super admin role."""
     if not current_user.has_role("super_admin"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Super admin access required"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required"
         )
     return current_user
 
@@ -171,7 +159,8 @@ class PermissionChecker:
         if not current_user.has_permission(self.required_permission):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required: {self.required_permission}")
+                detail=f"Insufficient permissions. Required: {self.required_permission}",
+            )
         return current_user
 
 
@@ -185,7 +174,8 @@ class RoleChecker:
         if not current_user.has_role(self.required_role):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required role: {self.required_role}")
+                detail=f"Insufficient permissions. Required role: {self.required_role}",
+            )
         return current_user
 
 
@@ -237,9 +227,8 @@ async def get_user_roles(current_user=Depends(get_current_user)) -> list:
 
 
 def check_resource_access(
-        user_id: int,
-        resource_user_id: int,
-        current_user=Depends(get_current_user)) -> bool:
+    user_id: int, resource_user_id: int, current_user=Depends(get_current_user)
+) -> bool:
     """Check if user can access a resource (either owner or admin)."""
     # Users can access their own resources
     if user_id == resource_user_id:
@@ -252,17 +241,10 @@ def check_resource_access(
     return False
 
 
-async def validate_user_access(
-    resource_user_id: int,
-    current_user=Depends(get_current_user)
-):
+async def validate_user_access(resource_user_id: int, current_user=Depends(get_current_user)):
     """Validate user access to a resource."""
-    if not check_resource_access(
-            current_user.id,
-            resource_user_id,
-            current_user):
+    if not check_resource_access(current_user.id, resource_user_id, current_user):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied to this resource"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied to this resource"
         )
     return current_user

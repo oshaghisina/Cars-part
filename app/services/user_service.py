@@ -5,9 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func
 from app.db.models import User
-from app.schemas.user_schemas import (
-    UserCreate, UserUpdate
-)
+from app.schemas.user_schemas import UserCreate, UserUpdate
 import secrets
 import logging
 
@@ -24,9 +22,11 @@ class UserService:
     async def create_user(self, user_data: UserCreate) -> User:
         """Create a new user."""
         # Check if username or email already exists
-        existing_user = self.db.query(User).filter(
-            or_(User.username == user_data.username, User.email == user_data.email)
-        ).first()
+        existing_user = (
+            self.db.query(User)
+            .filter(or_(User.username == user_data.username, User.email == user_data.email))
+            .first()
+        )
 
         if existing_user:
             # type: ignore[comparison-overlap]
@@ -45,7 +45,7 @@ class UserService:
             phone=user_data.phone,
             timezone=user_data.timezone,
             language=user_data.language,
-            preferences=user_data.preferences or {}
+            preferences=user_data.preferences or {},
         )
 
         # Set password
@@ -73,10 +73,8 @@ class UserService:
         return self.db.query(User).filter(User.email == email).first()
 
     async def get_users(
-            self,
-            skip: int = 0,
-            limit: int = 100,
-            search: Optional[str] = None) -> List[User]:
+        self, skip: int = 0, limit: int = 100, search: Optional[str] = None
+    ) -> List[User]:
         """Get users with pagination and search."""
         query = self.db.query(User)
 
@@ -85,16 +83,13 @@ class UserService:
                 User.username.ilike(f"%{search}%"),
                 User.email.ilike(f"%{search}%"),
                 User.first_name.ilike(f"%{search}%"),
-                User.last_name.ilike(f"%{search}%")
+                User.last_name.ilike(f"%{search}%"),
             )
             query = query.filter(search_filter)
 
         return query.offset(skip).limit(limit).all()
 
-    async def update_user(
-            self,
-            user_id: int,
-            user_data: UserUpdate) -> Optional[User]:
+    async def update_user(self, user_id: int, user_data: UserUpdate) -> Optional[User]:
         """Update user information."""
         user = await self.get_user_by_id(user_id)
         if not user:
@@ -103,18 +98,22 @@ class UserService:
         # Update fields
         if user_data.username is not None:
             # Check if username is already taken by another user
-            existing_user = self.db.query(User).filter(
-                and_(User.username == user_data.username, User.id != user_id)
-            ).first()
+            existing_user = (
+                self.db.query(User)
+                .filter(and_(User.username == user_data.username, User.id != user_id))
+                .first()
+            )
             if existing_user:
                 raise ValueError("Username already exists")
             user.username = user_data.username  # type: ignore[assignment]
 
         if user_data.email is not None:
             # Check if email is already taken by another user
-            existing_user = self.db.query(User).filter(
-                and_(User.email == user_data.email, User.id != user_id)
-            ).first()
+            existing_user = (
+                self.db.query(User)
+                .filter(and_(User.email == user_data.email, User.id != user_id))
+                .first()
+            )
             if existing_user:
                 raise ValueError("Email already exists")
             user.email = user_data.email  # type: ignore[assignment]
@@ -156,7 +155,7 @@ class UserService:
             return False
 
         # Don't allow deletion of system users
-        if user.has_role('super_admin'):
+        if user.has_role("super_admin"):
             raise ValueError("Cannot delete super admin user")
 
         user.is_active = False  # type: ignore[assignment]
@@ -167,11 +166,7 @@ class UserService:
         logger.info(f"User deactivated: {user.username} (ID: {user.id})")
         return True
 
-    async def change_password(
-            self,
-            user_id: int,
-            current_password: str,
-            new_password: str) -> bool:
+    async def change_password(self, user_id: int, current_password: str, new_password: str) -> bool:
         """Change user password."""
         user = await self.get_user_by_id(user_id)
         if not user:
@@ -185,46 +180,44 @@ class UserService:
 
         self.db.commit()
 
-        logger.info(
-            f"Password changed for user: {user.username} (ID: {user.id})")
+        logger.info(f"Password changed for user: {user.username} (ID: {user.id})")
         return True
 
     # Authentication Operations
     async def authenticate_user(
-            self,
-            username_or_email: str,
-            password: str,
-            ip_address: Optional[str] = None,
-            user_agent: Optional[str] = None) -> Optional[User]:
+        self,
+        username_or_email: str,
+        password: str,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+    ) -> Optional[User]:
         """Authenticate user with username/email and password."""
         # Find user by username or email
-        user = self.db.query(User).filter(
-            or_(User.username == username_or_email, User.email == username_or_email)
-        ).first()
+        user = (
+            self.db.query(User)
+            .filter(or_(User.username == username_or_email, User.email == username_or_email))
+            .first()
+        )
 
         if not user:
-            logger.warning(
-                f"Authentication failed: User not found - {username_or_email}")
+            logger.warning(f"Authentication failed: User not found - {username_or_email}")
             return None
 
         # Check if account is locked
         if user.is_locked():
-            logger.warning(
-                f"Authentication failed: Account locked - {user.username}")
+            logger.warning(f"Authentication failed: Account locked - {user.username}")
             return None
 
         # Check if account is active
         if not user.is_active:  # type: ignore[comparison-overlap]
-            logger.warning(
-                f"Authentication failed: Account inactive - {user.username}")
+            logger.warning(f"Authentication failed: Account inactive - {user.username}")
             return None
 
         # Verify password
         if not user.check_password(password):
             user.increment_login_attempts()
             self.db.commit()
-            logger.warning(
-                f"Authentication failed: Invalid password - {user.username}")
+            logger.warning(f"Authentication failed: Invalid password - {user.username}")
             return None
 
         # Reset login attempts on successful login
@@ -236,11 +229,12 @@ class UserService:
         return user
 
     async def create_session(
-            self,
-            user: User,
-            ip_address: Optional[str] = None,
-            user_agent: Optional[str] = None,
-            expires_hours: int = 24):
+        self,
+        user: User,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        expires_hours: int = 24,
+    ):
         """Create a new user session with basic tracking."""
         # Generate session token
         session_token = secrets.token_urlsafe(32)
@@ -254,13 +248,12 @@ class UserService:
             "user_agent": user_agent,
             "created_at": func.now(),
             "expires_at": func.now() + timedelta(hours=expires_hours),
-            "is_active": True
+            "is_active": True,
         }
 
         # In a real implementation, you would store this in a UserSession table
         # For now, we'll log it and return the token
-        logger.info(
-            f"Session created for user: {user.username} (IP: {ip_address})")
+        logger.info(f"Session created for user: {user.username} (IP: {ip_address})")
 
         # Update user's last login
         user.last_login = func.now()  # type: ignore[assignment]
@@ -279,22 +272,25 @@ class UserService:
         verified_users = self.db.query(User).filter(User.is_verified).count()
 
         # Users by role (simplified)
-        role_stats = self.db.query(
-            User.role,
-            func.count(User.id).label('user_count')
-        ).group_by(User.role).all()
+        role_stats = (
+            self.db.query(User.role, func.count(User.id).label("user_count"))
+            .group_by(User.role)
+            .all()
+        )
 
         # Recent activity
-        recent_logins = self.db.query(User).filter(
-            User.last_login >= datetime.utcnow() - timedelta(days=7)
-        ).count()
+        recent_logins = (
+            self.db.query(User)
+            .filter(User.last_login >= datetime.utcnow() - timedelta(days=7))
+            .count()
+        )
 
         return {
-            'total_users': total_users,
-            'active_users': active_users,
-            'verified_users': verified_users,
-            'recent_logins': recent_logins,
-            'role_distribution': {
-                role.role: role.user_count for role in role_stats}}
+            "total_users": total_users,
+            "active_users": active_users,
+            "verified_users": verified_users,
+            "recent_logins": recent_logins,
+            "role_distribution": {role.role: role.user_count for role in role_stats},
+        }
 
     # Note: Session cleanup method removed - session models not implemented yet

@@ -7,9 +7,16 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.services.user_service import UserService
 from app.schemas.user_schemas import (
-    UserCreate, UserUpdate, UserResponse, UserSummary, UserLogin,
-    UserStatistics, LoginResponse, UserListResponse,
-    PasswordChange, BulkUserCreate
+    UserCreate,
+    UserUpdate,
+    UserResponse,
+    UserSummary,
+    UserLogin,
+    UserStatistics,
+    LoginResponse,
+    UserListResponse,
+    PasswordChange,
+    BulkUserCreate,
 )
 from app.core.auth import create_access_token, verify_token, get_current_user
 from app.db.models import User
@@ -28,11 +35,7 @@ async def login_options():
 
 
 @router.post("/login", response_model=LoginResponse)
-async def login(
-    login_data: UserLogin,
-    request: Request,
-    db: Session = Depends(get_db)
-):
+async def login(login_data: UserLogin, request: Request, db: Session = Depends(get_db)):
     """Authenticate user and create session."""
     user_service = UserService(db)
 
@@ -42,16 +45,12 @@ async def login(
 
     # Authenticate user
     user = await user_service.authenticate_user(
-        login_data.username_or_email,
-        login_data.password,
-        ip_address,
-        user_agent
+        login_data.username_or_email, login_data.password, ip_address, user_agent
     )
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username/email or password"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username/email or password"
         )
 
     # Create session (placeholder - session management not fully implemented)
@@ -59,38 +58,29 @@ async def login(
 
     # Create JWT token
     access_token = create_access_token(
-        data={
-            "sub": user.username,
-            "user_id": user.id,
-            "role": user.role
-        }
+        data={"sub": user.username, "user_id": user.id, "role": user.role}
     )
 
     # Update last login time
     from datetime import datetime
+
     user.last_login = datetime.utcnow()  # type: ignore[assignment]
     db.commit()
 
     return LoginResponse(
-        access_token=access_token,
-        expires_in=86400,  # 24 hours
-        user=UserResponse.from_orm(user)
+        access_token=access_token, expires_in=86400, user=UserResponse.from_orm(user)  # 24 hours
     )
 
 
 @router.post("/logout")
 async def logout(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
+    credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)
 ):
     """Logout user and invalidate session."""
     # Verify token and get user
     token_data = verify_token(credentials.credentials)
     if not token_data:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     # For JWT, we can't invalidate the token itself
     # Session invalidation would be handled by client-side token removal
@@ -99,9 +89,7 @@ async def logout(
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user_info(
-    current_user: User = Depends(get_current_user)
-):
+async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """Get current user information."""
     return UserResponse.from_orm(current_user)
 
@@ -110,7 +98,7 @@ async def get_current_user_info(
 async def update_current_user(
     user_update: UserUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Update current user information."""
     user_service = UserService(db)
@@ -118,10 +106,7 @@ async def update_current_user(
     # type: ignore[arg-type]
     updated_user = await user_service.update_user(int(current_user.id), user_update)
     if not updated_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # Activity logging not implemented yet
 
@@ -132,7 +117,7 @@ async def update_current_user(
 async def change_password(
     password_data: PasswordChange,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Change user password."""
     user_service = UserService(db)
@@ -140,13 +125,12 @@ async def change_password(
     success = await user_service.change_password(
         int(current_user.id),  # type: ignore[arg-type]
         password_data.current_password,
-        password_data.new_password
+        password_data.new_password,
     )
 
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Failed to change password"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to change password"
         )
 
     # Activity logging not implemented yet
@@ -160,14 +144,13 @@ async def get_users(
     limit: int = Query(20, ge=1, le=100),
     search: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get users with pagination and search."""
     # Check permission
     if not current_user.has_permission("users.read"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
 
     user_service = UserService(db)
@@ -177,21 +160,26 @@ async def get_users(
     total = db.query(User).count()
     if search:
         from sqlalchemy import or_
-        total = db.query(User).filter(
-            or_(
-                User.username.ilike(f"%{search}%"),
-                User.email.ilike(f"%{search}%"),
-                User.first_name.ilike(f"%{search}%"),
-                User.last_name.ilike(f"%{search}%")
+
+        total = (
+            db.query(User)
+            .filter(
+                or_(
+                    User.username.ilike(f"%{search}%"),
+                    User.email.ilike(f"%{search}%"),
+                    User.first_name.ilike(f"%{search}%"),
+                    User.last_name.ilike(f"%{search}%"),
+                )
             )
-        ).count()
+            .count()
+        )
 
     return UserListResponse(
         users=[UserSummary.from_orm(user) for user in users],
         total=total,
         page=skip // limit + 1,
         limit=limit,
-        total_pages=(total + limit - 1) // limit
+        total_pages=(total + limit - 1) // limit,
     )
 
 
@@ -199,14 +187,13 @@ async def get_users(
 async def create_user(
     user_data: UserCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Create a new user."""
     # Check permission
     if not current_user.has_permission("users.create"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
 
     user_service = UserService(db)
@@ -218,34 +205,25 @@ async def create_user(
 
         return UserResponse.from_orm(user)
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
-    user_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """Get user by ID."""
     # Check permission
     if not current_user.has_permission("users.read"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
 
     user_service = UserService(db)
     user = await user_service.get_user_by_id(user_id)
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     return UserResponse.from_orm(user)
 
@@ -255,14 +233,13 @@ async def update_user(
     user_id: int,
     user_update: UserUpdate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Update user information."""
     # Check permission
     if not current_user.has_permission("users.update"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
 
     user_service = UserService(db)
@@ -270,40 +247,30 @@ async def update_user(
     try:
         updated_user = await user_service.update_user(user_id, user_update)
         if not updated_user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
         # Activity logging not implemented yet
 
         return UserResponse.from_orm(updated_user)
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.delete("/{user_id}")
 async def delete_user(
-    user_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """Delete user (soft delete)."""
     # Check permission
     if not current_user.has_permission("users.delete"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
 
     # Don't allow users to delete themselves
     if user_id == current_user.id:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete your own account"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete your own account"
         )
 
     user_service = UserService(db)
@@ -311,19 +278,13 @@ async def delete_user(
     try:
         success = await user_service.delete_user(user_id)
         if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
         # Activity logging not implemented yet
 
         return {"message": "User deleted successfully"}
     except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 # Role assignment endpoints temporarily disabled - methods not implemented in UserService
@@ -396,8 +357,7 @@ async def delete_user(
 
 @router.get("/statistics/overview", response_model=UserStatistics)
 async def get_user_statistics(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """
     Get user statistics.
@@ -405,8 +365,7 @@ async def get_user_statistics(
     # Check permission
     if not current_user.has_permission("users.read"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
 
     user_service = UserService(db)
@@ -419,14 +378,13 @@ async def get_user_statistics(
 async def create_users_bulk(
     bulk_data: BulkUserCreate,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Create multiple users at once."""
     # Check permission
     if not current_user.has_permission("users.create"):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
 
     user_service = UserService(db)
