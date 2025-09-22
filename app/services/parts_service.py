@@ -183,10 +183,7 @@ class PartsService:
                 else:
                     errors += 1
                     details.append(
-                        f"Row {
-                            index +
-                            2}: Failed to create part '{
-                            part_data['part_name']}'")
+                        f"Row {index + 2}: Failed to create part '{part_data['part_name']}'")
 
             except Exception as e:
                 errors += 1
