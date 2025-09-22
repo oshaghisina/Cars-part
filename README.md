@@ -22,6 +22,7 @@ A comprehensive auto parts management system with Telegram bot integration, web 
 - **SQLAlchemy ORM**: Robust database management
 - **JWT Authentication**: Secure user authentication
 - **Comprehensive Analytics**: Business intelligence and reporting
+- **AI Gateway (Experimental)**: Centralized AI provider management with fallbacks
 
 ## 🚀 Quick Start
 
@@ -238,6 +239,47 @@ POST /api/v1/orders/
   ]
 }
 ```
+
+## 🔬 AI Gateway (Experimental)
+
+The AI Gateway is a centralized system for managing AI providers, policies, and fallbacks. It's currently in scaffold mode and requires explicit feature flags to enable.
+
+### Configuration
+
+Add these environment variables to enable AI Gateway features:
+
+```bash
+# AI Gateway Configuration
+AI_GATEWAY_ENABLED=false              # Master toggle for AI Gateway
+AI_GATEWAY_EXPERIMENTAL=false         # Enable experimental features
+AI_FALLBACK_ENABLED=true              # Enable fallback mechanisms
+AI_FALLBACK_ORDER=openai,local,heuristic,basic  # Fallback sequence
+AI_LOG_PROMPTS_MASKED=true            # Mask PII in logs
+AI_RATE_LIMIT_PER_USER=20             # Rate limit per user
+AI_BUDGET_DAILY=20                    # Daily budget limit
+AI_OPENAI_API_KEY=                    # OpenAI API key
+AI_OPENAI_MODEL=gpt-4o-mini           # OpenAI model
+AI_OPENAI_TIMEOUT=5                   # Request timeout
+AI_OPENAI_MAX_RETRIES=3               # Max retries
+```
+
+### Current Status
+
+The AI Gateway is currently in **scaffold mode** with the following components:
+
+- **Providers**: Abstract interfaces and stub implementations
+- **Orchestrator**: Skeleton for task coordination
+- **Context Builder**: Placeholder for PII sanitization
+- **Normalizer**: Response standardization framework
+- **Policy Engine**: Configuration management structure
+- **Fallbacks**: Local processing framework
+- **Admin API**: Read-only endpoints (when experimental mode enabled)
+
+### Implementation Plan
+
+See `/docs/ai/implementation-plan.md` for the complete rollout strategy across 9 epics (E1-E9).
+
+**⚠️ Note**: This is scaffold-only code with no behavior changes. All methods raise `NotImplementedError` until implemented in their respective epics.
 
 ## 🤝 Contributing
 

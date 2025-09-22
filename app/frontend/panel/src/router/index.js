@@ -53,6 +53,16 @@ const routes = [
     component: () => import('../views/Analytics.vue')
   },
   {
+    path: '/ai-dashboard',
+    name: 'AIDashboard',
+    component: () => import('../views/AIDashboard.vue')
+  },
+  {
+    path: '/ai-chat',
+    name: 'AIChat',
+    component: () => import('../views/AIChat.vue')
+  },
+  {
     path: '/test-advanced-nav',
     name: 'TestAdvancedNav',
     component: () => import('../views/TestAdvancedNav.vue')

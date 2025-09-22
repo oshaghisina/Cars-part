@@ -20,10 +20,27 @@ class Settings(BaseSettings):
     telegram_webhook_url: Optional[str] = None
     admin_telegram_ids: str = "176007160"
 
-    # AI Search
+    # AI Search (Legacy)
     ai_enabled: bool = True
     ai_model_path: Optional[str] = None
     ai_api_key: Optional[str] = None
+
+    # AI Gateway Configuration
+    ai_gateway_enabled: bool = True
+    ai_gateway_experimental: bool = False
+    ai_gateway_primary_provider: str = "openai"
+    ai_gateway_fallback_providers: str = "stub"
+    ai_gateway_timeout: int = 30
+    ai_gateway_max_retries: int = 3
+    ai_gateway_circuit_breaker_threshold: int = 5
+    ai_gateway_circuit_breaker_timeout: int = 60
+    
+    # AI Gateway Advanced Configuration
+    ai_fallback_enabled: bool = True
+    ai_fallback_order: str = "openai,stub"
+    ai_log_prompts_masked: bool = True
+    ai_rate_limit_per_user: int = 20
+    ai_budget_daily: int = 20
 
     # OpenAI Configuration
     openai_api_key: Optional[str] = None
@@ -31,6 +48,10 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
     openai_max_tokens: int = 1000
     openai_temperature: float = 0.3
+    openai_timeout: int = 30
+    openai_max_retries: int = 3
+    openai_requests_per_minute: int = 60
+    openai_tokens_per_minute: int = 40000
 
     # Server
     host: str = "0.0.0.0"
@@ -74,6 +95,13 @@ class Settings(BaseSettings):
         """Parse admin telegram IDs from comma-separated string."""
         return [
             int(id.strip()) for id in self.admin_telegram_ids.split(",") if id.strip()
+        ]
+
+    @property
+    def ai_gateway_fallback_providers_list(self) -> List[str]:
+        """Parse AI Gateway fallback providers from comma-separated string."""
+        return [
+            provider.strip() for provider in self.ai_gateway_fallback_providers.split(",") if provider.strip()
         ]
 
     class Config:

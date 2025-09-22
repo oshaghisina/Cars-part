@@ -1,0 +1,206 @@
+{
+  "categories": {
+    "unit": {
+      "tests": [
+        {
+          "name": "cache_manager_creation",
+          "status": "passed",
+          "duration": 5.984306335449219e-05,
+          "result": {
+            "status": "passed",
+            "cache_stats": {
+              "total_requests": 1,
+              "hits": 1,
+              "misses": 0,
+              "hit_rate": 100.0,
+              "redis_hits": 0,
+              "redis_misses": 0,
+              "memory_hits": 1,
+              "memory_misses": 0,
+              "evictions": 0,
+              "memory_entries": 1,
+              "redis_enabled": false,
+              "max_memory_entries": 10000
+            }
+          }
+        },
+        {
+          "name": "performance_metrics_basic",
+          "status": "passed",
+          "duration": 2.09808349609375e-05,
+          "result": {
+            "status": "passed",
+            "metrics": {
+              "total_requests": 10,
+              "total_errors": 4,
+              "error_rate": 40.0,
+              "success_rate": 60.0,
+              "average_response_time": 0.14500000000000002,
+              "throughput_rpm": 2.0,
+              "average_cost": 0.05500000000000001,
+              "average_tokens": 145.0,
+              "error_breakdown": {},
+              "uptime_seconds": 1.4781951904296875e-05
+            }
+          }
+        },
+        {
+          "name": "resource_limiter_basic",
+          "status": "passed",
+          "duration": 4.601478576660156e-05,
+          "result": {
+            "status": "passed",
+            "usage_stats": {
+              "limits": {
+                "max_concurrent_requests": 100,
+                "max_requests_per_minute": 1000,
+                "max_tokens_per_minute": 100000,
+                "max_cost_per_hour": 100.0,
+                "max_memory_usage_mb": 1024
+              },
+              "current_usage": {
+                "concurrent_requests": 1,
+                "requests_this_minute": 1,
+                "tokens_this_minute": 100,
+                "cost_this_hour": 0.05
+              },
+              "utilization": {
+                "concurrent_requests": 1.0,
+                "requests_per_minute": 0.1,
+                "tokens_per_minute": 0.1,
+                "cost_per_hour": 0.05
+              }
+            }
+          }
+        },
+        {
+          "name": "query_optimization",
+          "status": "passed",
+          "duration": 3.719329833984375e-05,
+          "result": {
+            "status": "passed",
+            "optimization_results": [
+              {
+                "original_query": "\u0644\u0646\u062a \u062a\u0631\u0645\u0632 \u0686\u0631\u06cc \u062a\u06cc\u06af\u0648 8",
+                "optimized_query": "\u0644\u0646\u062a \u062a\u0631\u0645\u0632 \u0686\u0631\u06cc \u062a\u06cc\u06af\u0648 8",
+                "optimizations_applied": [
+                  "stop_words_removed"
+                ],
+                "confidence": 0.7,
+                "length_reduction": 0
+              },
+              {
+                "original_query": "brake pads for Chery Tiggo 8",
+                "optimized_query": "brake pads chery tiggo 8",
+                "optimizations_applied": [
+                  "english_optimized",
+                  "stop_words_removed"
+                ],
+                "confidence": 0.9,
+                "length_reduction": 4
+              },
+              {
+                "original_query": "a very long query with many unnecessary words",
+                "optimized_query": "very long query many unnecessary words",
+                "optimizations_applied": [
+                  "english_optimized",
+                  "stop_words_removed"
+                ],
+                "confidence": 0.9,
+                "length_reduction": 7
+              }
+            ]
+          }
+        },
+        {
+          "name": "ai_response_creation",
+          "status": "passed",
+          "duration": 3.0994415283203125e-06,
+          "result": {
+            "status": "passed",
+            "response": "<app.services.ai_provider.AIResponse object at 0x110499940>"
+          }
+        },
+        {
+          "name": "provider_status_enum",
+          "status": "passed",
+          "duration": 3.814697265625e-06,
+          "result": {
+            "status": "passed",
+            "enum_values": [
+              "healthy",
+              "degraded",
+              "unhealthy",
+              "unknown"
+            ]
+          }
+        }
+      ],
+      "total_tests": 6,
+      "passed_tests": 6,
+      "status": "completed"
+    },
+    "integration": {
+      "tests": [
+        {
+          "name": "orchestrator_initialization",
+          "status": "passed",
+          "duration": 0.004917621612548828,
+          "result": {
+            "status": "passed",
+            "initialized_components": [
+              "client",
+              "policy_engine",
+              "context_builder"
+            ]
+          }
+        },
+        {
+          "name": "cache_integration",
+          "status": "passed",
+          "duration": 0.007736921310424805,
+          "result": {
+            "status": "passed",
+            "cache_integration": "working"
+          }
+        },
+        {
+          "name": "performance_monitoring_integration",
+          "status": "passed",
+          "duration": 0.004658937454223633,
+          "result": {
+            "status": "passed",
+            "performance_monitoring": "working"
+          }
+        },
+        {
+          "name": "resource_management_integration",
+          "status": "passed",
+          "duration": 0.004703998565673828,
+          "result": {
+            "status": "passed",
+            "resource_management": "working"
+          }
+        },
+        {
+          "name": "ai_provider_integration",
+          "status": "passed",
+          "duration": 0.0046100616455078125,
+          "result": {
+            "status": "passed",
+            "provider_integration": "working"
+          }
+        }
+      ],
+      "total_tests": 5,
+      "passed_tests": 5,
+      "status": "completed"
+    }
+  },
+  "total_tests": 11,
+  "passed_tests": 11,
+  "failed_tests": 0,
+  "success_rate": 100.0,
+  "total_time": 0.026887893676757812,
+  "timestamp": "2025-09-22T11:28:16.076370"
+}
