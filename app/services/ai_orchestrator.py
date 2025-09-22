@@ -200,7 +200,7 @@ class AIOrchestrator:
                     )
 
                     error_msg = (
-                        response.metadata.get('error', 'Unknown error') 
+                        response.metadata.get('error', 'Unknown error')
                         if response else 'No response'
                     )
                     logger.warning(f"Semantic search failed: {error_msg}")

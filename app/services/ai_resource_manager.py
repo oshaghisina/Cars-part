@@ -254,7 +254,7 @@ class ResourcePool:
                 if (
                     len(self.pool) > self.min_size
                     and resource in self.last_used
-                    and current_time - self.last_used[resource] > 
+                    and current_time - self.last_used[resource] >
                     timedelta(seconds=self.idle_timeout)
                 ):
                     await self._destroy_resource(resource)
