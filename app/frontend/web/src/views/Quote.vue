@@ -1,33 +1,33 @@
 <template>
   <div class="quote">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-8 font-persian-bold text-rtl font-persian font-persian" class="font-persian-bold text-rtl">درخواست پیشنهاد قیمت</h1>
+      <h1 class="text-3xl font-bold text-gray-900 mb-8 font-persian-bold text-rtl font-persian font-persian-bold text-rtl">درخواست پیشنهاد قیمت</h1>
       
       <div class="bg-white rounded-lg shadow-md p-8">
         <form @submit.prevent="submitQuote" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl font-persian font-persian">نام *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl font-persian">نام *</label>
               <input
                 v-model="form.name"
                 type="text"
                 required
-                class="input-field font-persian text-rtl font-persian font-persian"
+                class="input-field font-persian text-rtl font-persian"
               />
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl font-persian font-persian">ایمیل *</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl font-persian">ایمیل *</label>
               <input
                 v-model="form.email"
                 type="email"
                 required
-                class="input-field font-persian text-rtl font-persian font-persian"
+                class="input-field font-persian text-rtl font-persian"
               />
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl font-persian font-persian">تلفن</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl font-persian">تلفن</label>
               <input
                 v-model="form.phone"
                 type="tel"
@@ -36,7 +36,7 @@
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 font-persian font-persian">شرکت</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2 font-persian">شرکت</label>
               <input
                 v-model="form.company"
                 type="text"
@@ -46,7 +46,7 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2 font-persian font-persian">Vehicle Details *</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2 font-persian">Vehicle Details *</label>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <input
                 v-model="form.make"
@@ -73,7 +73,7 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2 font-persian font-persian">Parts Needed *</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2 font-persian">Parts Needed *</label>
             <textarea
               v-model="form.parts"
               rows="4"
@@ -84,7 +84,7 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2 font-persian font-persian">Additional Requirements</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2 font-persian">Additional Requirements</label>
             <textarea
               v-model="form.requirements"
               rows="3"
@@ -94,9 +94,9 @@
           </div>
           
           <!-- Success Message -->
-          <div v-if="success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 font-persian font-persian">
+          <div v-if="success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 font-persian">
             <div class="flex items-center">
-              <span class="text-2xl mr-2 font-persian font-persian">✅</span>
+              <span class="text-2xl mr-2 font-persian">✅</span>
               <div>
                 <strong>موفق!</strong> Your quote request has been submitted successfully. 
                 We will contact you within 24 hours.
@@ -105,9 +105,9 @@
           </div>
 
           <!-- Error Message -->
-          <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 font-persian font-persian">
+          <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 font-persian">
             <div class="flex items-center">
-              <span class="text-2xl mr-2 font-persian font-persian">❌</span>
+              <span class="text-2xl mr-2 font-persian">❌</span>
               <div>
                 <strong>Error:</strong> {{ error }}
               </div>
