@@ -3,29 +3,29 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Search Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">Search Auto Parts</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-4 font-persian-bold text-rtl">جستجوی قطعات خودرو</h1>
         
         <!-- Search Form -->
         <div class="bg-white rounded-lg shadow-md p-6">
           <form @submit.prevent="searchParts" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Part Name</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl">نام قطعه</label>
                 <input
                   v-model="searchForm.partName"
                   type="text"
-                  placeholder="e.g., brake pads, oil filter"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="مثال: لنت ترمز، فیلتر روغن"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-persian text-rtl"
                 />
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Make</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl">برند خودرو</label>
                 <select
                   v-model="searchForm.make"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-persian text-rtl"
                 >
-                  <option value="">Select Make</option>
+                  <option value="">انتخاب برند</option>
                   <option value="BYD">BYD</option>
                   <option value="Geely">Geely</option>
                   <option value="Great Wall">Great Wall</option>
@@ -35,12 +35,12 @@
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle Model</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2 font-persian text-rtl">مدل خودرو</label>
                 <input
                   v-model="searchForm.model"
                   type="text"
-                  placeholder="e.g., F3, EC7"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="مثال: F3، EC7"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-persian text-rtl"
                 />
               </div>
             </div>
@@ -49,17 +49,17 @@
               <button
                 type="submit"
                 :disabled="loading"
-                class="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 disabled:opacity-50"
+                class="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 disabled:opacity-50 font-persian"
               >
-                {{ loading ? 'Searching...' : 'Search Parts' }}
+                {{ loading ? 'در حال جستجو...' : 'جستجوی قطعات' }}
               </button>
               
               <button
                 type="button"
                 @click="clearFilters"
-                class="text-gray-600 hover:text-gray-800"
+                class="text-gray-600 hover:text-gray-800 font-persian"
               >
-                Clear Filters
+                پاک کردن فیلترها
               </button>
             </div>
           </form>
