@@ -338,12 +338,9 @@ Respond with just 3 suggestions, one per line, in the same language as the query
 
             # Create part description for similarity search
             part_description = (
-                f"{
-                    part.part_name} {
-                    part.brand_oem} " f"{
-                    part.vehicle_make} {
-                    part.vehicle_model} " f"{
-                        part.category}")
+                f"{part.part_name} {part.brand_oem} "
+                f"{part.vehicle_make} {part.vehicle_model} "
+                f"{part.category}")
 
             # Find similar parts using semantic search
             similar_parts = self.semantic_search(part_description, limit * 2)
