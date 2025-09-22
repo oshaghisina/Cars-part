@@ -177,8 +177,9 @@ class AIOrchestrator:
                         cost=response.cost,
                     )
 
+                    result_count = len(response.content)
                     logger.info(
-                        f"Semantic search completed successfully. Found {len(response.content)} results.")
+                        f"Semantic search completed successfully. Found {result_count} results.")
                     return response.content
                 else:
                     # Record failure metrics
@@ -198,8 +199,11 @@ class AIOrchestrator:
                         error_type="empty_response",
                     )
 
-                    logger.warning(
-                        f"Semantic search failed: {response.metadata.get('error', 'Unknown error') if response else 'No response'}")
+                    error_msg = (
+                        response.metadata.get('error', 'Unknown error') 
+                        if response else 'No response'
+                    )
+                    logger.warning(f"Semantic search failed: {error_msg}")
                     return []
 
             except Exception as e:
@@ -266,7 +270,8 @@ class AIOrchestrator:
                 "parts": parts or [],
             }
 
-            response = await self.client.execute_task(TaskType.INTELLIGENT_SEARCH, context, limit=limit)
+            response = await self.client.execute_task(
+                TaskType.INTELLIGENT_SEARCH, context, limit=limit)
 
             if response.content is not None:
                 result = response.content
@@ -328,16 +333,20 @@ class AIOrchestrator:
                 "part_data": part_data,
             }
 
-            response = await self.client.execute_task(TaskType.PART_RECOMMENDATIONS, context, limit=limit)
+            response = await self.client.execute_task(
+                TaskType.PART_RECOMMENDATIONS, context, limit=limit)
 
             if response.content is not None:
+                rec_count = len(response.content)
                 logger.info(
-                    f"Part recommendations completed successfully. Generated {len(response.content)} recommendations."
+                    f"Part recommendations completed successfully. "
+                    f"Generated {rec_count} recommendations."
                 )
                 return response.content
             else:
                 logger.warning(
-                    f"Part recommendations failed: {response.metadata.get('error', 'Unknown error')}")
+                    f"Part recommendations failed: "
+                    f"{response.metadata.get('error', 'Unknown error')}")
                 return []
 
         except Exception as e:
@@ -424,13 +433,16 @@ class AIOrchestrator:
             response = await self.client.execute_task(TaskType.SUGGESTION_GENERATION, context)
 
             if response.content is not None:
+                sugg_count = len(response.content)
                 logger.info(
-                    f"Suggestion generation completed successfully. Generated {len(response.content)} suggestions."
+                    f"Suggestion generation completed successfully. "
+                    f"Generated {sugg_count} suggestions."
                 )
                 return response.content
             else:
                 logger.warning(
-                    f"Suggestion generation failed: {response.metadata.get('error', 'Unknown error')}")
+                    f"Suggestion generation failed: "
+                    f"{response.metadata.get('error', 'Unknown error')}")
                 return []
 
         except Exception as e:
@@ -461,7 +473,9 @@ class AIOrchestrator:
                 "statistics": self.tracer.get_trace_statistics(),
             },
             "metrics": {
-                "collection_period_hours": (time.time() - self.metrics.start_time.timestamp()) / 3600,
+                "collection_period_hours": (
+                    time.time() - self.metrics.start_time.timestamp()
+                ) / 3600,
                 "total_requests": sum(m.request_count for m in self.metrics.metrics.values()),
                 "health_status": self.metrics.get_health_status(),
             },

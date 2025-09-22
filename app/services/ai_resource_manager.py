@@ -157,8 +157,9 @@ class ResourcePool:
                         self.usage_count[resource] += 1
                         self.total_requests += 1
 
+                        resource_id = resource.get('id', 'unknown')
                         logger.debug(
-                            f"Created and acquired {self.resource_type} resource: {resource.get('id', 'unknown')}")
+                            f"Created and acquired {self.resource_type} resource: {resource_id}")
                         return resource
                     except Exception as e:
                         logger.error(f"Failed to create new resource: {e}")
@@ -184,8 +185,9 @@ class ResourcePool:
 
                 if mark_unhealthy:
                     self.unhealthy.add(resource)
+                    resource_id = resource.get('id', 'unknown')
                     logger.warning(
-                        f"Marked {self.resource_type} resource as unhealthy: {resource.get('id', 'unknown')}")
+                        f"Marked {self.resource_type} resource as unhealthy: {resource_id}")
                 else:
                     self.available.add(resource)
                     logger.debug(
@@ -252,7 +254,8 @@ class ResourcePool:
                 if (
                     len(self.pool) > self.min_size
                     and resource in self.last_used
-                    and current_time - self.last_used[resource] > timedelta(seconds=self.idle_timeout)
+                    and current_time - self.last_used[resource] > 
+                    timedelta(seconds=self.idle_timeout)
                 ):
                     await self._destroy_resource(resource)
 

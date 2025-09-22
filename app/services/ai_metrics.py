@@ -431,22 +431,26 @@ class AIMetricsCollector:
 
             # Duration metrics
             lines.append(
-                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.5"}} '
+                f'ai_duration_seconds{{provider="{provider}", '
+                f'task_type="{task_type}", quantile="0.5"}} '
                 f'{metrics.p50_duration_ms / 1000}'
             )
             lines.append(
-                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.95"}} '
+                f'ai_duration_seconds{{provider="{provider}", '
+                f'task_type="{task_type}", quantile="0.95"}} '
                 f'{metrics.p95_duration_ms / 1000}'
             )
             lines.append(
-                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.99"}} '
+                f'ai_duration_seconds{{provider="{provider}", '
+                f'task_type="{task_type}", quantile="0.99"}} '
                 f'{metrics.p99_duration_ms / 1000}'
             )
 
             # Cost metrics
             for cost_key, cost in metrics.cost_tracking.items():
                 lines.append(
-                    f'ai_cost_total{{provider="{provider}", task_type="{task_type}", cost_type="{cost_key}"}} '
+                    f'ai_cost_total{{provider="{provider}", '
+                    f'task_type="{task_type}", cost_type="{cost_key}"}} '
                     f'{cost}'
                 )
 
