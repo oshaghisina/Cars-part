@@ -132,10 +132,7 @@ class CategoryService:
                 if parent:
                     level = parent.level + 1
                     # type: ignore[comparison-overlap]
-                    path = f"{
-                        parent.path}/{
-                        category_data['name']}" if parent.path else f"/{
-                        category_data['name']}"
+                    path = f"{parent.path}/{category_data['name']}" if parent.path else f"/{category_data['name']}"
                 else:
                     raise ValueError("Invalid parent_id")
             else:
