@@ -36,7 +36,9 @@ class LanguageProcessor:
     def _load_persian_patterns(self) -> Dict[str, re.Pattern]:
         """Load Persian language detection patterns."""
         return {
-            "persian_chars": re.compile(r"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]"),
+            "persian_chars": re.compile(
+                r"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]"
+            ),
             "persian_numbers": re.compile(r"[\u06F0-\u06F9]"),
             "persian_words": re.compile(r"\b[\u0600-\u06FF]+\b"),
             "persian_car_brands": re.compile(

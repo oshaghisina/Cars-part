@@ -75,17 +75,21 @@ async def bulk_export(export_request: ExportRequest, db: Session = Depends(get_d
         if export_request.format == "csv":
             output = data.to_csv(index=False)
             content_type = "text/csv"
-            filename = f"{export_request.data_type}_export_" f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            filename = f"{export_request.data_type}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         elif export_request.format == "xlsx":
             output = io.BytesIO()
             data.to_excel(output, index=False)
             output.seek(0)
             content_type = "application/vnd.openxmlformats-officedocument." "spreadsheetml.sheet"
-            filename = f"{export_request.data_type}_export_" f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename = f"{
+                export_request.data_type}_export_" f"{
+                datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         elif export_request.format == "json":
             output = data.to_json(orient="records", date_format="iso")
             content_type = "application/json"
-            filename = f"{export_request.data_type}_export_" f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filename = f"{
+                export_request.data_type}_export_" f"{
+                datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         else:
             raise HTTPException(status_code=400, detail="Unsupported export format")
 
@@ -159,7 +163,12 @@ async def process_import(
     )
 
 
-async def import_parts(df: pd.DataFrame, mode: str, validate_data: bool, skip_errors: bool, db: Session):
+async def import_parts(
+        df: pd.DataFrame,
+        mode: str,
+        validate_data: bool,
+        skip_errors: bool,
+        db: Session):
     """Import parts data"""
     processed_count = 0
     error_count = 0
@@ -181,7 +190,11 @@ async def import_parts(df: pd.DataFrame, mode: str, validate_data: bool, skip_er
 
             if existing_part and mode == "create":
                 if skip_errors:
-                    errors.append(f"Row {index + 1}: Part with OEM code {row['oem_code']} already exists")
+                    errors.append(
+                        f"Row {
+                            index +
+                            1}: Part with OEM code {
+                            row['oem_code']} already exists")
                     error_count += 1
                     continue
                 else:
@@ -210,7 +223,12 @@ async def import_parts(df: pd.DataFrame, mode: str, validate_data: bool, skip_er
     return processed_count, error_count, errors
 
 
-async def import_vehicles(df: pd.DataFrame, mode: str, validate_data: bool, skip_errors: bool, db: Session):
+async def import_vehicles(
+        df: pd.DataFrame,
+        mode: str,
+        validate_data: bool,
+        skip_errors: bool,
+        db: Session):
     """Import vehicles data"""
     processed_count = 0
     error_count = 0
@@ -220,7 +238,8 @@ async def import_vehicles(df: pd.DataFrame, mode: str, validate_data: bool, skip
         try:
             if "brand_name" in row and not pd.isna(row["brand_name"]):
                 # Import brand
-                existing_brand = db.query(VehicleBrand).filter(VehicleBrand.name == row["brand_name"]).first()
+                existing_brand = db.query(VehicleBrand).filter(
+                    VehicleBrand.name == row["brand_name"]).first()
 
                 if existing_brand and mode == "create":
                     if skip_errors:
@@ -235,7 +254,8 @@ async def import_vehicles(df: pd.DataFrame, mode: str, validate_data: bool, skip
 
             # Import model if specified
             if "model_name" in row and not pd.isna(row["model_name"]):
-                brand = db.query(VehicleBrand).filter(VehicleBrand.name == row["brand_name"]).first()
+                brand = db.query(VehicleBrand).filter(
+                    VehicleBrand.name == row["brand_name"]).first()
                 if brand:
                     existing_model = (
                         db.query(VehicleModel)
@@ -260,7 +280,12 @@ async def import_vehicles(df: pd.DataFrame, mode: str, validate_data: bool, skip
     return processed_count, error_count, errors
 
 
-async def import_categories(df: pd.DataFrame, mode: str, validate_data: bool, skip_errors: bool, db: Session):
+async def import_categories(
+        df: pd.DataFrame,
+        mode: str,
+        validate_data: bool,
+        skip_errors: bool,
+        db: Session):
     """Import categories data"""
     processed_count = 0
     error_count = 0
@@ -271,7 +296,8 @@ async def import_categories(df: pd.DataFrame, mode: str, validate_data: bool, sk
             if pd.isna(row.get("name")):
                 raise ValueError("Category name is required")
 
-            existing_category = db.query(PartCategory).filter(PartCategory.name == row["name"]).first()
+            existing_category = db.query(PartCategory).filter(
+                PartCategory.name == row["name"]).first()
 
             if existing_category and mode == "create":
                 if skip_errors:
@@ -281,10 +307,9 @@ async def import_categories(df: pd.DataFrame, mode: str, validate_data: bool, sk
             else:
                 if not existing_category:
                     category_data = {
-                        "name": row["name"],
-                        "description": row.get("description", ""),
-                        "parent_id": row.get("parent_id") if not pd.isna(row.get("parent_id")) else None,
-                    }
+                        "name": row["name"], "description": row.get(
+                            "description", ""), "parent_id": row.get("parent_id") if not pd.isna(
+                            row.get("parent_id")) else None, }
                     new_category = PartCategory(**category_data)
                     db.add(new_category)
                     processed_count += 1
@@ -298,7 +323,12 @@ async def import_categories(df: pd.DataFrame, mode: str, validate_data: bool, sk
     return processed_count, error_count, errors
 
 
-async def import_orders(df: pd.DataFrame, mode: str, validate_data: bool, skip_errors: bool, db: Session):
+async def import_orders(
+        df: pd.DataFrame,
+        mode: str,
+        validate_data: bool,
+        skip_errors: bool,
+        db: Session):
     """Import orders data"""
     processed_count = 0
     error_count = 0
@@ -333,7 +363,12 @@ async def import_orders(df: pd.DataFrame, mode: str, validate_data: bool, skip_e
     return processed_count, error_count, errors
 
 
-async def import_leads(df: pd.DataFrame, mode: str, validate_data: bool, skip_errors: bool, db: Session):
+async def import_leads(
+        df: pd.DataFrame,
+        mode: str,
+        validate_data: bool,
+        skip_errors: bool,
+        db: Session):
     """Import leads data"""
     processed_count = 0
     error_count = 0

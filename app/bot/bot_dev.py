@@ -26,7 +26,12 @@ def initialize_bot():
     token = settings.telegram_bot_token
 
     # Check if token is valid (basic validation)
-    if not token or token == "CHANGEME_YOUR_PRODUCTION_BOT_TOKEN" or len(token) < 10 or ":" not in token:
+    if (
+        not token
+        or token == "CHANGEME_YOUR_PRODUCTION_BOT_TOKEN"
+        or len(token) < 10
+        or ":" not in token
+    ):
         logger.warning("⚠️  Invalid or missing TELEGRAM_BOT_TOKEN")
         logger.warning("⚠️  Bot will run in development mode (no actual Telegram connection)")
         logger.warning("⚠️  To enable full bot functionality, set a valid TELEGRAM_BOT_TOKEN")

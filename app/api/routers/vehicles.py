@@ -210,7 +210,9 @@ async def list_models(
 ):
     """List all vehicle models with optional filtering."""
     vehicle_service = VehicleService(db)
-    models = vehicle_service.get_models(skip=skip, limit=limit, brand_id=brand_id, is_active=is_active, search=search)
+    models = vehicle_service.get_models(
+        skip=skip, limit=limit, brand_id=brand_id, is_active=is_active, search=search
+    )
 
     return [
         VehicleModelResponse(

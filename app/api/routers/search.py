@@ -78,7 +78,9 @@ async def global_search(search_request: GlobalSearchRequest, db: Session = Depen
         results = sorted(results, key=lambda x: x.relevance_score, reverse=True)
         results = results[: search_request.limit]
 
-        return GlobalSearchResponse(results=results, total_count=len(results), query=search_request.query)
+        return GlobalSearchResponse(
+            results=results, total_count=len(results), query=search_request.query
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Global search error: {str(e)}")
@@ -123,7 +125,12 @@ async def get_search_suggestions(
                 )
 
         if not module or module == "vehicles":
-            brands = db.query(VehicleBrand).filter(func.lower(VehicleBrand.name).contains(query)).limit(3).all()
+            brands = (
+                db.query(VehicleBrand)
+                .filter(func.lower(VehicleBrand.name).contains(query))
+                .limit(3)
+                .all()
+            )
 
             for brand in brands:
                 suggestions.append(
@@ -136,7 +143,12 @@ async def get_search_suggestions(
                 )
 
         if not module or module == "categories":
-            categories = db.query(PartCategory).filter(func.lower(PartCategory.name).contains(query)).limit(3).all()
+            categories = (
+                db.query(PartCategory)
+                .filter(func.lower(PartCategory.name).contains(query))
+                .limit(3)
+                .all()
+            )
 
             for category in categories:
                 suggestions.append(
@@ -395,7 +407,9 @@ def apply_global_filters(results: List[SearchResult], filters):
         # Date range filter
         if filters.date_from or filters.date_to:
             if "created_at" in result.metadata:
-                created_at = datetime.fromisoformat(result.metadata["created_at"].replace("Z", "+00:00"))
+                created_at = datetime.fromisoformat(
+                    result.metadata["created_at"].replace("Z", "+00:00")
+                )
                 if filters.date_from and created_at.date() < filters.date_from:
                     include = False
                 if filters.date_to and created_at.date() > filters.date_to:

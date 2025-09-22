@@ -75,7 +75,9 @@ async def intelligent_search(
 
 
 @router.post("/intelligent/bulk", response_model=BulkIntelligentSearchResponse)
-async def bulk_intelligent_search(request: BulkIntelligentSearchRequest, db: Session = Depends(get_db)):
+async def bulk_intelligent_search(
+    request: BulkIntelligentSearchRequest, db: Session = Depends(get_db)
+):
     """Perform bulk intelligent search for multiple queries."""
     if not request.queries:
         raise HTTPException(status_code=400, detail="Queries list cannot be empty")

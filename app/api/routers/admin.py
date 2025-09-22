@@ -25,7 +25,9 @@ router = APIRouter()
 
 
 @router.get("/settings", response_model=SettingsResponse)
-async def get_settings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def get_settings(
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     """Get system settings."""
     # Check if user is admin
     if current_user.role not in ["admin", "super_admin"]:
@@ -110,7 +112,9 @@ async def create_admin_user(
     """Create a new admin user."""
     # Check if user is super_admin
     if current_user.role != "super_admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required"
+        )
 
     user_service = UserService(db)
 
@@ -147,7 +151,9 @@ async def create_admin_user(
 
 
 @router.get("/status", response_model=SystemStatusResponse)
-async def get_system_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def get_system_status(
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
     """Get system status and statistics."""
     # Check if user is admin
     if current_user.role not in ["admin", "super_admin"]:

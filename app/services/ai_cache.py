@@ -110,7 +110,9 @@ class AICacheManager:
                 self._redis_client.ping()
                 logger.info("Redis cache connection established")
             except Exception as e:
-                logger.warning(f"Failed to connect to Redis: {e}. Falling back to memory-only cache.")
+                logger.warning(
+                    f"Failed to connect to Redis: {e}. Falling back to memory-only cache."
+                )
                 self._redis_client = None
                 self.enable_redis = False
         elif enable_redis and not REDIS_AVAILABLE:
@@ -128,7 +130,9 @@ class AICacheManager:
             "memory_misses": 0,
         }
 
-    def _generate_cache_key(self, prefix: str, task_type: str, context: Dict[str, Any], **kwargs) -> str:
+    def _generate_cache_key(
+        self, prefix: str, task_type: str, context: Dict[str, Any], **kwargs
+    ) -> str:
         """Generate a consistent cache key for the given parameters."""
         # Create a deterministic hash of the context
         context_str = json.dumps(context, sort_keys=True, default=str)
@@ -141,7 +145,9 @@ class AICacheManager:
         hash_obj = hashlib.sha256(combined.encode())
         return f"ai_cache:{hash_obj.hexdigest()[:16]}"
 
-    async def get(self, prefix: str, task_type: str, context: Dict[str, Any], **kwargs) -> Optional[Any]:
+    async def get(
+        self, prefix: str, task_type: str, context: Dict[str, Any], **kwargs
+    ) -> Optional[Any]:
         """
         Retrieve a cached value.
 
@@ -309,7 +315,9 @@ class AICacheManager:
 
         # Clear memory cache
         if prefix:
-            keys_to_delete = [k for k in self._memory_cache.keys() if k.startswith(f"ai_cache:{prefix}:")]
+            keys_to_delete = [
+                k for k in self._memory_cache.keys() if k.startswith(f"ai_cache:{prefix}:")
+            ]
             for key in keys_to_delete:
                 del self._memory_cache[key]
                 cleared_count += 1
@@ -433,7 +441,9 @@ cache_manager = AICacheManager(enable_redis=REDIS_AVAILABLE)
 class CacheDecorator:
     """Decorator for caching AI operations."""
 
-    def __init__(self, prefix: str = "ai_operation", ttl: int = 3600, cache_manager: AICacheManager = None):
+    def __init__(
+        self, prefix: str = "ai_operation", ttl: int = 3600, cache_manager: AICacheManager = None
+    ):
         self.prefix = prefix
         self.ttl = ttl
         self.cache_manager = cache_manager or globals()["cache_manager"]
@@ -448,7 +458,9 @@ class CacheDecorator:
                 context["kwargs"] = kwargs
 
             # Try to get from cache
-            cached_result = await self.cache_manager.get(self.prefix, func.__name__, context, **kwargs)
+            cached_result = await self.cache_manager.get(
+                self.prefix, func.__name__, context, **kwargs
+            )
 
             if cached_result is not None:
                 logger.debug(f"Cache hit for {func.__name__}")
@@ -457,7 +469,9 @@ class CacheDecorator:
             # Execute function and cache result
             result = await func(*args, **kwargs)
 
-            await self.cache_manager.set(self.prefix, func.__name__, context, result, ttl=self.ttl, **kwargs)
+            await self.cache_manager.set(
+                self.prefix, func.__name__, context, result, ttl=self.ttl, **kwargs
+            )
 
             logger.debug(f"Cached result for {func.__name__}")
             return result

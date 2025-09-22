@@ -56,7 +56,9 @@ class Part(Base):
     synonyms = relationship("Synonym", back_populates="part")
     order_items = relationship("OrderItem", back_populates="matched_part")
     category_obj = relationship("PartCategory", back_populates="parts")
-    specifications = relationship("PartSpecification", back_populates="part", cascade="all, delete-orphan")
+    specifications = relationship(
+        "PartSpecification", back_populates="part", cascade="all, delete-orphan"
+    )
     images = relationship("PartImage", back_populates="part", cascade="all, delete-orphan")
 
 
@@ -208,7 +210,9 @@ class User(Base):
         """Check password against hash."""
         if not self.password_hash or not self.salt:
             return False
-        hash_to_check = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), self.salt.encode("utf-8"), 100000).hex()
+        hash_to_check = hashlib.pbkdf2_hmac(
+            "sha256", password.encode("utf-8"), self.salt.encode("utf-8"), 100000
+        ).hex()
         return hash_to_check == self.password_hash
 
     def get_full_name(self) -> str:

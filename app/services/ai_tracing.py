@@ -271,7 +271,9 @@ class AITracer:
             if span:
                 span.add_tag(key, value)
 
-    def add_span_log(self, trace_id: str, span_id: str, message: str, level: str = "info", **kwargs):
+    def add_span_log(
+        self, trace_id: str, span_id: str, message: str, level: str = "info", **kwargs
+    ):
         """Add a log entry to a span."""
         if trace_id in self.active_traces:
             span = self.active_traces[trace_id].get_span(span_id)
@@ -393,7 +395,9 @@ class TraceContext:
 
     def __enter__(self):
         """Start the trace."""
-        self.trace = self.tracer.start_trace(self.operation_name, self.correlation_id, self.user_id, **self.tags)
+        self.trace = self.tracer.start_trace(
+            self.operation_name, self.correlation_id, self.user_id, **self.tags
+        )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

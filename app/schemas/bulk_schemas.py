@@ -53,7 +53,9 @@ class ExportResponse(BaseModel):
 class BatchOperationRequest(BaseModel):
     """Batch operation request"""
 
-    operation_type: Literal["update-status", "assign-category", "delete", "bulk-update"] = Field(...)
+    operation_type: Literal["update-status", "assign-category", "delete", "bulk-update"] = Field(
+        ...
+    )
     data_type: Literal["parts", "vehicles", "categories", "orders", "leads", "users"] = Field(...)
     item_ids: List[int] = Field(..., min_items=1)
     data: Optional[Dict[str, Any]] = None

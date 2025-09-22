@@ -33,7 +33,9 @@ e3_extensions = AIOrchestratorE3Extensions(ai_orchestrator)
 @router.post("/hybrid-search", response_model=Dict[str, Any])
 async def hybrid_search(
     query: str,
-    search_type: str = Query("hybrid", description="Search type: hybrid, semantic, keyword, filter"),
+    search_type: str = Query(
+        "hybrid", description="Search type: hybrid, semantic, keyword, filter"
+    ),
     limit: int = Query(20, description="Maximum number of results"),
     filters: Optional[Dict[str, Any]] = None,
     current_user: User = Depends(get_current_user),
@@ -155,13 +157,17 @@ async def get_smart_recommendations(
 
 
 @router.post("/query-analysis", response_model=Dict[str, Any])
-async def analyze_natural_language_query(query: str, current_user: User = Depends(get_current_user)):
+async def analyze_natural_language_query(
+    query: str, current_user: User = Depends(get_current_user)
+):
     """
     Analyze natural language query with advanced understanding.
     """
     try:
         # Process the query
-        analysis = await e3_extensions.process_natural_language_query(query=query, user_id=str(current_user.id))
+        analysis = await e3_extensions.process_natural_language_query(
+            query=query, user_id=str(current_user.id)
+        )
 
         return analysis
 
@@ -268,7 +274,9 @@ async def intelligent_search(
     """
     try:
         # First, analyze the query
-        query_analysis = await e3_extensions.process_natural_language_query(query=query, user_id=str(current_user.id))
+        query_analysis = await e3_extensions.process_natural_language_query(
+            query=query, user_id=str(current_user.id)
+        )
 
         if not query_analysis.get("success", False):
             raise HTTPException(status_code=400, detail="Query analysis failed")

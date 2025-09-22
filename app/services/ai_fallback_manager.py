@@ -62,7 +62,9 @@ class AIFallbackManager:
             logger.info(f"Attempting fallback strategy: {strategy_name}")
 
             try:
-                result = await strategy_func(providers, provider_chain, task_type, context, **kwargs)
+                result = await strategy_func(
+                    providers, provider_chain, task_type, context, **kwargs
+                )
 
                 if result and result.content is not None:
                     logger.info(f"Fallback strategy '{strategy_name}' succeeded")
@@ -284,7 +286,9 @@ class AIFallbackManager:
         elif task_type == TaskType.PART_RECOMMENDATIONS:
             return self._create_basic_recommendations_response(context)
         else:
-            return self._create_error_response(task_type, "Graceful degradation not implemented for this task type")
+            return self._create_error_response(
+                task_type, "Graceful degradation not implemented for this task type"
+            )
 
     def _generate_cache_key(self, task_type: TaskType, context: Dict[str, Any]) -> str:
         """Generate a cache key for the task and context."""
@@ -462,7 +466,9 @@ class AIFallbackManager:
     def get_cache_stats(self) -> Dict[str, Any]:
         """Get cache statistics."""
         current_time = time.time()
-        valid_entries = sum(1 for _, timestamp in self.cache.values() if current_time - timestamp < self.cache_ttl)
+        valid_entries = sum(
+            1 for _, timestamp in self.cache.values() if current_time - timestamp < self.cache_ttl
+        )
 
         return {
             "total_entries": len(self.cache),

@@ -25,7 +25,9 @@ class UserService:
         """Create a new user."""
         # Check if username or email already exists
         existing_user = (
-            self.db.query(User).filter(or_(User.username == user_data.username, User.email == user_data.email)).first()
+            self.db.query(User)
+            .filter(or_(User.username == user_data.username, User.email == user_data.email))
+            .first()
         )
 
         if existing_user:
@@ -72,7 +74,9 @@ class UserService:
         """Get user by email."""
         return self.db.query(User).filter(User.email == email).first()
 
-    async def get_users(self, skip: int = 0, limit: int = 100, search: Optional[str] = None) -> List[User]:
+    async def get_users(
+        self, skip: int = 0, limit: int = 100, search: Optional[str] = None
+    ) -> List[User]:
         """Get users with pagination and search."""
         query = self.db.query(User)
 
@@ -97,7 +101,9 @@ class UserService:
         if user_data.username is not None:
             # Check if username is already taken by another user
             existing_user = (
-                self.db.query(User).filter(and_(User.username == user_data.username, User.id != user_id)).first()
+                self.db.query(User)
+                .filter(and_(User.username == user_data.username, User.id != user_id))
+                .first()
             )
             if existing_user:
                 raise ValueError("Username already exists")
@@ -105,7 +111,11 @@ class UserService:
 
         if user_data.email is not None:
             # Check if email is already taken by another user
-            existing_user = self.db.query(User).filter(and_(User.email == user_data.email, User.id != user_id)).first()
+            existing_user = (
+                self.db.query(User)
+                .filter(and_(User.email == user_data.email, User.id != user_id))
+                .first()
+            )
             if existing_user:
                 raise ValueError("Email already exists")
             user.email = user_data.email  # type: ignore[assignment]
@@ -186,7 +196,9 @@ class UserService:
         """Authenticate user with username/email and password."""
         # Find user by username or email
         user = (
-            self.db.query(User).filter(or_(User.username == username_or_email, User.email == username_or_email)).first()
+            self.db.query(User)
+            .filter(or_(User.username == username_or_email, User.email == username_or_email))
+            .first()
         )
 
         if not user:
@@ -262,10 +274,18 @@ class UserService:
         verified_users = self.db.query(User).filter(User.is_verified).count()
 
         # Users by role (simplified)
-        role_stats = self.db.query(User.role, func.count(User.id).label("user_count")).group_by(User.role).all()
+        role_stats = (
+            self.db.query(User.role, func.count(User.id).label("user_count"))
+            .group_by(User.role)
+            .all()
+        )
 
         # Recent activity
-        recent_logins = self.db.query(User).filter(User.last_login >= datetime.utcnow() - timedelta(days=7)).count()
+        recent_logins = (
+            self.db.query(User)
+            .filter(User.last_login >= datetime.utcnow() - timedelta(days=7))
+            .count()
+        )
 
         return {
             "total_users": total_users,

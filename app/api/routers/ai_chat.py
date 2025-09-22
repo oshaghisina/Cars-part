@@ -65,7 +65,9 @@ async def chat_with_ai(message_data: ChatMessage, current_user: dict = Depends(g
         context = message_data.context or {}
 
         if not user_message:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Message cannot be empty")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Message cannot be empty")
 
         # Add user context
         context.update(
@@ -80,7 +82,9 @@ async def chat_with_ai(message_data: ChatMessage, current_user: dict = Depends(g
         ai_response = await process_chat_message(user_message, context)
 
         # Generate session ID if not provided
-        session_id = context.get("session_id", f"chat_{current_user.get('id')}_{hash(user_message) % 10000}")
+        session_id = context.get(
+            "session_id",
+            f"chat_{current_user.get('id')}_{hash(user_message) % 10000}")
 
         return ChatResponse(
             response=ai_response,
@@ -138,7 +142,8 @@ async def process_chat_message(message: str, context: Dict[str, Any]) -> str:
 
     except Exception as e:
         logger.error(f"Error processing chat message: {e}")
-        return "I apologize, but I encountered an error while processing your request. Please try again or contact support if the issue persists."
+        return ("I apologize, but I encountered an error while processing your request. "
+                "Please try again or contact support if the issue persists.")
 
 
 async def handle_system_status_query(message: str, context: Dict[str, Any]) -> str:
@@ -159,23 +164,26 @@ async def handle_system_status_query(message: str, context: Dict[str, Any]) -> s
         providers = ai_status.get("providers", {})
         if providers:
             response += f"\n**AI Providers**: {len(providers)} available\n"
-            for name, status in providers.items():
-                status_icon = "✅" if status.get("available") else "❌"
-                response += f"- {status_icon} {name.title()}: {status.get('status', 'unknown')}\n"
+        for name, provider_status in providers.items():
+            status_icon = "✅" if provider_status.get("available") else "❌"
+            response += (f"- {status_icon} {name.title()}: "
+                         f"{provider_status.get('status', 'unknown')}\n")
 
         # Performance metrics
         performance = ai_status.get("performance", {})
         if performance:
             global_metrics = performance.get("global_metrics", {})
-            response += f"\n**Performance**:\n"
-            response += f"- Success Rate: {global_metrics.get('success_rate', 0):.1f}%\n"
-            response += f"- Average Response Time: {global_metrics.get( 'average_response_time', 0):.3f}s\n"
+            response += "\n**Performance**:\n"
+            response += (f"- Success Rate: "
+                         f"{global_metrics.get('success_rate', 0):.1f}%\n")
+            response += (f"- Average Response Time: "
+                         f"{global_metrics.get('average_response_time', 0):.3f}s\n")
             response += f"- Total Requests: {global_metrics.get('total_requests', 0)}\n"
 
         # Cache status
         caching = ai_status.get("caching", {})
         if caching:
-            response += f"\n**Caching**:\n"
+            response += "\n**Caching**:\n"
             response += f"- Hit Rate: {caching.get('hit_rate', 0):.1f}%\n"
             response += f"- Total Requests: {caching.get('total_requests', 0)}\n"
 
@@ -202,8 +210,13 @@ async def handle_performance_query(message: str, context: Dict[str, Any]) -> str
             response += "**Overall Performance**:\n"
             response += f"- Success Rate: {global_metrics.get('success_rate', 0):.1f}%\n"
             response += f"- Error Rate: {global_metrics.get('error_rate', 0):.1f}%\n"
-            response += f"- Average Response Time: {global_metrics.get( 'average_response_time', 0):.3f}s\n"
-            response += f"- Throughput: {global_metrics.get( 'throughput_rpm', 0):.1f} requests/min\n"
+            response += f"- Average Response Time: {
+                global_metrics.get(
+                    'average_response_time', 0):.3f}s\n"
+            response += f"- Throughput: {
+                global_metrics.get(
+                    'throughput_rpm',
+                    0):.1f} requests/min\n"
             response += f"- Average Cost: ${global_metrics.get('average_cost', 0):.4f}\n"
             response += f"- Average Tokens: {global_metrics.get('average_tokens', 0):.0f}\n"
 
@@ -226,12 +239,18 @@ async def handle_performance_query(message: str, context: Dict[str, Any]) -> str
             current_usage = resource_usage.get("current_usage", {})
             resource_usage.get("utilization", {})
 
-            response += f"- Concurrent Requests: {current_usage.get('concurrent_requests', 0)}/{limits.get('max_concurrent_requests', 0)}\n"
-            response += f"- Requests/min: {current_usage.get('requests_this_minute', 0)}/{limits.get('max_requests_per_minute', 0)}\n"
-            response += (
-                f"- Tokens/min: {current_usage.get('tokens_this_minute', 0)}/{limits.get('max_tokens_per_minute', 0)}\n"
-            )
-            response += f"- Cost/hour: ${current_usage.get('cost_this_hour', 0):.2f}/${limits.get('max_cost_per_hour', 0):.2f}\n"
+            response += (f"- Concurrent Requests: "
+                         f"{current_usage.get('concurrent_requests', 0)}/"
+                         f"{limits.get('max_concurrent_requests', 0)}\n")
+            response += (f"- Requests/min: "
+                         f"{current_usage.get('requests_this_minute', 0)}/"
+                         f"{limits.get('max_requests_per_minute', 0)}\n")
+            response += (f"- Tokens/min: "
+                         f"{current_usage.get('tokens_this_minute', 0)}/"
+                         f"{limits.get('max_tokens_per_minute', 0)}\n")
+            response += (f"- Cost/hour: "
+                         f"${current_usage.get('cost_this_hour', 0):.2f}/"
+                         f"${limits.get('max_cost_per_hour', 0):.2f}\n")
 
         return response
 
@@ -251,8 +270,8 @@ async def handle_errors_query(message: str, context: Dict[str, Any]) -> str:
         # Check for any unhealthy providers
         providers = ai_status.get("providers", {})
         unhealthy_providers = []
-        for name, status in providers.items():
-            if not status.get("available") or status.get("status") != "healthy":
+        for name, provider_status in providers.items():
+            if not provider_status.get("available") or provider_status.get("status") != "healthy":
                 unhealthy_providers.append(name)
 
         if unhealthy_providers:
@@ -281,8 +300,8 @@ async def handle_errors_query(message: str, context: Dict[str, Any]) -> str:
         # Circuit breaker status
         if providers:
             response += "\n**Circuit Breaker Status**:\n"
-            for name, status in providers.items():
-                cb_status = status.get("circuit_breaker", {})
+            for name, provider_status in providers.items():
+                cb_status = provider_status.get("circuit_breaker", {})
                 state = cb_status.get("state", "unknown")
                 state_icon = "🟢" if state == "closed" else "🔴" if state == "open" else "🟡"
                 response += f"- {state_icon} {name.title()}: {state}\n"
@@ -291,7 +310,8 @@ async def handle_errors_query(message: str, context: Dict[str, Any]) -> str:
 
     except Exception as e:
         logger.error(f"Error handling errors query: {e}")
-        return "I'm having trouble retrieving error information. Please try again later."
+        return ("I'm having trouble retrieving error information. "
+                "Please try again later.")
 
 
 async def handle_users_query(message: str, context: Dict[str, Any]) -> str:
@@ -301,7 +321,8 @@ async def handle_users_query(message: str, context: Dict[str, Any]) -> str:
         # For now, we'll provide a general response
 
         response = "## User Activity Summary\n\n"
-        response += "I can help you with user-related information, but I need to connect to the database to get real-time data.\n\n"
+        response += ("I can help you with user-related information, but I need to "
+                     "connect to the database to get real-time data.\n\n")
         response += "**Available user queries**:\n"
         response += "- Show active users\n"
         response += "- User login statistics\n"
@@ -335,12 +356,13 @@ async def handle_ai_status_query(message: str, context: Dict[str, Any]) -> str:
         providers = ai_status.get("providers", {})
         if providers:
             response += f"\n**Providers** ({len(providers)}):\n"
-            for name, status in providers.items():
-                available = "✅" if status.get("available") else "❌"
-                healthy = "🟢" if status.get("healthy") else "🔴"
-                response += f"- {available} {name.title()}: {status.get('status', 'unknown')} {healthy}\n"
+            for name, provider_status in providers.items():
+                available = "✅" if provider_status.get("available") else "❌"
+                healthy = ("🟢" if provider_status.get("healthy") else "🔴")
+                response += (f"- {available} {name.title()}: "
+                             f"{provider_status.get('status', 'unknown')} {healthy}\n")
 
-                capabilities = status.get("capabilities", [])
+                capabilities = provider_status.get("capabilities", [])
                 if capabilities:
                     response += f"  - Capabilities: {', '.join(capabilities)}\n"
 
@@ -348,7 +370,7 @@ async def handle_ai_status_query(message: str, context: Dict[str, Any]) -> str:
         performance = ai_status.get("performance", {})
         if performance:
             global_metrics = performance.get("global_metrics", {})
-            response += f"\n**Performance Summary**:\n"
+            response += "\n**Performance Summary**:\n"
             response += f"- Success Rate: {global_metrics.get('success_rate', 0):.1f}%\n"
             response += f"- Response Time: {global_metrics.get('average_response_time', 0):.3f}s\n"
             response += f"- Total Requests: {global_metrics.get('total_requests', 0)}\n"
@@ -356,7 +378,7 @@ async def handle_ai_status_query(message: str, context: Dict[str, Any]) -> str:
         # Cache status
         caching = ai_status.get("caching", {})
         if caching:
-            response += f"\n**Cache Status**:\n"
+            response += "\n**Cache Status**:\n"
             response += f"- Hit Rate: {caching.get('hit_rate', 0):.1f}%\n"
             response += f"- Memory Entries: {caching.get('memory_entries', 0)}\n"
             response += f"- Redis Enabled: {'Yes' if caching.get('redis_enabled') else 'No'}\n"
@@ -444,7 +466,9 @@ async def handle_general_query(message: str, context: Dict[str, Any]) -> str:
 
     except Exception as e:
         logger.error(f"Error handling general query: {e}")
-        return "I'm here to help with system monitoring and analysis. Could you please rephrase your question or ask about something specific like system status, performance, or errors?"
+        return ("I'm here to help with system monitoring and analysis. "
+                "Could you please rephrase your question or ask about something "
+                "specific like system status, performance, or errors?")
 
 
 @router.get("/status")

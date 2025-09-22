@@ -97,16 +97,14 @@ if dp:
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="🧙‍♂️ راهنمای گام به گام", callback_data="start_wizard"),
-                    InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
-                ],
-                [
-                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
-                    InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
-                ],
-                [InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings")],
-            ]
-        )
+                    InlineKeyboardButton(
+                        text="🧙‍♂️ راهنمای گام به گام", callback_data="start_wizard"), InlineKeyboardButton(
+                        text="🔍 جستجوی قطعات", callback_data="search_parts"), ], [
+                    InlineKeyboardButton(
+                        text="📋 سفارشات من", callback_data="my_orders"), InlineKeyboardButton(
+                        text="❓ راهنمای استفاده", callback_data="help"), ], [
+                    InlineKeyboardButton(
+                        text="⚙️ تنظیمات", callback_data="settings")], ])
 
         await message.answer(welcome_text, reply_markup=keyboard, parse_mode="Markdown")
 
@@ -239,7 +237,9 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
-                            status_text += f"قطعات یافت شده: " f"{order['matched_items']}/{order['total_items']}\n"
+                            status_text += f"قطعات یافت شده: " f"{
+                                order['matched_items']}/{
+                                order['total_items']}\n"
 
                         await message.answer(status_text)
                 else:
@@ -316,7 +316,9 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
-                            status_text += f"قطعات یافت شده: " f"{order['matched_items']}/{order['total_items']}\n"
+                            status_text += f"قطعات یافت شده: " f"{
+                                order['matched_items']}/{
+                                order['total_items']}\n"
 
                         await callback_query.message.answer(status_text)
                 else:
@@ -417,11 +419,15 @@ if dp:
                         if "found" not in item:  # Found part
                             price_text = ""
                             if item["best_price"]:
-                                price_text = f" - قیمت: {item['best_price']:,.0f} " f"{item['currency']}"
+                                price_text = f" - قیمت: {
+                                    item['best_price']:,.0f} " f"{
+                                    item['currency']}"
 
                             detail_text = (
-                                f"✅ {item['query']}\n" f"{item['part_name']} {item['vehicle_model']}" f"{price_text}"
-                            )
+                                f"✅ {
+                                    item['query']}\n" f"{
+                                    item['part_name']} {
+                                    item['vehicle_model']}" f"{price_text}")
                             await message.answer(detail_text)
                         else:
                             # Not found
@@ -528,7 +534,8 @@ if dp:
                     "original_query": original_query,
                 }
 
-                order_result = bot_service.create_order_from_search_results(telegram_user_id, [search_result])
+                order_result = bot_service.create_order_from_search_results(
+                    telegram_user_id, [search_result])
 
                 if order_result["success"]:
                     await callback_query.message.answer(order_result["message"])

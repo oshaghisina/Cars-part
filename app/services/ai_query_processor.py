@@ -164,7 +164,9 @@ class AIQueryProcessor:
         search_terms = self._extract_search_terms(normalized_query)
 
         # Determine if clarification is needed
-        requires_clarification, clarification_questions = self._check_clarification_needed(query, entities, intent)
+        requires_clarification, clarification_questions = self._check_clarification_needed(
+            query, entities, intent
+        )
 
         # Generate suggestions
         suggestions = self._generate_suggestions(query, entities, intent)
@@ -318,7 +320,9 @@ class AIQueryProcessor:
             needs_clarification = True
 
         # Check for missing position for brake parts
-        if entities.get("part_types") and any("brake" in pt.lower() for pt in entities["part_types"]):
+        if entities.get("part_types") and any(
+            "brake" in pt.lower() for pt in entities["part_types"]
+        ):
             if not entities.get("positions"):
                 clarification_questions.append(self.clarification_templates["position"][0])
                 needs_clarification = True
@@ -332,7 +336,9 @@ class AIQueryProcessor:
 
         return needs_clarification, clarification_questions
 
-    def _generate_suggestions(self, query: str, entities: Dict[str, List[str]], intent: QueryIntent) -> List[str]:
+    def _generate_suggestions(
+        self, query: str, entities: Dict[str, List[str]], intent: QueryIntent
+    ) -> List[str]:
         """Generate search suggestions based on query analysis."""
         suggestions = []
 
@@ -353,7 +359,9 @@ class AIQueryProcessor:
                 suggestions.extend(["J4", "J5", "J6"])
 
         # Add position suggestions for brake parts
-        if entities.get("part_types") and any("brake" in pt.lower() for pt in entities["part_types"]):
+        if entities.get("part_types") and any(
+            "brake" in pt.lower() for pt in entities["part_types"]
+        ):
             if not entities.get("positions"):
                 suggestions.extend(["جلو", "عقب", "چپ", "راست"])
 

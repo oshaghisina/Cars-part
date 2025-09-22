@@ -363,7 +363,8 @@ class AIRecommendationsEngine:
 
         return list(set(related))
 
-    def _deduplicate_recommendations(self, recommendations: List[Recommendation]) -> List[Recommendation]:
+    def _deduplicate_recommendations(
+            self, recommendations: List[Recommendation]) -> List[Recommendation]:
         """Remove duplicate recommendations based on part_id."""
         seen = set()
         unique_recommendations = []
@@ -381,7 +382,8 @@ class AIRecommendationsEngine:
 
         return unique_recommendations
 
-    def update_user_profile(self, user_profile: UserProfile, purchase: Dict[str, Any]) -> UserProfile:
+    def update_user_profile(self, user_profile: UserProfile,
+                            purchase: Dict[str, Any]) -> UserProfile:
         """Update user profile with new purchase data."""
         user_profile.purchase_history.append(purchase)
 
@@ -397,7 +399,10 @@ class AIRecommendationsEngine:
 
         return user_profile
 
-    def get_personalized_recommendations(self, user_profile: UserProfile, limit: int = 10) -> List[Recommendation]:
+    def get_personalized_recommendations(
+            self,
+            user_profile: UserProfile,
+            limit: int = 10) -> List[Recommendation]:
         """Get personalized recommendations based on user profile."""
         recommendations = []
 
@@ -405,7 +410,8 @@ class AIRecommendationsEngine:
         recent_purchases = user_profile.purchase_history[-5:]  # Last 5 purchases
 
         for purchase in recent_purchases:
-            part_recommendations = self.get_recommendations(purchase.get("id", 0), purchase, user_profile, limit=2)
+            part_recommendations = self.get_recommendations(
+                purchase.get("id", 0), purchase, user_profile, limit=2)
             recommendations.extend(part_recommendations)
 
         # Sort by score and return top recommendations
@@ -433,11 +439,17 @@ class AIRecommendationsEngine:
 
         if category_counts:
             most_common_category = category_counts.most_common(1)[0]
-            insights.append(f"Most purchased category: {most_common_category[0]} ({most_common_category[1]} times)")
+            insights.append(
+                f"Most purchased category: {
+                    most_common_category[0]} ({
+                    most_common_category[1]} times)")
 
         if brand_counts:
             most_common_brand = brand_counts.most_common(1)[0]
-            insights.append(f"Preferred brand: {most_common_brand[0]} ({most_common_brand[1]} times)")
+            insights.append(
+                f"Preferred brand: {
+                    most_common_brand[0]} ({
+                    most_common_brand[1]} times)")
 
         if avg_price > 0:
             insights.append(f"Average purchase price: ${avg_price:.2f}")

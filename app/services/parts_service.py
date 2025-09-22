@@ -182,7 +182,11 @@ class PartsService:
                     details.append(f"Row {index + 2}: Part '{part.part_name}' created successfully")
                 else:
                     errors += 1
-                    details.append(f"Row {index + 2}: Failed to create part '{part_data['part_name']}'")
+                    details.append(
+                        f"Row {
+                            index +
+                            2}: Failed to create part '{
+                            part_data['part_name']}'")
 
             except Exception as e:
                 errors += 1
@@ -193,8 +197,11 @@ class PartsService:
     def get_categories(self) -> List[str]:
         """Get all unique categories."""
         categories = (
-            self.db.query(distinct(Part.category)).filter(Part.category.isnot(None), Part.status == "active").all()
-        )
+            self.db.query(
+                distinct(
+                    Part.category)).filter(
+                Part.category.isnot(None),
+                Part.status == "active").all())
         return [cat[0] for cat in categories if cat[0]]
 
     def get_vehicle_makes(self) -> List[str]:

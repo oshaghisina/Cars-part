@@ -98,7 +98,11 @@ class Settings(BaseSettings):
     @property
     def ai_gateway_fallback_providers_list(self) -> List[str]:
         """Parse AI Gateway fallback providers from comma-separated string."""
-        return [provider.strip() for provider in self.ai_gateway_fallback_providers.split(",") if provider.strip()]
+        return [
+            provider.strip()
+            for provider in self.ai_gateway_fallback_providers.split(",")
+            if provider.strip()
+        ]
 
     class Config:
         env_file = ".env"

@@ -188,10 +188,15 @@ async def get_category(category_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Category not found")
 
     # Get children count for this specific category
-    children_count = db.query(func.count(PartCategory.id)).filter(PartCategory.parent_id == category_id).scalar() or 0
+    children_count = (
+        db.query(func.count(PartCategory.id)).filter(PartCategory.parent_id == category_id).scalar()
+        or 0
+    )
 
     # Get parts count for this specific category
-    parts_count = db.query(func.count(Part.id)).filter(Part.category_id == category_id).scalar() or 0
+    parts_count = (
+        db.query(func.count(Part.id)).filter(Part.category_id == category_id).scalar() or 0
+    )
 
     return PartCategoryResponse(
         id=category.id,  # type: ignore[arg-type]
@@ -214,7 +219,9 @@ async def get_category(category_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{category_id}", response_model=PartCategoryResponse)
-async def update_category(category_id: int, request: PartCategoryUpdateRequest, db: Session = Depends(get_db)):
+async def update_category(
+    category_id: int, request: PartCategoryUpdateRequest, db: Session = Depends(get_db)
+):
     """Update an existing part category."""
     category_service = CategoryService(db)
     category = category_service.update_category(category_id, request.dict(exclude_unset=True))
@@ -223,10 +230,15 @@ async def update_category(category_id: int, request: PartCategoryUpdateRequest, 
         raise HTTPException(status_code=404, detail="Category not found or update failed")
 
     # Get children count for this specific category
-    children_count = db.query(func.count(PartCategory.id)).filter(PartCategory.parent_id == category_id).scalar() or 0
+    children_count = (
+        db.query(func.count(PartCategory.id)).filter(PartCategory.parent_id == category_id).scalar()
+        or 0
+    )
 
     # Get parts count for this specific category
-    parts_count = db.query(func.count(Part.id)).filter(Part.category_id == category_id).scalar() or 0
+    parts_count = (
+        db.query(func.count(Part.id)).filter(Part.category_id == category_id).scalar() or 0
+    )
 
     return PartCategoryResponse(
         id=category.id,  # type: ignore[arg-type]
@@ -477,7 +489,9 @@ async def move_category(
 ):
     """Move a category to a new parent or change sort order."""
     category_service = CategoryService(db)
-    success = category_service.move_category(category_id, new_parent_id=new_parent_id, new_sort_order=new_sort_order)
+    success = category_service.move_category(
+        category_id, new_parent_id=new_parent_id, new_sort_order=new_sort_order
+    )
 
     if not success:
         raise HTTPException(status_code=400, detail="Failed to move category")

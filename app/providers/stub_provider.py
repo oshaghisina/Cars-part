@@ -59,7 +59,9 @@ class StubProvider(AIProvider):
         # - Return realistic mock cost
         return 0.01
 
-    def _generate_mock_response(self, task_type: TaskType, context: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_mock_response(
+        self, task_type: TaskType, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Generate mock response for task type."""
         # TODO: Implement in Epic E8
         # - Generate realistic mock data

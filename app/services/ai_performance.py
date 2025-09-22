@@ -149,7 +149,9 @@ class AdaptiveLoadBalancer:
         if provider_name not in self.provider_metrics:
             self.initialize_provider(provider_name)
 
-        self.provider_metrics[provider_name].record_request(response_time, success, error_type, cost, tokens_used)
+        self.provider_metrics[provider_name].record_request(
+            response_time, success, error_type, cost, tokens_used
+        )
 
         # Update circuit breaker
         if not success:
@@ -219,12 +221,16 @@ class AdaptiveLoadBalancer:
                 continue
 
             # Calculate composite score based on multiple factors
-            response_time_score = max(0, 1 - (metrics.get_average_response_time() / 10.0))  # Normalize to 0-1
+            response_time_score = max(
+                0, 1 - (metrics.get_average_response_time() / 10.0)
+            )  # Normalize to 0-1
             success_rate_score = metrics.get_success_rate() / 100.0
             cost_score = max(0, 1 - (metrics.get_average_cost() * 100))  # Normalize cost
 
             # Weighted composite score
-            composite_score = response_time_score * 0.4 + success_rate_score * 0.4 + cost_score * 0.2
+            composite_score = (
+                response_time_score * 0.4 + success_rate_score * 0.4 + cost_score * 0.2
+            )
 
             scores[provider_name] = composite_score
 
@@ -439,7 +445,9 @@ class PerformanceMonitor:
     ):
         """Record a request for performance tracking."""
         # Record for specific provider
-        self.load_balancer.record_provider_request(provider_name, response_time, success, error_type, cost, tokens_used)
+        self.load_balancer.record_provider_request(
+            provider_name, response_time, success, error_type, cost, tokens_used
+        )
 
         # Record globally
         self.global_metrics.record_request(response_time, success, error_type, cost, tokens_used)

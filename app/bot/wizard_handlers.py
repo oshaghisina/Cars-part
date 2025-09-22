@@ -139,7 +139,9 @@ class WizardBotService:
             logger.error(f"Error getting parts: {e}")
             return []
 
-    def search_parts(self, vehicle_data: Dict[str, Any], part_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def search_parts(
+        self, vehicle_data: Dict[str, Any], part_data: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Search parts by criteria."""
         try:
             response = requests.post(
@@ -186,7 +188,9 @@ async def safe_edit_message(
         await callback.message.answer(text, reply_markup=reply_markup, parse_mode=parse_mode)
 
 
-def create_inline_keyboard(items: List[str], prefix: str, callback_data: str) -> InlineKeyboardMarkup:
+def create_inline_keyboard(
+    items: List[str], prefix: str, callback_data: str
+) -> InlineKeyboardMarkup:
     """Create inline keyboard from items."""
     buttons = []
     for item in items:
@@ -263,7 +267,9 @@ async def handle_brand_selection(callback: CallbackQuery, state: FSMContext):
     user_id = str(callback.from_user.id)
 
     # Update session with brand
-    session = wizard_service.update_session(user_id, state="model_selection", vehicle_data={"brand": brand})
+    session = wizard_service.update_session(
+        user_id, state="model_selection", vehicle_data={"brand": brand}
+    )
 
     if not session:
         await callback.answer("❌ خطا در ذخیره انتخاب")
@@ -273,7 +279,9 @@ async def handle_brand_selection(callback: CallbackQuery, state: FSMContext):
     models = wizard_service.get_models(brand)
 
     if not models:
-        await safe_edit_message(callback, f"❌ برای برند {brand} هیچ مدلی یافت نشد.", reply_markup=None)
+        await safe_edit_message(
+            callback, f"❌ برای برند {brand} هیچ مدلی یافت نشد.", reply_markup=None
+        )
         return
 
     keyboard = create_inline_keyboard(models, "model", "model")
@@ -305,7 +313,9 @@ async def handle_model_selection(callback: CallbackQuery, state: FSMContext):
     vehicle_data["model"] = model
 
     # Update session with model
-    updated_session = wizard_service.update_session(user_id, state="category_selection", vehicle_data=vehicle_data)
+    updated_session = wizard_service.update_session(
+        user_id, state="category_selection", vehicle_data=vehicle_data
+    )
 
     if not updated_session:
         await callback.answer("❌ خطا در ذخیره انتخاب")
@@ -326,7 +336,8 @@ async def handle_model_selection(callback: CallbackQuery, state: FSMContext):
 
     await safe_edit_message(
         callback,
-        f"🚗 **خودرو: {vehicle_data.get('brand')} {model}**\n\n" f"لطفاً نوع قطعه مورد نظر خود را انتخاب کنید:",
+        f"🚗 **خودرو: {vehicle_data.get('brand')} {model}**\n\n"
+        f"لطفاً نوع قطعه مورد نظر خود را انتخاب کنید:",
         reply_markup=keyboard,
         parse_mode="Markdown",
     )
@@ -351,7 +362,9 @@ async def handle_category_selection(callback: CallbackQuery, state: FSMContext):
     part_data = {"category": category}
 
     # Update session with category
-    updated_session = wizard_service.update_session(user_id, state="part_selection", part_data=part_data)
+    updated_session = wizard_service.update_session(
+        user_id, state="part_selection", part_data=part_data
+    )
 
     if not updated_session:
         await callback.answer("❌ خطا در ذخیره انتخاب")
@@ -380,7 +393,9 @@ async def handle_category_selection(callback: CallbackQuery, state: FSMContext):
         if position:
             display_text += f" ({position})"
 
-        buttons.append([InlineKeyboardButton(text=display_text, callback_data=f"part:{part.get('id')}")])
+        buttons.append(
+            [InlineKeyboardButton(text=display_text, callback_data=f"part:{part.get('id')}")]
+        )
 
     # Add navigation buttons
     buttons.append([InlineKeyboardButton(text="🔙 بازگشت", callback_data="back")])
@@ -418,7 +433,9 @@ async def handle_part_selection(callback: CallbackQuery, state: FSMContext):
     part_data["selected_part_id"] = part_id
 
     # Update session with selected part
-    updated_session = wizard_service.update_session(user_id, state="confirmation", part_data=part_data)
+    updated_session = wizard_service.update_session(
+        user_id, state="confirmation", part_data=part_data
+    )
 
     if not updated_session:
         await callback.answer("❌ خطا در ذخیره انتخاب")
@@ -522,7 +539,9 @@ async def handle_contact_received(message: Message, state: FSMContext):
         "last_name": contact.last_name,
     }
 
-    updated_session = wizard_service.update_session(user_id, state="completed", contact_data=contact_data)
+    updated_session = wizard_service.update_session(
+        user_id, state="completed", contact_data=contact_data
+    )
 
     if not updated_session:
         await message.answer("❌ خطا در ذخیره اطلاعات تماس")
@@ -591,7 +610,9 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
     elif current_state == PartsWizard.part_selection.state:
         # Go back to category selection
         vehicle_data = session.get("vehicle_data", {})
-        categories = wizard_service.get_categories(brand=vehicle_data.get("brand"), model=vehicle_data.get("model"))
+        categories = wizard_service.get_categories(
+            brand=vehicle_data.get("brand"), model=vehicle_data.get("model")
+        )
         if categories:
             keyboard = create_inline_keyboard(categories, "category", "category")
             await safe_edit_message(
@@ -622,7 +643,13 @@ async def handle_back(callback: CallbackQuery, state: FSMContext):
                 if position:
                     display_text += f" ({position})"
 
-                buttons.append([InlineKeyboardButton(text=display_text, callback_data=f"part:{part.get('id')}")])
+                buttons.append(
+                    [
+                        InlineKeyboardButton(
+                            text=display_text, callback_data=f"part:{part.get('id')}"
+                        )
+                    ]
+                )
 
             buttons.append([InlineKeyboardButton(text="🔙 بازگشت", callback_data="back")])
             buttons.append([InlineKeyboardButton(text="❌ لغو", callback_data="cancel")])
@@ -691,4 +718,6 @@ async def handle_cancel(callback: CallbackQuery, state: FSMContext):
 @router.message(StateFilter(PartsWizard))
 async def handle_unknown_message(message: Message, state: FSMContext):
     """Handle unknown messages during wizard flow."""
-    await message.answer("❓ لطفاً از دکمه‌های موجود استفاده کنید یا برای لغو از /cancel استفاده کنید.")
+    await message.answer(
+        "❓ لطفاً از دکمه‌های موجود استفاده کنید یا برای لغو از /cancel استفاده کنید."
+    )

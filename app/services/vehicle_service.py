@@ -39,7 +39,12 @@ class VehicleService:
             )
             query = query.filter(search_filter)
 
-        return query.order_by(VehicleBrand.sort_order, VehicleBrand.name).offset(skip).limit(limit).all()
+        return (
+            query.order_by(VehicleBrand.sort_order, VehicleBrand.name)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def get_brand_by_id(self, brand_id: int) -> Optional[VehicleBrand]:
         """Get brand by ID."""
@@ -118,7 +123,12 @@ class VehicleService:
             )
             query = query.filter(search_filter)
 
-        return query.order_by(VehicleModel.sort_order, VehicleModel.name).offset(skip).limit(limit).all()
+        return (
+            query.order_by(VehicleModel.sort_order, VehicleModel.name)
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def get_models_by_brand(self, brand_id: int) -> List[VehicleModel]:
         "Get all models for a specific brand." ""
@@ -210,7 +220,9 @@ class VehicleService:
             )
             query = query.filter(search_filter)
 
-        return query.order_by(VehicleTrim.sort_order, VehicleTrim.name).offset(skip).limit(limit).all()
+        return (
+            query.order_by(VehicleTrim.sort_order, VehicleTrim.name).offset(skip).limit(limit).all()
+        )
 
     def get_trims_by_model(self, model_id: int) -> List[VehicleTrim]:
         "Get all trims for a specific model." ""

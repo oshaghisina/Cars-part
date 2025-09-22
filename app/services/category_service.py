@@ -132,7 +132,10 @@ class CategoryService:
                 if parent:
                     level = parent.level + 1
                     # type: ignore[comparison-overlap]
-                    path = f"{parent.path}/{category_data['name']}" if parent.path else f"/{category_data['name']}"
+                    path = f"{
+                        parent.path}/{
+                        category_data['name']}" if parent.path else f"/{
+                        category_data['name']}"
                 else:
                     raise ValueError("Invalid parent_id")
             else:
@@ -151,7 +154,10 @@ class CategoryService:
             logger.error(f"Error creating category: {e}")
             return None
 
-    def update_category(self, category_id: int, category_data: Dict[str, Any]) -> Optional[PartCategory]:
+    def update_category(self,
+                        category_id: int,
+                        category_data: Dict[str,
+                                            Any]) -> Optional[PartCategory]:
         """Update an existing category."""
         try:
             category = self.get_category_by_id(category_id)
@@ -180,7 +186,8 @@ class CategoryService:
                         category.path = f"/{category.name}"
 
                     # Update paths for all descendants
-                    self._update_descendant_paths(category_id, category.path)  # type: ignore[arg-type]
+                    self._update_descendant_paths(
+                        category_id, category.path)  # type: ignore[arg-type]
 
             # Update other fields
             for key, value in category_data.items():
@@ -313,13 +320,15 @@ class CategoryService:
         total_categories = self.db.query(PartCategory).count()
         active_categories = self.db.query(PartCategory).filter(PartCategory.is_active).count()
         root_categories = (
-            self.db.query(PartCategory).filter(PartCategory.parent_id.is_(None), PartCategory.is_active).count()
-        )
+            self.db.query(PartCategory).filter(
+                PartCategory.parent_id.is_(None),
+                PartCategory.is_active).count())
 
         # Get categories by level
         level_stats = {}
         for level in range(0, 5):  # Assuming max 5 levels
-            count = self.db.query(PartCategory).filter(PartCategory.level == level, PartCategory.is_active).count()
+            count = self.db.query(PartCategory).filter(
+                PartCategory.level == level, PartCategory.is_active).count()
             if count > 0:
                 level_stats[f"level_{level}"] = count
 

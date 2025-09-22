@@ -107,7 +107,9 @@ class AIOrchestratorE3Extensions:
                     cost=0.0,
                 )
 
-                logger.info(f"Hybrid search completed successfully. Found {len(search_results)} results.")
+                logger.info(
+                    f"Hybrid search completed successfully. Found {
+                        len(search_results)} results.")
                 return search_results
 
             except Exception as e:
@@ -213,8 +215,8 @@ class AIOrchestratorE3Extensions:
                 )
 
                 logger.info(
-                    f"Smart recommendations completed successfully. Generated {len(rec_results)} recommendations."
-                )
+                    f"Smart recommendations completed successfully. Generated {
+                        len(rec_results)} recommendations.")
                 return rec_results
 
             except Exception as e:
@@ -288,7 +290,7 @@ class AIOrchestratorE3Extensions:
                     "search_query": search_query,
                 }
 
-                logger.info(f"Natural language query processing completed successfully.")
+                logger.info("Natural language query processing completed successfully.")
                 return result
 
             except Exception as e:

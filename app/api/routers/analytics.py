@@ -71,8 +71,12 @@ async def get_dashboard_metrics(
 
         # Orders
         total_orders = db.query(Order).filter(date_filter).count()
-        pending_orders = db.query(Order).filter(and_(Order.status == "pending", date_filter)).count()
-        completed_orders = db.query(Order).filter(and_(Order.status == "completed", date_filter)).count()
+        pending_orders = (
+            db.query(Order).filter(and_(Order.status == "pending", date_filter)).count()
+        )
+        completed_orders = (
+            db.query(Order).filter(and_(Order.status == "completed", date_filter)).count()
+        )
 
         # Revenue (calculate from order items and prices)
         total_revenue = (
@@ -87,7 +91,11 @@ async def get_dashboard_metrics(
 
         # Leads
         total_leads = db.query(Lead).filter(date_filter).count()
-        new_leads = db.query(Lead).filter(and_(func.date(Lead.created_at) >= date_from, date_filter)).count()
+        new_leads = (
+            db.query(Lead)
+            .filter(and_(func.date(Lead.created_at) >= date_from, date_filter))
+            .count()
+        )
 
         # Users
         total_users = db.query(User).count()
@@ -114,7 +122,9 @@ async def get_dashboard_metrics(
 
 
 @router.get("/sales/analytics", response_model=SalesAnalytics)
-async def get_sales_analytics(period: str = Query("30d", regex="^(7d|30d|90d|1y)$"), db: Session = Depends(get_db)):
+async def get_sales_analytics(
+    period: str = Query("30d", regex="^(7d|30d|90d|1y)$"), db: Session = Depends(get_db)
+):
     """
     Get sales analytics for the specified period
     """
@@ -213,8 +223,10 @@ async def get_sales_analytics(period: str = Query("30d", regex="^(7d|30d|90d|1y)
             .join(Order, OrderItem.order_id == Order.id)
             .filter(
                 and_(
-                    func.extract("year", Order.created_at) == (end_date - relativedelta(months=1)).year,
-                    func.extract("month", Order.created_at) == (end_date - relativedelta(months=1)).month,
+                    func.extract("year", Order.created_at)
+                    == (end_date - relativedelta(months=1)).year,
+                    func.extract("month", Order.created_at)
+                    == (end_date - relativedelta(months=1)).month,
                     Order.status == "completed",
                 )
             )
@@ -224,7 +236,9 @@ async def get_sales_analytics(period: str = Query("30d", regex="^(7d|30d|90d|1y)
 
         revenue_growth = 0
         if previous_month_revenue > 0:
-            revenue_growth = ((current_month_revenue - previous_month_revenue) / previous_month_revenue) * 100
+            revenue_growth = (
+                (current_month_revenue - previous_month_revenue) / previous_month_revenue
+            ) * 100
 
         return SalesAnalytics(
             period=period,
@@ -303,7 +317,9 @@ async def get_inventory_analytics(db: Session = Depends(get_db)):
         ]
 
         # Status distribution
-        status_distribution = db.query(Part.status, func.count(Part.id).label("count")).group_by(Part.status).all()
+        status_distribution = (
+            db.query(Part.status, func.count(Part.id).label("count")).group_by(Part.status).all()
+        )
 
         # Low stock items (using Price available_qty)
         low_stock_items = (
@@ -351,7 +367,9 @@ async def get_inventory_analytics(db: Session = Depends(get_db)):
 
 
 @router.get("/customers/analytics", response_model=CustomerAnalytics)
-async def get_customer_analytics(period: str = Query("30d", regex="^(7d|30d|90d|1y)$"), db: Session = Depends(get_db)):
+async def get_customer_analytics(
+    period: str = Query("30d", regex="^(7d|30d|90d|1y)$"), db: Session = Depends(get_db)
+):
     """
     Get customer analytics
     """
@@ -447,7 +465,8 @@ async def get_customer_analytics(period: str = Query("30d", regex="^(7d|30d|90d|
             converted_leads=converted_leads,
             conversion_rate=conversion_rate,
             acquisition_trends=[
-                {"date": trend.date.isoformat(), "new_leads": trend.new_leads} for trend in acquisition_trends
+                {"date": trend.date.isoformat(), "new_leads": trend.new_leads}
+                for trend in acquisition_trends
             ],
             geographic_distribution={geo.city: geo.count for geo in geographic_distribution},
             lead_sources={source.source: source.count for source in lead_sources},
@@ -599,7 +618,9 @@ async def get_parts_by_category_chart(db: Session = Depends(get_db)):
 
 
 @router.get("/charts/sales-trend", response_model=TimeSeriesData)
-async def get_sales_trend_chart(period: str = Query("30d", regex="^(7d|30d|90d|1y)$"), db: Session = Depends(get_db)):
+async def get_sales_trend_chart(
+    period: str = Query("30d", regex="^(7d|30d|90d|1y)$"), db: Session = Depends(get_db)
+):
     """Get sales trend chart data"""
     try:
         # Calculate date range

@@ -146,7 +146,9 @@ def require_admin(current_user=Depends(get_current_active_user)):
 def require_super_admin(current_user=Depends(get_current_active_user)):
     """Require super admin role."""
     if not current_user.has_role("super_admin"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required"
+        )
     return current_user
 
 
@@ -227,7 +229,9 @@ async def get_user_roles(current_user=Depends(get_current_user)) -> list:
     return [role.name for role in current_user.roles]
 
 
-def check_resource_access(user_id: int, resource_user_id: int, current_user=Depends(get_current_user)) -> bool:
+def check_resource_access(
+    user_id: int, resource_user_id: int, current_user=Depends(get_current_user)
+) -> bool:
     """Check if user can access a resource (either owner or admin)."""
     # Users can access their own resources
     if user_id == resource_user_id:

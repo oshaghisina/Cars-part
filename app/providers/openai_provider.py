@@ -80,7 +80,8 @@ class OpenAIProvider(AIProvider):
 
         return ProviderStatus
 
-    async def execute_task(self, task_type: TaskType, context: Dict[str, Any], **kwargs) -> AIResponse:
+    async def execute_task(self, task_type: TaskType,
+                           context: Dict[str, Any], **kwargs) -> AIResponse:
         """
         Execute an AI task using OpenAI APIs.
 
@@ -212,7 +213,22 @@ class OpenAIProvider(AIProvider):
             # Create embeddings for all parts
             part_texts = []
             for part in parts:
-                text = f"{part.get('part_name', '')} {part.get('brand_oem', '')} {part.get('vehicle_make', '')} {part.get('vehicle_model', '')} {part.get('category', '')}"
+                text = f"{
+                    part.get(
+                        'part_name',
+                        '')} {
+                    part.get(
+                        'brand_oem',
+                        '')} {
+                    part.get(
+                        'vehicle_make',
+                        '')} {
+                            part.get(
+                                'vehicle_model',
+                                '')} {
+                                    part.get(
+                                        'category',
+                                        '')}"
                 part_texts.append(text)
 
             part_embeddings = await OpenAIHelpers.create_embeddings(self._client, part_texts, self.embedding_model)

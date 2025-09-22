@@ -60,7 +60,9 @@ async def login(login_data: UserLogin, request: Request, db: Session = Depends(g
     await user_service.create_session(user, ip_address, user_agent)
 
     # Create JWT token
-    access_token = create_access_token(data={"sub": user.username, "user_id": user.id, "role": user.role})
+    access_token = create_access_token(
+        data={"sub": user.username, "user_id": user.id, "role": user.role}
+    )
 
     # Update last login time
     from datetime import datetime
@@ -133,7 +135,9 @@ async def change_password(
     )
 
     if not success:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to change password")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to change password"
+        )
 
     # Activity logging not implemented yet
 
@@ -151,7 +155,9 @@ async def get_users(
     """Get users with pagination and search."""
     # Check permission
     if not current_user.has_permission("users.read"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
 
     user_service = UserService(db)
     users = await user_service.get_users(skip, limit, search)
@@ -192,7 +198,9 @@ async def create_user(
     """Create a new user."""
     # Check permission
     if not current_user.has_permission("users.create"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
 
     user_service = UserService(db)
 
@@ -215,7 +223,9 @@ async def get_user(
     """Get user by ID."""
     # Check permission
     if not current_user.has_permission("users.read"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
 
     user_service = UserService(db)
     user = await user_service.get_user_by_id(user_id)
@@ -236,7 +246,9 @@ async def update_user(
     """Update user information."""
     # Check permission
     if not current_user.has_permission("users.update"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
 
     user_service = UserService(db)
 
@@ -261,7 +273,9 @@ async def delete_user(
     """Delete user (soft delete)."""
     # Check permission
     if not current_user.has_permission("users.delete"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
 
     # Don't allow users to delete themselves
     if user_id == current_user.id:
@@ -353,13 +367,17 @@ async def delete_user(
 
 
 @router.get("/statistics/overview", response_model=UserStatistics)
-async def get_user_statistics(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def get_user_statistics(
+    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """
     Get user statistics.
     """
     # Check permission
     if not current_user.has_permission("users.read"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
 
     user_service = UserService(db)
     stats = await user_service.get_user_statistics()
@@ -376,7 +394,9 @@ async def create_users_bulk(
     """Create multiple users at once."""
     # Check permission
     if not current_user.has_permission("users.create"):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
 
     user_service = UserService(db)
     created_users = []

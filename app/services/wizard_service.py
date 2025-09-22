@@ -87,7 +87,9 @@ class WizardService:
         categories = query.all()
         return [category[0] for category in categories if category[0]]
 
-    def get_available_parts(self, brand: str = None, model: str = None, category: str = None) -> List[Dict[str, Any]]:
+    def get_available_parts(
+        self, brand: str = None, model: str = None, category: str = None
+    ) -> List[Dict[str, Any]]:
         """Get list of available parts with optional filters."""
         query = self.db.query(Part)
 
@@ -113,7 +115,9 @@ class WizardService:
             for part in parts
         ]
 
-    def search_parts_by_criteria(self, vehicle_data: Dict[str, Any], part_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def search_parts_by_criteria(
+        self, vehicle_data: Dict[str, Any], part_data: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Search parts based on collected wizard data."""
         query = self.db.query(Part)
 

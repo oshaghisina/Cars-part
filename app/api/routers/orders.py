@@ -166,7 +166,9 @@ async def update_order(order_id: int, request: OrderUpdateRequest, db: Session =
     """Update order by ID."""
     order_service = OrderService(db)
 
-    result = order_service.update_order_status(order_id=order_id, status=request.status, notes=request.notes)
+    result = order_service.update_order_status(
+        order_id=order_id, status=request.status, notes=request.notes
+    )
 
     if not result["success"]:
         raise HTTPException(status_code=404, detail=result["message"])

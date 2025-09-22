@@ -17,7 +17,9 @@ class OpenAIHelpers:
     """Helper methods for OpenAI provider operations."""
 
     @staticmethod
-    async def create_embeddings(client: AsyncOpenAI, texts: List[str], model: str) -> Optional[List[List[float]]]:
+    async def create_embeddings(
+        client: AsyncOpenAI, texts: List[str], model: str
+    ) -> Optional[List[List[float]]]:
         """Create embeddings for a list of texts."""
         try:
             response = await client.embeddings.create(model=model, input=texts)
@@ -93,8 +95,12 @@ Respond in JSON format:
     ) -> List[str]:
         """Generate smart suggestions based on search results."""
         # Extract categories from results
-        categories = list(set([result.get("category", "") for result in results if result.get("category")]))
-        brands = list(set([result.get("brand_oem", "") for result in results if result.get("brand_oem")]))
+        categories = list(
+            set([result.get("category", "") for result in results if result.get("category")])
+        )
+        brands = list(
+            set([result.get("brand_oem", "") for result in results if result.get("brand_oem")])
+        )
 
         prompt = f"""Based on this car parts search query and results, generate 3 helpful suggestions:
 

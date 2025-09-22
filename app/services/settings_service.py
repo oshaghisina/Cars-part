@@ -51,7 +51,9 @@ class SettingsService:
         logger.info(f"Setting updated: {key} = {value}")
         return setting
 
-    def set_settings(self, settings: Dict[str, str], updated_by: Optional[int] = None) -> Dict[str, str]:
+    def set_settings(
+        self, settings: Dict[str, str], updated_by: Optional[int] = None
+    ) -> Dict[str, str]:
         """Set multiple settings."""
         results = {}
 

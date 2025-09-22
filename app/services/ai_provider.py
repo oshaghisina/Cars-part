@@ -66,7 +66,9 @@ class AIProvider(ABC):
         self._max_errors = config.get("max_errors", 5)
 
     @abstractmethod
-    async def execute_task(self, task_type: TaskType, context: Dict[str, Any], **kwargs) -> AIResponse:
+    async def execute_task(
+        self, task_type: TaskType, context: Dict[str, Any], **kwargs
+    ) -> AIResponse:
         """
         Execute an AI task.
 

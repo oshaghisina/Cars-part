@@ -272,7 +272,12 @@ class AINormalizer:
     # Helper methods for extracting specific fields
     def _extract_part_name(self, item: Dict[str, Any]) -> str:
         """Extract part name from item."""
-        return item.get("part_name") or item.get("name") or item.get("title") or str(item.get("id", ""))
+        return (
+            item.get("part_name")
+            or item.get("name")
+            or item.get("title")
+            or str(item.get("id", ""))
+        )
 
     def _extract_brand(self, item: Dict[str, Any]) -> str:
         """Extract brand from item."""
@@ -366,7 +371,9 @@ class AINormalizer:
                 required_fields = ["success", "parts", "query_analysis", "suggestions"]
                 for field in required_fields:
                     if field not in response.content:
-                        errors.append(f"Missing required field '{field}' in intelligent search response")
+                        errors.append(
+                            f"Missing required field '{field}' in intelligent search response"
+                        )
 
         elif task_type == TaskType.QUERY_ANALYSIS:
             if not isinstance(response.content, dict):

@@ -23,7 +23,8 @@ class AIClient:
         self.providers: Dict[str, AIProvider] = {}
         self.primary_provider: Optional[str] = None
         self.fallback_providers: List[str] = []
-        self._circuit_breaker_threshold = getattr(settings, "ai_gateway_circuit_breaker_threshold", 5)
+        self._circuit_breaker_threshold = getattr(
+            settings, "ai_gateway_circuit_breaker_threshold", 5)
         self._circuit_breaker_timeout = getattr(settings, "ai_gateway_circuit_breaker_timeout", 60)
         self._circuit_breaker_state: Dict[str, Dict[str, Any]] = {}
         self._initialized = False
@@ -75,7 +76,8 @@ class AIClient:
                 def __init__(self, name: str, config: Dict[str, Any]):
                     super().__init__(name, config)
 
-                async def execute_task(self, task_type: TaskType, context: Dict[str, Any], **kwargs) -> AIResponse:
+                async def execute_task(self, task_type: TaskType,
+                                       context: Dict[str, Any], **kwargs) -> AIResponse:
                     return AIResponse(
                         content=[{"stub": "data"}],
                         metadata={"stub": True},
@@ -130,7 +132,8 @@ class AIClient:
         if provider_name in self.providers:
             del self.providers[provider_name]
             if self.primary_provider == provider_name:
-                self.primary_provider = self.fallback_providers.pop(0) if self.fallback_providers else None
+                self.primary_provider = self.fallback_providers.pop(
+                    0) if self.fallback_providers else None
             elif provider_name in self.fallback_providers:
                 self.fallback_providers.remove(provider_name)
             logger.info(f"Removed provider: {provider_name}")
@@ -164,9 +167,11 @@ class AIClient:
 
         # Determine which provider to use
         if provider_preference:
-            providers_to_try = [provider_preference] + [p for p in self.fallback_providers if p != provider_preference]
+            providers_to_try = [provider_preference] + \
+                [p for p in self.fallback_providers if p != provider_preference]
         else:
-            providers_to_try = [self.primary_provider] + self.fallback_providers if self.primary_provider else []
+            providers_to_try = [self.primary_provider] + \
+                self.fallback_providers if self.primary_provider else []
 
         last_error = None
 
@@ -183,7 +188,8 @@ class AIClient:
 
             # Check if provider supports the task
             if task_type not in provider.get_capabilities():
-                logger.warning(f"Provider '{provider_name}' does not support task type '{task_type}'")
+                logger.warning(
+                    f"Provider '{provider_name}' does not support task type '{task_type}'")
                 continue
 
             # Check if provider is healthy
@@ -246,7 +252,8 @@ class AIClient:
         """Get status information for all providers."""
         status = {}
         for name, provider in self.providers.items():
-            circuit_state = self._circuit_breaker_state.get(name, {"failures": 0, "last_failure": 0, "state": "closed"})
+            circuit_state = self._circuit_breaker_state.get(
+                name, {"failures": 0, "last_failure": 0, "state": "closed"})
 
             status[name] = {
                 "available": provider.is_available(),
@@ -310,8 +317,8 @@ class AIClient:
         if self._circuit_breaker_state[provider_name]["failures"] >= self._circuit_breaker_threshold:
             self._circuit_breaker_state[provider_name]["state"] = "open"
             logger.warning(
-                f"Circuit breaker opened for provider '{provider_name}' after {self._circuit_breaker_threshold} failures"
-            )
+                f"Circuit breaker opened for provider '{provider_name}' after {
+                    self._circuit_breaker_threshold} failures")
 
     def _is_gateway_enabled(self) -> bool:
         """Check if AI Gateway is enabled via feature flag."""

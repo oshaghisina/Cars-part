@@ -52,7 +52,9 @@ class PIIMasker:
             email = match.group()
             local, domain = email.split("@")
             masked_local = (
-                local[0] + mask_char * (len(local) - 2) + local[-1] if len(local) > 2 else mask_char * len(local)
+                local[0] + mask_char * (len(local) - 2) + local[-1]
+                if len(local) > 2
+                else mask_char * len(local)
             )
             masked_email = f"{masked_local}@{domain}"
             masked_text = masked_text.replace(email, f"[EMAIL:{masked_email}]")
@@ -182,7 +184,9 @@ class AILogger:
 
         return log_entry
 
-    def log_request(self, correlation_id: str, operation: str, provider: str, request_data: Dict[str, Any]) -> None:
+    def log_request(
+        self, correlation_id: str, operation: str, provider: str, request_data: Dict[str, Any]
+    ) -> None:
         """
         Log an AI request.
 
@@ -264,7 +268,9 @@ class AILogger:
 
         self.logger.error(json.dumps(log_data, ensure_ascii=False))
 
-    def log_provider_status(self, provider: str, status: str, details: Optional[Dict[str, Any]] = None) -> None:
+    def log_provider_status(
+        self, provider: str, status: str, details: Optional[Dict[str, Any]] = None
+    ) -> None:
         """
         Log provider status changes.
 
@@ -283,7 +289,9 @@ class AILogger:
 
         self.logger.info(json.dumps(log_data, ensure_ascii=False))
 
-    def log_cost_tracking(self, correlation_id: str, provider: str, operation: str, cost_data: Dict[str, Any]) -> None:
+    def log_cost_tracking(
+        self, correlation_id: str, provider: str, operation: str, cost_data: Dict[str, Any]
+    ) -> None:
         """
         Log AI operation cost tracking.
 
@@ -351,7 +359,9 @@ class AILoggingMixin:
         if error:
             self.ai_logger.log_error(correlation_id, operation, provider, error, request_data)
         elif response_data is not None:
-            self.ai_logger.log_response(correlation_id, operation, provider, response_data, duration_ms)
+            self.ai_logger.log_response(
+                correlation_id, operation, provider, response_data, duration_ms
+            )
 
         # Reset correlation ID after operation
         self._reset_correlation_id()

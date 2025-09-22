@@ -68,7 +68,12 @@ class OrderService:
 
     def get_orders_by_lead(self, lead_id: int) -> List[Order]:
         """Get all orders for a lead."""
-        return self.db.query(Order).filter(Order.lead_id == lead_id).order_by(Order.created_at.desc()).all()
+        return (
+            self.db.query(Order)
+            .filter(Order.lead_id == lead_id)
+            .order_by(Order.created_at.desc())
+            .all()
+        )
 
     def update_order_status(self, order_id: int, status: str, notes: str = None) -> Dict:
         """Update order status."""

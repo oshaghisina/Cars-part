@@ -33,7 +33,9 @@ class LeadService:
             Dictionary with lead information and status
         """
         # Check if lead already exists
-        existing_lead = self.db.query(Lead).filter(Lead.telegram_user_id == telegram_user_id).first()
+        existing_lead = (
+            self.db.query(Lead).filter(Lead.telegram_user_id == telegram_user_id).first()
+        )
 
         if existing_lead:
             # Update existing lead if new information provided

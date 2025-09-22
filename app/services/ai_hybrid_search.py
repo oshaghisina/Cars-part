@@ -118,7 +118,9 @@ class HybridSearchEngine:
         filter_results = self._filter_search(query, parts, query_analysis)
 
         # Combine and re-score results
-        combined_results = self._combine_search_results(semantic_results, keyword_results, filter_results)
+        combined_results = self._combine_search_results(
+            semantic_results, keyword_results, filter_results
+        )
 
         return combined_results
 
@@ -173,8 +175,12 @@ class HybridSearchEngine:
             field_scores = {
                 "part_name": self._calculate_field_score(query_terms, part.get("part_name", "")),
                 "brand_oem": self._calculate_field_score(query_terms, part.get("brand_oem", "")),
-                "vehicle_make": self._calculate_field_score(query_terms, part.get("vehicle_make", "")),
-                "vehicle_model": self._calculate_field_score(query_terms, part.get("vehicle_model", "")),
+                "vehicle_make": self._calculate_field_score(
+                    query_terms, part.get("vehicle_make", "")
+                ),
+                "vehicle_model": self._calculate_field_score(
+                    query_terms, part.get("vehicle_model", "")
+                ),
                 "category": self._calculate_field_score(query_terms, part.get("category", "")),
             }
 
@@ -323,7 +329,9 @@ class HybridSearchEngine:
 
         return list(combined.values())
 
-    def _apply_filters(self, parts: List[Dict[str, Any]], filters: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _apply_filters(
+        self, parts: List[Dict[str, Any]], filters: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Apply filters to parts list."""
         filtered_parts = parts.copy()
 
@@ -333,25 +341,32 @@ class HybridSearchEngine:
             filtered_parts = [
                 p
                 for p in filtered_parts
-                if brand in p.get("brand_oem", "").lower() or brand in p.get("vehicle_make", "").lower()
+                if brand in p.get("brand_oem", "").lower()
+                or brand in p.get("vehicle_make", "").lower()
             ]
 
         # Category filter
         if "category" in filters and filters["category"]:
             category = filters["category"].lower()
-            filtered_parts = [p for p in filtered_parts if category in p.get("category", "").lower()]
+            filtered_parts = [
+                p for p in filtered_parts if category in p.get("category", "").lower()
+            ]
 
         # Price range filter
         if "min_price" in filters and filters["min_price"] is not None:
             min_price = float(filters["min_price"])
             filtered_parts = [
-                p for p in filtered_parts if p.get("price") is not None and p.get("price", 0) >= min_price
+                p
+                for p in filtered_parts
+                if p.get("price") is not None and p.get("price", 0) >= min_price
             ]
 
         if "max_price" in filters and filters["max_price"] is not None:
             max_price = float(filters["max_price"])
             filtered_parts = [
-                p for p in filtered_parts if p.get("price") is not None and p.get("price", 0) <= max_price
+                p
+                for p in filtered_parts
+                if p.get("price") is not None and p.get("price", 0) <= max_price
             ]
 
         # Availability filter
@@ -449,7 +464,9 @@ class HybridSearchEngine:
 
         return " ".join(filter(None, fields)).lower()
 
-    def get_search_suggestions(self, query: str, parts: List[Dict[str, Any]], limit: int = 5) -> List[str]:
+    def get_search_suggestions(
+        self, query: str, parts: List[Dict[str, Any]], limit: int = 5
+    ) -> List[str]:
         """Get search suggestions based on query and available parts."""
         if not query or len(query) < 2:
             return []

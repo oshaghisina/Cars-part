@@ -96,12 +96,16 @@ class SearchService:
         """Search using synonyms table."""
         # Search Persian synonyms
         persian_synonyms = (
-            self.db.query(Synonym).filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "fa").all()
+            self.db.query(Synonym)
+            .filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "fa")
+            .all()
         )
 
         # Search English synonyms
         english_synonyms = (
-            self.db.query(Synonym).filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "en").all()
+            self.db.query(Synonym)
+            .filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "en")
+            .all()
         )
 
         results = []
@@ -109,7 +113,11 @@ class SearchService:
         # Process Persian matches (higher priority)
         for synonym in persian_synonyms:
             if synonym.part_id:
-                part = self.db.query(Part).filter(Part.id == synonym.part_id, Part.status == "active").first()
+                part = (
+                    self.db.query(Part)
+                    .filter(Part.id == synonym.part_id, Part.status == "active")
+                    .first()
+                )
 
                 if part:
                     # Calculate score based on synonym weight and match quality
@@ -129,7 +137,11 @@ class SearchService:
         # Process English matches (lower priority)
         for synonym in english_synonyms:
             if synonym.part_id:
-                part = self.db.query(Part).filter(Part.id == synonym.part_id, Part.status == "active").first()
+                part = (
+                    self.db.query(Part)
+                    .filter(Part.id == synonym.part_id, Part.status == "active")
+                    .first()
+                )
 
                 if part:
                     match_score = fuzz.ratio(query, synonym.keyword) / 100.0
