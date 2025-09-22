@@ -64,6 +64,39 @@
       </div>
     </section>
 
+    <!-- Persian Font Demo Section -->
+    <section class="py-16 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-bold text-gray-900 mb-4 font-persian-bold">
+            پشتیبانی کامل از زبان فارسی
+          </h2>
+          <p class="text-lg text-gray-600 font-persian text-rtl">
+            این سیستم با پشتیبانی کامل از زبان فارسی طراحی شده است
+          </p>
+        </div>
+        <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+              <div class="text-4xl mb-4">🔍</div>
+              <h4 class="text-lg font-persian-bold text-rtl mb-2">جستجوی قطعات</h4>
+              <p class="text-sm font-persian text-rtl text-gray-600">جستجوی آسان و سریع قطعات مورد نیاز</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl mb-4">💰</div>
+              <h4 class="text-lg font-persian-bold text-rtl mb-2">قیمت‌های رقابتی</h4>
+              <p class="text-sm font-persian text-rtl text-gray-600">بهترین قیمت‌ها در بازار</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl mb-4">🚚</div>
+              <h4 class="text-lg font-persian-bold text-rtl mb-2">ارسال سریع</h4>
+              <p class="text-sm font-persian text-rtl text-gray-600">ارسال سریع و مطمئن</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Popular Parts Section -->
     <section class="py-16 bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

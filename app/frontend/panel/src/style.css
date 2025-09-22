@@ -2,7 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Persian fonts from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 /* Custom styles for the admin panel */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Vazirmatn', 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Persian text direction support */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Persian font utilities */
+.font-persian {
+  font-family: 'Vazirmatn', 'Noto Sans Arabic', sans-serif;
+}
+
+.font-persian-bold {
+  font-family: 'Vazirmatn', 'Noto Sans Arabic', sans-serif;
+  font-weight: 700;
+}
+
+.text-rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+.text-ltr {
+  direction: ltr;
+  text-align: left;
 }
