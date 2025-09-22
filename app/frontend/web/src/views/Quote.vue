@@ -93,6 +93,27 @@
             ></textarea>
           </div>
           
+          <!-- Success Message -->
+          <div v-if="success" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div class="flex items-center">
+              <span class="text-2xl mr-2">✅</span>
+              <div>
+                <strong>Success!</strong> Your quote request has been submitted successfully. 
+                We will contact you within 24 hours.
+              </div>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <div class="flex items-center">
+              <span class="text-2xl mr-2">❌</span>
+              <div>
+                <strong>Error:</strong> {{ error }}
+              </div>
+            </div>
+          </div>
+
           <div class="flex justify-end">
             <button
               type="submit"
@@ -109,6 +130,8 @@
 </template>
 
 <script>
+import apiService from '../services/api.js'
+
 export default {
   name: 'Quote',
   data() {
@@ -124,38 +147,91 @@ export default {
         parts: '',
         requirements: ''
       },
-      loading: false
+      loading: false,
+      error: null,
+      success: false
     }
   },
   methods: {
     async submitQuote() {
       this.loading = true
+      this.error = null
+      this.success = false
       
       try {
-        // Simulate API call - replace with actual API integration
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        // Show success message
-        alert('Quote request sent successfully! We will contact you within 24 hours.')
-        
-        // Reset form
-        this.form = {
-          name: '',
-          email: '',
-          phone: '',
-          company: '',
-          make: '',
-          model: '',
-          year: '',
-          parts: '',
-          requirements: ''
+        // Validate required fields
+        if (!this.form.name || !this.form.phone || !this.form.parts) {
+          throw new Error('Please fill in all required fields (Name, Phone, Parts)')
         }
+        
+        // Prepare lead data
+        const leadData = {
+          name: this.form.name,
+          phone: this.form.phone,
+          lastName: this.form.company || '',
+          city: '', // Could be added to form if needed
+          description: this.buildDescription()
+        }
+        
+        // Create lead via API
+        const lead = await apiService.createLead(leadData)
+        
+        this.success = true
+        
+        // Reset form after successful submission
+        setTimeout(() => {
+          this.resetForm()
+        }, 3000)
+        
       } catch (error) {
         console.error('Quote submission error:', error)
-        alert('Failed to send quote request. Please try again.')
+        this.error = error.message || 'Failed to send quote request. Please try again.'
       } finally {
         this.loading = false
       }
+    },
+    
+    buildDescription() {
+      let description = `Quote Request:\n\n`
+      description += `Parts Needed: ${this.form.parts}\n\n`
+      
+      if (this.form.make || this.form.model || this.form.year) {
+        description += `Vehicle Details:\n`
+        if (this.form.make) description += `Make: ${this.form.make}\n`
+        if (this.form.model) description += `Model: ${this.form.model}\n`
+        if (this.form.year) description += `Year: ${this.form.year}\n`
+        description += `\n`
+      }
+      
+      if (this.form.requirements) {
+        description += `Additional Requirements: ${this.form.requirements}\n\n`
+      }
+      
+      if (this.form.email) {
+        description += `Contact Email: ${this.form.email}\n`
+      }
+      
+      if (this.form.company) {
+        description += `Company: ${this.form.company}\n`
+      }
+      
+      return description
+    },
+    
+    resetForm() {
+      this.form = {
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        make: '',
+        model: '',
+        year: '',
+        parts: '',
+        requirements: ''
+      }
+      this.success = false
+      this.error = null
     }
   }
 }

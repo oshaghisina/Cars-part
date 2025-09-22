@@ -97,6 +97,19 @@
         </div>
       </div>
 
+      <!-- Error State -->
+      <div v-else-if="error" class="text-center py-12">
+        <div class="text-6xl mb-4">❌</div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Search Error</h3>
+        <p class="text-gray-600 mb-4">{{ error }}</p>
+        <button
+          @click="searchParts"
+          class="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700"
+        >
+          Try Again
+        </button>
+      </div>
+
       <!-- No Results -->
       <div v-else-if="hasSearched && !loading" class="text-center py-12">
         <div class="text-6xl mb-4">🔍</div>
@@ -120,6 +133,8 @@
 </template>
 
 <script>
+import apiService from '../services/api.js'
+
 export default {
   name: 'Search',
   data() {
@@ -131,43 +146,50 @@ export default {
       },
       searchResults: [],
       loading: false,
-      hasSearched: false
+      hasSearched: false,
+      error: null
     }
   },
   methods: {
     async searchParts() {
       this.loading = true
       this.hasSearched = true
+      this.error = null
       
       try {
-        // Simulate API call - replace with actual API integration
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Build search parameters
+        const searchParams = {
+          limit: 20
+        }
         
-        // Mock search results
-        this.searchResults = [
-          {
-            id: 1,
-            name: 'Brake Pads - Front',
-            description: 'High-quality ceramic brake pads for front wheels',
-            price: '45.99',
-            stock: 12,
-            make: this.searchForm.make || 'BYD',
-            model: this.searchForm.model || 'F3',
-            year: '2020-2023'
-          },
-          {
-            id: 2,
-            name: 'Oil Filter',
-            description: 'Premium oil filter for optimal engine protection',
-            price: '12.50',
-            stock: 25,
-            make: this.searchForm.make || 'Geely',
-            model: this.searchForm.model || 'EC7',
-            year: '2018-2023'
+        // Add search query
+        if (this.searchForm.partName) {
+          searchParams.search = this.searchForm.partName
+        }
+        
+        // Add vehicle filters
+        if (this.searchForm.make) {
+          searchParams.vehicle_make = this.searchForm.make
+        }
+        
+        if (this.searchForm.model) {
+          // For model search, we'll use the general search parameter
+          if (searchParams.search) {
+            searchParams.search += ` ${this.searchForm.model}`
+          } else {
+            searchParams.search = this.searchForm.model
           }
-        ]
+        }
+        
+        // Call real API
+        const response = await apiService.searchParts(searchParams)
+        
+        // Format results for display
+        this.searchResults = response.map(part => apiService.formatPartForDisplay(part))
+        
       } catch (error) {
         console.error('Search error:', error)
+        this.error = error.message || 'Search failed. Please try again.'
         this.searchResults = []
       } finally {
         this.loading = false
@@ -182,6 +204,7 @@ export default {
       }
       this.searchResults = []
       this.hasSearched = false
+      this.error = null
     }
   }
 }

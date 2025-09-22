@@ -105,44 +105,80 @@
 </template>
 
 <script>
+import apiService from '../services/api.js'
+
 export default {
   name: 'Home',
   data() {
     return {
-      popularParts: [
-        {
-          id: 1,
-          name: 'Brake Pads',
-          description: 'High-quality brake pads for Chinese vehicles',
-          price: '45.99',
-          stock: 12,
-          icon: '🛑'
-        },
-        {
-          id: 2,
-          name: 'Oil Filter',
-          description: 'Premium oil filters for optimal engine performance',
-          price: '12.50',
-          stock: 25,
-          icon: '🔧'
-        },
-        {
-          id: 3,
-          name: 'Air Filter',
-          description: 'Clean air filters for better engine efficiency',
-          price: '18.75',
-          stock: 8,
-          icon: '💨'
-        },
-        {
-          id: 4,
-          name: 'Spark Plugs',
-          description: 'High-performance spark plugs for smooth ignition',
-          price: '32.00',
-          stock: 15,
-          icon: '⚡'
-        }
-      ]
+      popularParts: [],
+      loading: true,
+      error: null
+    }
+  },
+  async mounted() {
+    await this.loadPopularParts()
+  },
+  methods: {
+    async loadPopularParts() {
+      this.loading = true
+      this.error = null
+      
+      try {
+        // Get popular parts from API
+        const parts = await apiService.getPopularParts(4)
+        
+        // Format parts for display with icons
+        this.popularParts = parts.map((part, index) => {
+          const icons = ['🛑', '🔧', '💨', '⚡', '🔩', '⚙️', '🛠️', '🔌']
+          return {
+            ...apiService.formatPartForDisplay(part),
+            icon: icons[index % icons.length]
+          }
+        })
+        
+      } catch (error) {
+        console.error('Failed to load popular parts:', error)
+        this.error = 'Failed to load popular parts'
+        
+        // Fallback to mock data
+        this.popularParts = [
+          {
+            id: 1,
+            name: 'Brake Pads',
+            description: 'High-quality brake pads for Chinese vehicles',
+            price: '45.99',
+            stock: 12,
+            icon: '🛑'
+          },
+          {
+            id: 2,
+            name: 'Oil Filter',
+            description: 'Premium oil filters for optimal engine performance',
+            price: '12.50',
+            stock: 25,
+            icon: '🔧'
+          },
+          {
+            id: 3,
+            name: 'Air Filter',
+            description: 'Clean air filters for better engine efficiency',
+            price: '18.75',
+            stock: 8,
+            icon: '💨'
+          },
+          {
+            id: 4,
+            name: 'Spark Plugs',
+            description: 'High-performance spark plugs for smooth ignition',
+            price: '32.00',
+            stock: 15,
+            icon: '⚡'
+          }
+        ]
+      } finally {
+        this.loading = false
+      }
     }
   }
 }

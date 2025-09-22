@@ -97,6 +97,19 @@
         </div>
       </div>
 
+      <!-- Error State -->
+      <div v-else-if="error" class="text-center py-12">
+        <div class="text-6xl mb-4">❌</div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">Tracking Error</h3>
+        <p class="text-gray-600 mb-4">{{ error }}</p>
+        <button
+          @click="trackOrder"
+          class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700"
+        >
+          Try Again
+        </button>
+      </div>
+
       <!-- No Order Found -->
       <div v-else-if="hasSearched && !loading" class="text-center py-12">
         <div class="text-6xl mb-4">📦</div>
@@ -114,6 +127,8 @@
 </template>
 
 <script>
+import apiService from '../services/api.js'
+
 export default {
   name: 'Track',
   data() {
@@ -121,7 +136,8 @@ export default {
       orderNumber: '',
       order: null,
       loading: false,
-      hasSearched: false
+      hasSearched: false,
+      error: null
     }
   },
   methods: {
@@ -130,80 +146,130 @@ export default {
       
       this.loading = true
       this.hasSearched = true
+      this.error = null
       
       try {
-        // Simulate API call - replace with actual API integration
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Mock order data
-        this.order = {
-          number: this.orderNumber,
-          date: '2024-01-15',
-          status: 'Shipped',
-          total: '125.50',
-          items: [
-            {
-              id: 1,
-              name: 'Brake Pads - Front',
-              description: 'High-quality ceramic brake pads',
-              price: '45.99',
-              quantity: 1
-            },
-            {
-              id: 2,
-              name: 'Oil Filter',
-              description: 'Premium oil filter',
-              price: '12.50',
-              quantity: 2
-            }
-          ],
-          timeline: [
-            {
-              title: 'Order Placed',
-              description: 'Your order has been received and is being processed.',
-              timestamp: '2024-01-15 10:30 AM',
-              status: 'completed'
-            },
-            {
-              title: 'Payment Confirmed',
-              description: 'Payment has been processed successfully.',
-              timestamp: '2024-01-15 10:35 AM',
-              status: 'completed'
-            },
-            {
-              title: 'Order Processed',
-              description: 'Your order is being prepared for shipment.',
-              timestamp: '2024-01-15 2:15 PM',
-              status: 'completed'
-            },
-            {
-              title: 'Shipped',
-              description: 'Your order has been shipped and is on its way.',
-              timestamp: '2024-01-16 9:00 AM',
-              status: 'current'
-            },
-            {
-              title: 'In Transit',
-              description: 'Your order is currently in transit.',
-              timestamp: 'Expected delivery: 2024-01-20',
-              status: 'pending'
-            }
-          ]
+        // Try to find order by ID
+        const orderId = parseInt(this.orderNumber)
+        if (isNaN(orderId)) {
+          throw new Error('Please enter a valid order number')
         }
+        
+        // Get order from API
+        const order = await apiService.getOrder(orderId)
+        
+        if (!order) {
+          throw new Error('Order not found. Please check your order number.')
+        }
+        
+        // Format order for display
+        this.order = {
+          ...apiService.formatOrderForDisplay(order),
+          timeline: this.generateTimeline(order.status),
+          items: this.formatOrderItems(order.items || [])
+        }
+        
       } catch (error) {
         console.error('Tracking error:', error)
+        this.error = error.message || 'Failed to track order. Please try again.'
         this.order = null
       } finally {
         this.loading = false
       }
     },
     
+    generateTimeline(status) {
+      const baseTimeline = [
+        {
+          title: 'Order Placed',
+          description: 'Your order has been received and is being processed.',
+          timestamp: 'Just now',
+          status: 'completed'
+        }
+      ]
+      
+      const statusTimeline = {
+        'pending': [
+          {
+            title: 'Order Processing',
+            description: 'Your order is being prepared.',
+            timestamp: 'In progress',
+            status: 'current'
+          }
+        ],
+        'processing': [
+          {
+            title: 'Order Processing',
+            description: 'Your order is being prepared.',
+            timestamp: 'In progress',
+            status: 'current'
+          }
+        ],
+        'shipped': [
+          {
+            title: 'Order Processed',
+            description: 'Your order has been prepared for shipment.',
+            timestamp: 'Completed',
+            status: 'completed'
+          },
+          {
+            title: 'Shipped',
+            description: 'Your order has been shipped and is on its way.',
+            timestamp: 'In progress',
+            status: 'current'
+          }
+        ],
+        'delivered': [
+          {
+            title: 'Order Processed',
+            description: 'Your order has been prepared for shipment.',
+            timestamp: 'Completed',
+            status: 'completed'
+          },
+          {
+            title: 'Shipped',
+            description: 'Your order has been shipped and is on its way.',
+            timestamp: 'Completed',
+            status: 'completed'
+          },
+          {
+            title: 'Delivered',
+            description: 'Your order has been delivered successfully.',
+            timestamp: 'Completed',
+            status: 'completed'
+          }
+        ],
+        'cancelled': [
+          {
+            title: 'Order Cancelled',
+            description: 'Your order has been cancelled.',
+            timestamp: 'Completed',
+            status: 'completed'
+          }
+        ]
+      }
+      
+      return [...baseTimeline, ...(statusTimeline[status] || [])]
+    },
+    
+    formatOrderItems(items) {
+      return items.map((item, index) => ({
+        id: index + 1,
+        name: item.query_text || 'Part',
+        description: `OEM Code: ${item.matched_part_id || 'N/A'}`,
+        price: '0.00', // Price would need to be fetched separately
+        quantity: item.qty || 1,
+        notes: item.notes || ''
+      }))
+    },
+    
     getStatusClass(status) {
       const classes = {
-        'Processing': 'bg-yellow-100 text-yellow-800',
-        'Shipped': 'bg-blue-100 text-blue-800',
-        'Delivered': 'bg-green-100 text-green-800',
-        'Cancelled': 'bg-red-100 text-red-800'
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'processing': 'bg-yellow-100 text-yellow-800',
+        'shipped': 'bg-blue-100 text-blue-800',
+        'delivered': 'bg-green-100 text-green-800',
+        'cancelled': 'bg-red-100 text-red-800'
       }
       return classes[status] || 'bg-gray-100 text-gray-800'
     },
