@@ -81,15 +81,11 @@ async def bulk_export(export_request: ExportRequest, db: Session = Depends(get_d
             data.to_excel(output, index=False)
             output.seek(0)
             content_type = "application/vnd.openxmlformats-officedocument." "spreadsheetml.sheet"
-            filename = f"{
-                export_request.data_type}_export_" f"{
-                datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            filename = f"{export_request.data_type}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         elif export_request.format == "json":
             output = data.to_json(orient="records", date_format="iso")
             content_type = "application/json"
-            filename = f"{
-                export_request.data_type}_export_" f"{
-                datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filename = f"{export_request.data_type}_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         else:
             raise HTTPException(status_code=400, detail="Unsupported export format")
 
@@ -191,10 +187,7 @@ async def import_parts(
             if existing_part and mode == "create":
                 if skip_errors:
                     errors.append(
-                        f"Row {
-                            index +
-                            1}: Part with OEM code {
-                            row['oem_code']} already exists")
+                        f"Row {index + 1}: Part with OEM code {row['oem_code']} already exists")
                     error_count += 1
                     continue
                 else:
