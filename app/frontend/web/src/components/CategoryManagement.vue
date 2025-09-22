@@ -46,8 +46,8 @@
           
           <!-- Product Count -->
           <div class="flex justify-between items-center mb-4">
-            <span class="text-sm text-gray-500 font-persian">
-              {{ category.productCount }} محصول
+            <span class="text-sm text-gray-500 font-persian text-rtl">
+              {{ formatPersianNumber(category.productCount, 'محصول') }}
             </span>
             <span class="text-blue-600 text-sm font-semibold font-persian">
               مشاهده همه →
@@ -95,6 +95,9 @@ import img10106 from '@/assets/images/parts/10106.png'
 import img10110 from '@/assets/images/parts/10110.png'
 import img10111 from '@/assets/images/parts/10111.png'
 import img10113 from '@/assets/images/parts/10113.png'
+
+// Import Persian number utilities
+import { formatPersianNumber } from '@/utils/persianNumbers'
 
 export default {
   name: 'CategoryManagement',
@@ -194,6 +197,10 @@ export default {
           categoryName: category.name
         }
       })
+    },
+    
+    formatPersianNumber(number, suffix = '') {
+      return formatPersianNumber(number, suffix)
     }
   }
 }

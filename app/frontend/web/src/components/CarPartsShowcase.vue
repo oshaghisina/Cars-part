@@ -43,8 +43,8 @@
             <span class="text-2xl font-bold text-blue-600 font-persian">
               {{ part.price }}
             </span>
-            <span class="text-sm text-gray-500 font-persian" :class="part.stock > 0 ? 'text-green-600' : 'text-red-600'">
-              {{ part.stock > 0 ? 'موجود' : 'ناموجود' }}
+            <span class="text-sm text-gray-500 font-persian text-rtl" :class="part.stock > 0 ? 'text-green-600' : 'text-red-600'">
+              {{ part.stock > 0 ? formatPersianNumber(part.stock, 'موجود') : 'ناموجود' }}
             </span>
           </div>
 
@@ -103,6 +103,9 @@ import img10106 from '@/assets/images/parts/10106.png'
 import img10110 from '@/assets/images/parts/10110.png'
 import img10111 from '@/assets/images/parts/10111.png'
 import img10113 from '@/assets/images/parts/10113.png'
+
+// Import Persian number utilities
+import { formatPersianNumber } from '@/utils/persianNumbers'
 
 export default {
   name: 'CarPartsShowcase',
@@ -190,6 +193,11 @@ export default {
           isPopular: true
         }
       ]
+    }
+  },
+  methods: {
+    formatPersianNumber(number, suffix = '') {
+      return formatPersianNumber(number, suffix)
     }
   }
 }

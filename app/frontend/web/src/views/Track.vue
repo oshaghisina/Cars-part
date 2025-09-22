@@ -37,7 +37,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p class="text-sm text-gray-600 font-persian text-rtl">شماره سفارش</p>
-              <p class="font-semibold font-persian text-rtl">{{ order.number }}</p>
+              <p class="font-semibold font-persian text-rtl">{{ formatPersianNumber(order.number) }}</p>
             </div>
             <div>
               <p class="text-sm text-gray-600 font-persian text-rtl">تاریخ سفارش</p>
@@ -51,7 +51,7 @@
             </div>
             <div>
               <p class="text-sm text-gray-600 font-persian text-rtl">Total Amount</p>
-              <p class="font-semibold text-lg text-blue-600 font-persian text-rtl">${{ order.total }}</p>
+              <p class="font-semibold text-lg text-blue-600 font-persian text-rtl">{{ formatPersianNumber(order.total, 'تومان') }}</p>
             </div>
           </div>
         </div>
@@ -128,6 +128,7 @@
 
 <script>
 import apiService from '../services/api.js'
+import { formatPersianNumber } from '@/utils/persianNumbers'
 
 export default {
   name: 'پیگیری',
@@ -281,6 +282,10 @@ export default {
         'pending': 'bg-gray-300'
       }
       return classes[status] || 'bg-gray-300'
+    },
+    
+    formatPersianNumber(number, suffix = '') {
+      return formatPersianNumber(number, suffix)
     }
   }
 }
