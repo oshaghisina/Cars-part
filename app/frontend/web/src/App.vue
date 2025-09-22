@@ -10,7 +10,7 @@
               <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span class="text-white font-bold text-lg">🚗</span>
               </div>
-              <span class="text-xl font-bold text-gray-900 font-persian-bold text-rtl">قطعات خودرو چین</span>
+              <span class="text-xl font-bold text-gray-900 font-persian-bold text-rtl">قطعات خودرو</span>
             </router-link>
           </div>
           
@@ -51,7 +51,7 @@
           <div>
               <h3 class="text-lg font-semibold mb-4 font-persian-bold text-rtl">درباره ما</h3>
               <p class="text-gray-300 font-persian text-rtl">
-              شریک قابل اعتماد شما برای قطعات خودرو چین. قطعات با کیفیت، قیمت‌های رقابتی، ارسال سریع.
+              شریک قابل اعتماد شما برای قطعات خودرو. قطعات با کیفیت، قیمت‌های رقابتی، ارسال سریع.
             </p>
           </div>
           <div>
@@ -71,7 +71,7 @@
           </div>
         </div>
         <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-300">
-          <p class="font-persian text-rtl">&copy; 2024 قطعات خودرو چین. تمامی حقوق محفوظ است.</p>
+          <p class="font-persian text-rtl">&copy; 2024 قطعات خودرو. تمامی حقوق محفوظ است.</p>
         </div>
       </div>
     </footer>

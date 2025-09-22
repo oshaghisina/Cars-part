@@ -5,7 +5,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div class="text-center font-persian">
           <h1 class="text-4xl md:text-6xl font-bold mb-6 font-persian-bold text-rtl">
-            قطعات خودرو چین با کیفیت
+            قطعات خودرو با کیفیت
           </h1>
           <p class="text-xl md:text-2xl mb-8 text-blue-100 font-persian text-rtl font-persian text-rtl">
             قطعات مناسب خودرو خود را با قیمت‌های رقابتی و ارسال سریع پیدا کنید
@@ -45,7 +45,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-3xl font-bold text-gray-900 mb-4 font-persian-bold text-rtl">چرا ما را انتخاب کنید؟</h2>
-          <p class="text-lg text-gray-600 font-persian text-rtl">بهترین خدمات را برای قطعات خودرو چین ارائه می‌دهیم</p>
+          <p class="text-lg text-gray-600 font-persian text-rtl">بهترین خدمات را برای قطعات خودرو ارائه می‌دهیم</p>
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
