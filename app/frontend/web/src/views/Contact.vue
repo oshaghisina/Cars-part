@@ -1,12 +1,12 @@
 <template>
   <div class="contact">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-8 font-persian font-persian-bold text-rtl">تماس با ما</h1>
+      <h1 class="text-3xl font-bold text-gray-900 mb-8 font-persian-bold text-rtl">تماس با ما</h1>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Contact Form -->
         <div class="bg-white rounded-lg shadow-md p-8">
-          <h2 class="text-xl font-semibold text-gray-900 mb-6 font-persian font-persian-bold text-rtl">Send us a Message</h2>
+          <h2 class="text-xl font-semibold text-gray-900 mb-6 font-persian-bold text-rtl">Send us a Message</h2>
           
           <form @submit.prevent="submitContact" class="space-y-4">
             <div>
@@ -69,13 +69,13 @@
         <!-- Contact Information -->
         <div class="space-y-6">
           <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian font-persian-bold text-rtl">Get in Touch</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian-bold text-rtl">Get in Touch</h3>
             <div class="space-y-3">
               <div class="flex items-center">
                 <span class="text-2xl mr-3 font-persian">📧</span>
                 <div>
                   <p class="font-semibold font-persian text-rtl">ایمیل</p>
-                  <p class="text-gray-600 font-persian font-persian text-rtl">info@chinaautoparts.com</p>
+                  <p class="text-gray-600 font-persian text-rtl">info@chinaautoparts.com</p>
                 </div>
               </div>
               
@@ -83,7 +83,7 @@
                 <span class="text-2xl mr-3 font-persian">📞</span>
                 <div>
                   <p class="font-semibold font-persian text-rtl">تلفن</p>
-                  <p class="text-gray-600 font-persian font-persian text-rtl">+86 123 456 7890</p>
+                  <p class="text-gray-600 font-persian text-rtl">+86 123 456 7890</p>
                 </div>
               </div>
               
@@ -91,14 +91,14 @@
                 <span class="text-2xl mr-3 font-persian">📍</span>
                 <div>
                   <p class="font-semibold font-persian text-rtl">آدرس</p>
-                  <p class="text-gray-600 font-persian font-persian text-rtl">Shanghai, China</p>
+                  <p class="text-gray-600 font-persian text-rtl">Shanghai, China</p>
                 </div>
               </div>
             </div>
           </div>
           
           <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian font-persian-bold text-rtl">Business Hours</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian-bold text-rtl">Business Hours</h3>
             <div class="space-y-2 text-sm font-persian">
               <div class="flex justify-between">
                 <span>Monday - Friday</span>
@@ -116,7 +116,7 @@
           </div>
           
           <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian font-persian-bold text-rtl">Quick Links</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian-bold text-rtl">Quick Links</h3>
             <div class="space-y-2">
               <router-link to="/search" class="block text-blue-600 hover:text-blue-800 font-persian">
                 Search Parts

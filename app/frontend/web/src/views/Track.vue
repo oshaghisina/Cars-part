@@ -1,7 +1,7 @@
 <template>
   <div class="track">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-8 font-persian font-persian-bold text-rtl">Track Your Order</h1>
+      <h1 class="text-3xl font-bold text-gray-900 mb-8 font-persian-bold text-rtl">Track Your Order</h1>
       
       <!-- Search Form -->
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -33,43 +33,43 @@
       <div v-if="order" class="space-y-6">
         <!-- Order Summary -->
         <div class="bg-white rounded-lg shadow-md p-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4 font-persian font-persian-bold text-rtl">خلاصه سفارش</h2>
+          <h2 class="text-xl font-semibold text-gray-900 mb-4 font-persian-bold text-rtl">خلاصه سفارش</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p class="text-sm text-gray-600 font-persian font-persian text-rtl">شماره سفارش</p>
+              <p class="text-sm text-gray-600 font-persian text-rtl">شماره سفارش</p>
               <p class="font-semibold font-persian text-rtl">{{ order.number }}</p>
             </div>
             <div>
-              <p class="text-sm text-gray-600 font-persian font-persian text-rtl">تاریخ سفارش</p>
+              <p class="text-sm text-gray-600 font-persian text-rtl">تاریخ سفارش</p>
               <p class="font-semibold font-persian text-rtl">{{ order.date }}</p>
             </div>
             <div>
-              <p class="text-sm text-gray-600 font-persian font-persian text-rtl">Status</p>
-              <span :class="getStatusClass(order.status) px-3 py-1 rounded-full text-sm font-semibold font-persian">
+              <p class="text-sm text-gray-600 font-persian text-rtl">Status</p>
+              <span :class="getStatusClass(order.status) + ' px-3 py-1 rounded-full text-sm font-semibold font-persian'">
                 {{ order.status }}
               </span>
             </div>
             <div>
-              <p class="text-sm text-gray-600 font-persian font-persian text-rtl">Total Amount</p>
-              <p class="font-semibold text-lg text-blue-600 font-persian font-persian text-rtl">${{ order.total }}</p>
+              <p class="text-sm text-gray-600 font-persian text-rtl">Total Amount</p>
+              <p class="font-semibold text-lg text-blue-600 font-persian text-rtl">${{ order.total }}</p>
             </div>
           </div>
         </div>
 
         <!-- Tracking Timeline -->
         <div class="bg-white rounded-lg shadow-md p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian font-persian-bold text-rtl">Tracking Timeline</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian-bold text-rtl">Tracking Timeline</h3>
           <div class="space-y-4">
             <div
               v-for="(event, index) in order.timeline"
               :key="index"
               class="flex items-start space-x-3"
             >
-              <div :class="getTimelineDotClass(event.status) w-3 h-3 rounded-full mt-2"></div>
+              <div :class="getTimelineDotClass(event.status) + ' w-3 h-3 rounded-full mt-2'"></div>
               <div class="flex-1">
-                <p class="font-semibold text-gray-900 font-persian font-persian text-rtl">{{ event.title }}</p>
-                <p class="text-sm text-gray-600 font-persian font-persian text-rtl">{{ event.description }}</p>
-                <p class="text-xs text-gray-500 font-persian font-persian text-rtl">{{ event.timestamp }}</p>
+                <p class="font-semibold text-gray-900 font-persian text-rtl">{{ event.title }}</p>
+                <p class="text-sm text-gray-600 font-persian text-rtl">{{ event.description }}</p>
+                <p class="text-xs text-gray-500 font-persian text-rtl">{{ event.timestamp }}</p>
               </div>
             </div>
           </div>
@@ -77,7 +77,7 @@
 
         <!-- Order Items -->
         <div class="bg-white rounded-lg shadow-md p-6">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian font-persian-bold text-rtl">اقلام سفارش</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4 font-persian-bold text-rtl">اقلام سفارش</h3>
           <div class="space-y-3">
             <div
               v-for="item in order.items"
@@ -86,11 +86,11 @@
             >
               <div>
                 <p class="font-semibold font-persian text-rtl">{{ item.name }}</p>
-                <p class="text-sm text-gray-600 font-persian font-persian text-rtl">{{ item.description }}</p>
+                <p class="text-sm text-gray-600 font-persian text-rtl">{{ item.description }}</p>
               </div>
               <div class="text-right font-persian">
                 <p class="font-semibold font-persian text-rtl">${{ item.price }}</p>
-                <p class="text-sm text-gray-600 font-persian font-persian text-rtl">Qty: {{ item.quantity }}</p>
+                <p class="text-sm text-gray-600 font-persian text-rtl">Qty: {{ item.quantity }}</p>
               </div>
             </div>
           </div>
@@ -100,8 +100,8 @@
       <!-- Error State -->
       <div v-else-if="error" class="text-center py-12 font-persian">
         <div class="text-6xl mb-4 font-persian">❌</div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-2 font-persian font-persian-bold text-rtl">Tracking Error</h3>
-        <p class="text-gray-600 mb-4 font-persian font-persian text-rtl">{{ error }}</p>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2 font-persian-bold text-rtl">Tracking Error</h3>
+        <p class="text-gray-600 mb-4 font-persian text-rtl">{{ error }}</p>
         <button
           @click="trackOrder"
           class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 font-persian"
@@ -113,14 +113,14 @@
       <!-- No Order Found -->
       <div v-else-if="hasSearched && !loading" class="text-center py-12 font-persian">
         <div class="text-6xl mb-4 font-persian">📦</div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-2 font-persian font-persian-bold text-rtl">Order not found</h3>
-        <p class="text-gray-600 mb-4 font-persian font-persian text-rtl">Please check your order number and try again.</p>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2 font-persian-bold text-rtl">Order not found</h3>
+        <p class="text-gray-600 mb-4 font-persian text-rtl">Please check your order number and try again.</p>
       </div>
 
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-12 font-persian">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p class="mt-2 text-gray-600 font-persian font-persian text-rtl">Tracking order...</p>
+        <p class="mt-2 text-gray-600 font-persian text-rtl">Tracking order...</p>
       </div>
     </div>
   </div>

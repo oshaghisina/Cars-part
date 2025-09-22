@@ -3,7 +3,7 @@
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 font-persian font-persian-bold text-rtl">Get a Quote</h3>
+          <h3 class="text-lg font-semibold text-gray-900 font-persian-bold text-rtl">Get a Quote</h3>
           <button
             @click="$emit('close')"
             class="text-gray-400 hover:text-gray-600 font-persian"

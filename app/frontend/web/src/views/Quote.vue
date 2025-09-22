@@ -1,7 +1,7 @@
 <template>
   <div class="quote">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-8 font-persian-bold text-rtl font-persian font-persian-bold text-rtl">درخواست پیشنهاد قیمت</h1>
+      <h1 class="text-3xl font-bold text-gray-900 mb-8 font-persian-bold text-rtl font-persian-bold text-rtl">درخواست پیشنهاد قیمت</h1>
       
       <div class="bg-white rounded-lg shadow-md p-8">
         <form @submit.prevent="submitQuote" class="space-y-6">

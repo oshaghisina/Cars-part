@@ -4,22 +4,22 @@
     <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white font-persian">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div class="text-center font-persian">
-          <h1 class="text-4xl md:text-6xl font-bold mb-6 font-persian-bold font-persian font-persian-bold text-rtl">
+          <h1 class="text-4xl md:text-6xl font-bold mb-6 font-persian-bold text-rtl">
             قطعات خودرو چین با کیفیت
           </h1>
-          <p class="text-xl md:text-2xl mb-8 text-blue-100 font-persian text-rtl font-persian font-persian text-rtl">
+          <p class="text-xl md:text-2xl mb-8 text-blue-100 font-persian text-rtl font-persian text-rtl">
             قطعات مناسب خودرو خود را با قیمت‌های رقابتی و ارسال سریع پیدا کنید
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <router-link 
               to="/search" 
-              class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors font-persian font-persian"
+              class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors font-persian"
             >
               جستجوی قطعات
             </router-link>
             <button 
               @click="$emit('show-contact')"
-              class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors font-persian font-persian"
+              class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors font-persian"
             >
               دریافت پیشنهاد
             </button>
