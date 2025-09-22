@@ -1,27 +1,39 @@
 <template>
   <div class="ai-dashboard">
     <div class="dashboard-header mb-8">
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">
-        🤖 AI Dashboard
-      </h1>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">🤖 AI Dashboard</h1>
       <p class="text-gray-600 text-lg">
         Advanced AI-powered features for car parts management
       </p>
     </div>
 
     <!-- AI Status Card -->
-    <div class="ai-status-card mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+    <div
+      class="ai-status-card mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200"
+    >
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-xl font-semibold text-blue-800 mb-2">AI Gateway Status</h2>
+          <h2 class="text-xl font-semibold text-blue-800 mb-2">
+            AI Gateway Status
+          </h2>
           <div class="flex items-center gap-4 text-sm">
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span class="text-gray-700">AI Gateway: {{ aiStatus.enabled ? 'Enabled' : 'Disabled' }}</span>
+              <span class="text-gray-700"
+                >AI Gateway:
+                {{ aiStatus.enabled ? "Enabled" : "Disabled" }}</span
+              >
             </div>
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span class="text-gray-700">Providers: {{ aiStatus.providers ? Object.keys(aiStatus.providers).length : 0 }}</span>
+              <span class="text-gray-700"
+                >Providers:
+                {{
+                  aiStatus.providers
+                    ? Object.keys(aiStatus.providers).length
+                    : 0
+                }}</span
+              >
             </div>
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
@@ -30,11 +42,11 @@
           </div>
         </div>
         <button
-          @click="refreshAIStatus"
           :disabled="isLoadingStatus"
           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="refreshAIStatus"
         >
-          {{ isLoadingStatus ? 'Refreshing...' : 'Refresh Status' }}
+          {{ isLoadingStatus ? "Refreshing..." : "Refresh Status" }}
         </button>
       </div>
     </div>
@@ -46,13 +58,13 @@
           <button
             v-for="tab in tabs"
             :key="tab.id"
-            @click="activeTab = tab.id"
             :class="[
               'py-2 px-1 border-b-2 font-medium text-sm transition-colors',
               activeTab === tab.id
                 ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
             ]"
+            @click="activeTab = tab.id"
           >
             <span class="mr-2">{{ tab.icon }}</span>
             {{ tab.name }}
@@ -89,30 +101,36 @@
       <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button
-          @click="activeTab = 'search'"
           class="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left"
+          @click="activeTab = 'search'"
         >
           <div class="text-2xl mb-2">🔍</div>
           <div class="font-medium text-gray-800">AI Search</div>
-          <div class="text-sm text-gray-600">Search parts with natural language</div>
+          <div class="text-sm text-gray-600">
+            Search parts with natural language
+          </div>
         </button>
-        
+
         <button
-          @click="activeTab = 'recommendations'"
           class="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left"
+          @click="activeTab = 'recommendations'"
         >
           <div class="text-2xl mb-2">🎯</div>
           <div class="font-medium text-gray-800">Smart Recommendations</div>
-          <div class="text-sm text-gray-600">Get AI-powered part suggestions</div>
+          <div class="text-sm text-gray-600">
+            Get AI-powered part suggestions
+          </div>
         </button>
-        
+
         <button
-          @click="activeTab = 'language'"
           class="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow text-left"
+          @click="activeTab = 'language'"
         >
           <div class="text-2xl mb-2">🌐</div>
           <div class="font-medium text-gray-800">Language Analysis</div>
-          <div class="text-sm text-gray-600">Analyze text and extract entities</div>
+          <div class="text-sm text-gray-600">
+            Analyze text and extract entities
+          </div>
         </button>
       </div>
     </div>
@@ -120,52 +138,52 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import AISearchInterface from '@/components/AISearchInterface.vue'
-import AIRecommendations from '@/components/AIRecommendations.vue'
-import AILanguageAnalysis from '@/components/AILanguageAnalysis.vue'
-import AIAnalytics from '@/components/AIAnalytics.vue'
+import { ref, onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import AISearchInterface from "@/components/AISearchInterface.vue";
+import AIRecommendations from "@/components/AIRecommendations.vue";
+import AILanguageAnalysis from "@/components/AILanguageAnalysis.vue";
+import AIAnalytics from "@/components/AIAnalytics.vue";
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
 // Reactive data
-const activeTab = ref('search')
-const aiStatus = ref({})
-const isLoadingStatus = ref(false)
+const activeTab = ref("search");
+const aiStatus = ref({});
+const isLoadingStatus = ref(false);
 
 const tabs = [
-  { id: 'search', name: 'AI Search', icon: '🔍' },
-  { id: 'recommendations', name: 'Recommendations', icon: '🎯' },
-  { id: 'language', name: 'Language Analysis', icon: '🌐' },
-  { id: 'analytics', name: 'AI Analytics', icon: '📊' }
-]
+  { id: "search", name: "AI Search", icon: "🔍" },
+  { id: "recommendations", name: "Recommendations", icon: "🎯" },
+  { id: "language", name: "Language Analysis", icon: "🌐" },
+  { id: "analytics", name: "AI Analytics", icon: "📊" },
+];
 
 // Methods
 const refreshAIStatus = async () => {
-  isLoadingStatus.value = true
-  
+  isLoadingStatus.value = true;
+
   try {
-    const response = await fetch('/api/v1/ai/ai-status', {
+    const response = await fetch("/api/v1/ai/ai-status", {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    })
-    
+        Authorization: `Bearer ${authStore.token}`,
+      },
+    });
+
     if (response.ok) {
-      const data = await response.json()
-      aiStatus.value = data
+      const data = await response.json();
+      aiStatus.value = data;
     }
   } catch (err) {
-    console.error('Error fetching AI status:', err)
+    console.error("Error fetching AI status:", err);
   } finally {
-    isLoadingStatus.value = false
+    isLoadingStatus.value = false;
   }
-}
+};
 
 onMounted(() => {
-  refreshAIStatus()
-})
+  refreshAIStatus();
+});
 </script>
 
 <style scoped>
@@ -180,8 +198,14 @@ onMounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .quick-actions button {

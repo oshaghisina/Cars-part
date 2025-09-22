@@ -4,14 +4,14 @@
       <div class="flex justify-between items-center">
         <h3 class="text-lg font-medium text-gray-900">{{ title }}</h3>
         <button
-          @click="$emit('viewAll')"
           class="text-sm text-blue-600 hover:text-blue-900"
+          @click="$emit('viewAll')"
         >
           View all
         </button>
       </div>
     </div>
-    
+
     <div class="divide-y divide-gray-200">
       <!-- Loading State -->
       <div v-if="loading" class="px-6 py-4">
@@ -25,16 +25,28 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Empty State -->
       <div v-else-if="!hasItems" class="px-6 py-8 text-center">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+        <svg
+          class="mx-auto h-12 w-12 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+          />
         </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900">No recent activity</h3>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">
+          No recent activity
+        </h3>
         <p class="mt-1 text-sm text-gray-500">{{ emptyMessage }}</p>
       </div>
-      
+
       <!-- Activity Items -->
       <div v-else>
         <div
@@ -44,11 +56,15 @@
         >
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div :class="[
-                'w-8 h-8 rounded-full flex items-center justify-center',
-                getItemIconBg(item)
-              ]">
-                <span class="text-white text-xs font-medium">{{ getItemIcon(item) }}</span>
+              <div
+                :class="[
+                  'w-8 h-8 rounded-full flex items-center justify-center',
+                  getItemIconBg(item),
+                ]"
+              >
+                <span class="text-white text-xs font-medium">{{
+                  getItemIcon(item)
+                }}</span>
               </div>
             </div>
             <div class="ml-4 flex-1 min-w-0">
@@ -64,10 +80,12 @@
                 {{ getItemDescription(item) }}
               </p>
               <div v-if="getItemStatus(item)" class="mt-1">
-                <span :class="[
-                  'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                  getStatusClass(getItemStatus(item))
-                ]">
+                <span
+                  :class="[
+                    'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                    getStatusClass(getItemStatus(item)),
+                  ]"
+                >
                   {{ getItemStatus(item) }}
                 </span>
               </div>
@@ -81,143 +99,143 @@
 
 <script>
 export default {
-  name: 'ActivityList',
+  name: "ActivityList",
   props: {
     title: {
       type: String,
-      required: true
+      required: true,
     },
     items: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     loading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     type: {
       type: String,
-      default: 'general' // 'orders', 'leads', 'parts', 'categories'
+      default: "general", // 'orders', 'leads', 'parts', 'categories'
     },
     emptyMessage: {
       type: String,
-      default: 'No recent activity to show'
-    }
+      default: "No recent activity to show",
+    },
   },
-  emits: ['viewAll'],
+  emits: ["viewAll"],
   computed: {
     hasItems() {
-      return this.items && this.items.length > 0
-    }
+      return this.items && this.items.length > 0;
+    },
   },
   methods: {
-    getItemIcon(item) {
+    getItemIcon(_item) {
       switch (this.type) {
-        case 'orders':
-          return '📦'
-        case 'leads':
-          return '👥'
-        case 'parts':
-          return '🔧'
-        case 'categories':
-          return '📁'
+        case "orders":
+          return "📦";
+        case "leads":
+          return "👥";
+        case "parts":
+          return "🔧";
+        case "categories":
+          return "📁";
         default:
-          return '📋'
+          return "📋";
       }
     },
-    
-    getItemIconBg(item) {
+
+    getItemIconBg(_item) {
       switch (this.type) {
-        case 'orders':
-          return 'bg-blue-500'
-        case 'leads':
-          return 'bg-green-500'
-        case 'parts':
-          return 'bg-purple-500'
-        case 'categories':
-          return 'bg-orange-500'
+        case "orders":
+          return "bg-blue-500";
+        case "leads":
+          return "bg-green-500";
+        case "parts":
+          return "bg-purple-500";
+        case "categories":
+          return "bg-orange-500";
         default:
-          return 'bg-gray-500'
+          return "bg-gray-500";
       }
     },
-    
+
     getItemTitle(item) {
       switch (this.type) {
-        case 'orders':
-          return `Order #${item.id}`
-        case 'leads':
-          return item.name || item.email || 'New Lead'
-        case 'parts':
-          return item.part_name || 'New Part'
-        case 'categories':
-          return item.name || 'New Category'
+        case "orders":
+          return `Order #${item.id}`;
+        case "leads":
+          return item.name || item.email || "New Lead";
+        case "parts":
+          return item.part_name || "New Part";
+        case "categories":
+          return item.name || "New Category";
         default:
-          return item.title || item.name || 'New Item'
+          return item.title || item.name || "New Item";
       }
     },
-    
+
     getItemDescription(item) {
       switch (this.type) {
-        case 'orders':
-          return `Customer: ${item.customer_name || 'Unknown'} - $${item.total || 0}`
-        case 'leads':
-          return item.message || item.source || 'New lead received'
-        case 'parts':
-          return `${item.brand_oem || 'Unknown Brand'} - ${item.category || 'Uncategorized'}`
-        case 'categories':
-          return item.description || 'New category added'
+        case "orders":
+          return `Customer: ${item.customer_name || "Unknown"} - $${item.total || 0}`;
+        case "leads":
+          return item.message || item.source || "New lead received";
+        case "parts":
+          return `${item.brand_oem || "Unknown Brand"} - ${item.category || "Uncategorized"}`;
+        case "categories":
+          return item.description || "New category added";
         default:
-          return item.description || 'New activity'
+          return item.description || "New activity";
       }
     },
-    
+
     getItemStatus(item) {
       switch (this.type) {
-        case 'orders':
-          return item.status
-        case 'leads':
-          return item.status
-        case 'parts':
-          return item.status === 'active' ? 'Active' : 'Inactive'
-        case 'categories':
-          return null
+        case "orders":
+          return item.status;
+        case "leads":
+          return item.status;
+        case "parts":
+          return item.status === "active" ? "Active" : "Inactive";
+        case "categories":
+          return null;
         default:
-          return null
+          return null;
       }
     },
-    
+
     getStatusClass(status) {
-      if (!status) return ''
-      
+      if (!status) return "";
+
       const statusMap = {
-        'pending': 'bg-yellow-100 text-yellow-800',
-        'active': 'bg-green-100 text-green-800',
-        'inactive': 'bg-red-100 text-red-800',
-        'completed': 'bg-blue-100 text-blue-800',
-        'cancelled': 'bg-gray-100 text-gray-800',
-        'new': 'bg-green-100 text-green-800',
-        'contacted': 'bg-blue-100 text-blue-800',
-        'qualified': 'bg-purple-100 text-purple-800',
-        'closed': 'bg-gray-100 text-gray-800'
-      }
-      
-      return statusMap[status.toLowerCase()] || 'bg-gray-100 text-gray-800'
+        pending: "bg-yellow-100 text-yellow-800",
+        active: "bg-green-100 text-green-800",
+        inactive: "bg-red-100 text-red-800",
+        completed: "bg-blue-100 text-blue-800",
+        cancelled: "bg-gray-100 text-gray-800",
+        new: "bg-green-100 text-green-800",
+        contacted: "bg-blue-100 text-blue-800",
+        qualified: "bg-purple-100 text-purple-800",
+        closed: "bg-gray-100 text-gray-800",
+      };
+
+      return statusMap[status.toLowerCase()] || "bg-gray-100 text-gray-800";
     },
-    
+
     formatTime(item) {
-      const date = new Date(item.created_at || item.updated_at || Date.now())
-      const now = new Date()
-      const diffInHours = (now - date) / (1000 * 60 * 60)
-      
+      const date = new Date(item.created_at || item.updated_at || Date.now());
+      const now = new Date();
+      const diffInHours = (now - date) / (1000 * 60 * 60);
+
       if (diffInHours < 1) {
-        return 'Just now'
+        return "Just now";
       } else if (diffInHours < 24) {
-        return `${Math.floor(diffInHours)}h ago`
+        return `${Math.floor(diffInHours)}h ago`;
       } else {
-        const diffInDays = Math.floor(diffInHours / 24)
-        return `${diffInDays}d ago`
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays}d ago`;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>

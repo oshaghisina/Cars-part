@@ -15,18 +15,26 @@
         Select a part to get recommendations:
       </label>
       <div class="flex gap-4">
-        <select v-model="selectedPartId" @change="onPartChange" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+        <select
+          v-model="selectedPartId"
+          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          @change="onPartChange"
+        >
           <option value="">Choose a part...</option>
-          <option v-for="part in availableParts" :key="part.id" :value="part.id">
+          <option
+            v-for="part in availableParts"
+            :key="part.id"
+            :value="part.id"
+          >
             {{ part.part_name }} - {{ part.brand_oem }} {{ part.vehicle_model }}
           </option>
         </select>
         <button
-          @click="getRecommendations"
           :disabled="!selectedPartId || isLoading"
           class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="getRecommendations"
         >
-          {{ isLoading ? 'Getting Recommendations...' : 'Get Recommendations' }}
+          {{ isLoading ? "Getting Recommendations..." : "Get Recommendations" }}
         </button>
       </div>
     </div>
@@ -37,7 +45,11 @@
         Recommendation Types:
       </label>
       <div class="flex flex-wrap gap-2">
-        <label v-for="type in recommendationTypes" :key="type.value" class="flex items-center">
+        <label
+          v-for="type in recommendationTypes"
+          :key="type.value"
+          class="flex items-center"
+        >
           <input
             v-model="selectedTypes"
             :value="type.value"
@@ -50,17 +62,30 @@
     </div>
 
     <!-- Selected Part Info -->
-    <div v-if="selectedPart" class="selected-part-info mb-6 p-4 bg-gray-50 rounded-lg">
+    <div
+      v-if="selectedPart"
+      class="selected-part-info mb-6 p-4 bg-gray-50 rounded-lg"
+    >
       <h3 class="font-semibold text-gray-800 mb-2">Selected Part</h3>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div><strong>Name:</strong> {{ selectedPart.part_name }}</div>
         <div><strong>Brand:</strong> {{ selectedPart.brand_oem }}</div>
-        <div><strong>Vehicle:</strong> {{ selectedPart.vehicle_make }} {{ selectedPart.vehicle_model }}</div>
+        <div>
+          <strong>Vehicle:</strong> {{ selectedPart.vehicle_make }}
+          {{ selectedPart.vehicle_model }}
+        </div>
         <div><strong>Category:</strong> {{ selectedPart.category }}</div>
-        <div v-if="selectedPart.price"><strong>Price:</strong> ${{ selectedPart.price }}</div>
-        <div><strong>Availability:</strong> 
-          <span :class="selectedPart.availability ? 'text-green-600' : 'text-red-600'">
-            {{ selectedPart.availability ? 'Available' : 'Out of Stock' }}
+        <div v-if="selectedPart.price">
+          <strong>Price:</strong> ${{ selectedPart.price }}
+        </div>
+        <div>
+          <strong>Availability:</strong>
+          <span
+            :class="
+              selectedPart.availability ? 'text-green-600' : 'text-red-600'
+            "
+          >
+            {{ selectedPart.availability ? "Available" : "Out of Stock" }}
           </span>
         </div>
       </div>
@@ -86,7 +111,9 @@
           <div class="flex justify-between items-start mb-2">
             <h4 class="font-semibold text-gray-800">{{ rec.part_name }}</h4>
             <div class="flex flex-col items-end">
-              <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded mb-1">
+              <span
+                class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded mb-1"
+              >
                 {{ rec.recommendation_type }}
               </span>
               <span class="text-xs text-gray-500">
@@ -94,27 +121,35 @@
               </span>
             </div>
           </div>
-          
+
           <div class="text-sm text-gray-600 mb-3">
             <div><strong>Brand:</strong> {{ rec.brand_oem }}</div>
-            <div><strong>Vehicle:</strong> {{ rec.vehicle_make }} {{ rec.vehicle_model }}</div>
+            <div>
+              <strong>Vehicle:</strong> {{ rec.vehicle_make }}
+              {{ rec.vehicle_model }}
+            </div>
             <div><strong>Category:</strong> {{ rec.category }}</div>
             <div v-if="rec.price"><strong>Price:</strong> ${{ rec.price }}</div>
           </div>
-          
+
           <div class="mb-3">
-            <div class="text-xs font-medium text-gray-700 mb-1">Why recommended:</div>
+            <div class="text-xs font-medium text-gray-700 mb-1">
+              Why recommended:
+            </div>
             <div class="text-xs text-gray-600 bg-gray-50 p-2 rounded">
               {{ rec.reason }}
             </div>
           </div>
-          
+
           <div class="flex justify-between items-center">
             <span class="text-xs text-gray-500">
               Score: {{ Math.round(rec.recommendation_score * 100) }}%
             </span>
-            <span :class="rec.availability ? 'text-green-600' : 'text-red-600'" class="text-xs font-medium">
-              {{ rec.availability ? 'Available' : 'Out of Stock' }}
+            <span
+              :class="rec.availability ? 'text-green-600' : 'text-red-600'"
+              class="text-xs font-medium"
+            >
+              {{ rec.availability ? "Available" : "Out of Stock" }}
             </span>
           </div>
         </div>
@@ -122,19 +157,29 @@
     </div>
 
     <!-- No Recommendations -->
-    <div v-else-if="hasSearched && !isLoading" class="no-recommendations text-center py-8">
+    <div
+      v-else-if="hasSearched && !isLoading"
+      class="no-recommendations text-center py-8"
+    >
       <div class="text-gray-500 text-lg mb-2">No recommendations available</div>
-      <div class="text-gray-400 text-sm">Try selecting a different part or adjusting the recommendation types</div>
+      <div class="text-gray-400 text-sm">
+        Try selecting a different part or adjusting the recommendation types
+      </div>
     </div>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="loading text-center py-8">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+      ></div>
       <div class="mt-2 text-gray-600">Generating AI recommendations...</div>
     </div>
 
     <!-- Error State -->
-    <div v-if="error" class="error bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <div
+      v-if="error"
+      class="error bg-red-50 border border-red-200 rounded-lg p-4 mb-6"
+    >
       <div class="text-red-800 font-medium">Recommendation Error</div>
       <div class="text-red-600 text-sm mt-1">{{ error }}</div>
     </div>
@@ -142,102 +187,107 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { ref, onMounted, watch } from "vue";
+import { useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
 // Reactive data
-const selectedPartId = ref('')
-const selectedPart = ref(null)
-const availableParts = ref([])
-const recommendations = ref([])
-const isLoading = ref(false)
-const hasSearched = ref(false)
-const error = ref('')
-const selectedTypes = ref(['complementary', 'alternative', 'maintenance'])
+const selectedPartId = ref("");
+const selectedPart = ref(null);
+const availableParts = ref([]);
+const recommendations = ref([]);
+const isLoading = ref(false);
+const hasSearched = ref(false);
+const error = ref("");
+const selectedTypes = ref(["complementary", "alternative", "maintenance"]);
 
 const recommendationTypes = [
-  { value: 'complementary', label: 'Complementary Parts' },
-  { value: 'alternative', label: 'Alternative Brands' },
-  { value: 'maintenance', label: 'Maintenance Items' },
-  { value: 'upgrade', label: 'Upgrade Options' },
-  { value: 'frequently_bought', label: 'Frequently Bought Together' }
-]
+  { value: "complementary", label: "Complementary Parts" },
+  { value: "alternative", label: "Alternative Brands" },
+  { value: "maintenance", label: "Maintenance Items" },
+  { value: "upgrade", label: "Upgrade Options" },
+  { value: "frequently_bought", label: "Frequently Bought Together" },
+];
 
 // Methods
 const loadAvailableParts = async () => {
   try {
-    const response = await fetch('/api/v1/parts/?limit=100', {
+    const response = await fetch("/api/v1/parts/?limit=100", {
       headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    })
-    
+        Authorization: `Bearer ${authStore.token}`,
+      },
+    });
+
     if (response.ok) {
-      const data = await response.json()
-      availableParts.value = data.items || []
+      const data = await response.json();
+      availableParts.value = data.items || [];
     }
   } catch (err) {
-    console.error('Error loading parts:', err)
+    console.error("Error loading parts:", err);
   }
-}
+};
 
 const onPartChange = () => {
   if (selectedPartId.value) {
-    selectedPart.value = availableParts.value.find(p => p.id === parseInt(selectedPartId.value))
+    selectedPart.value = availableParts.value.find(
+      (p) => p.id === parseInt(selectedPartId.value),
+    );
   } else {
-    selectedPart.value = null
+    selectedPart.value = null;
   }
-  recommendations.value = []
-  hasSearched.value = false
-}
+  recommendations.value = [];
+  hasSearched.value = false;
+};
 
 const getRecommendations = async () => {
-  if (!selectedPartId.value) return
-  
-  isLoading.value = true
-  hasSearched.value = true
-  error.value = ''
-  
+  if (!selectedPartId.value) return;
+
+  isLoading.value = true;
+  hasSearched.value = true;
+  error.value = "";
+
   try {
-    const response = await fetch(`/api/v1/ai/recommendations/${selectedPartId.value}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authStore.token}`
+    const response = await fetch(
+      `/api/v1/ai/recommendations/${selectedPartId.value}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authStore.token}`,
+        },
+        body: JSON.stringify({
+          recommendation_types: selectedTypes.value,
+          limit: 10,
+        }),
       },
-      body: JSON.stringify({
-        recommendation_types: selectedTypes.value,
-        limit: 10
-      })
-    })
-    
+    );
+
     if (response.ok) {
-      const data = await response.json()
-      recommendations.value = data.recommendations || []
+      const data = await response.json();
+      recommendations.value = data.recommendations || [];
     } else {
-      const errorData = await response.json()
-      error.value = errorData.detail || 'Failed to get recommendations'
+      const errorData = await response.json();
+      error.value = errorData.detail || "Failed to get recommendations";
     }
   } catch (err) {
-    console.error('Recommendation error:', err)
-    error.value = 'An error occurred while getting recommendations'
+    console.error("Recommendation error:", err);
+    error.value = "An error occurred while getting recommendations";
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 // Watch for recommendation type changes
 watch(selectedTypes, () => {
   if (hasSearched.value && selectedPartId.value) {
-    getRecommendations()
+    getRecommendations();
   }
-})
+});
 
 onMounted(() => {
-  loadAvailableParts()
-})
+  loadAvailableParts();
+});
 </script>
 
 <style scoped>
@@ -252,8 +302,14 @@ onMounted(() => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .loading {
@@ -261,7 +317,12 @@ onMounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 </style>

@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,8 +14,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  BarController
-} from 'chart.js'
+  BarController,
+} from "chart.js";
 
 // Register Chart.js components
 ChartJS.register(
@@ -25,20 +25,20 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  BarController
-)
+  BarController,
+);
 
 // Props
 const props = defineProps({
   data: {
     type: Array,
-    default: () => []
-  }
-})
+    default: () => [],
+  },
+});
 
 // Reactive data
-const chartCanvas = ref(null)
-let chart = null
+const chartCanvas = ref(null);
+let chart = null;
 
 // Chart configuration
 const chartOptions = {
@@ -46,148 +46,160 @@ const chartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false
+      display: false,
     },
     tooltip: {
       callbacks: {
-        label: function(context) {
-          const label = context.label || ''
-          const value = context.parsed.y
-          return `${label}: ${value} parts`
-        }
-      }
-    }
+        label(context) {
+          const label = context.label || "";
+          const value = context.parsed.y;
+          return `${label}: ${value} parts`;
+        },
+      },
+    },
   },
   scales: {
     x: {
       display: true,
       title: {
         display: true,
-        text: 'Brand'
+        text: "Brand",
       },
       grid: {
-        display: false
-      }
+        display: false,
+      },
     },
     y: {
       display: true,
       title: {
         display: true,
-        text: 'Number of Parts'
+        text: "Number of Parts",
       },
       beginAtZero: true,
       ticks: {
-        stepSize: 1
-      }
-    }
-  }
-}
+        stepSize: 1,
+      },
+    },
+  },
+};
 
 // Methods
 const createChart = () => {
-  if (!chartCanvas.value) return
+  if (!chartCanvas.value) return;
 
-  const brandData = props.data.slice(0, 10) // Show top 10 brands
-  
+  const brandData = props.data.slice(0, 10); // Show top 10 brands
+
   if (!brandData || brandData.length === 0) {
     // Show empty state
     chart = new ChartJS(chartCanvas.value, {
-      type: 'bar',
+      type: "bar",
       data: {
-        labels: ['No data available'],
-        datasets: [{
-          data: [0],
-          backgroundColor: '#E5E7EB',
-          borderWidth: 0
-        }]
+        labels: ["No data available"],
+        datasets: [
+          {
+            data: [0],
+            backgroundColor: "#E5E7EB",
+            borderWidth: 0,
+          },
+        ],
       },
       options: {
         ...chartOptions,
         plugins: {
           ...chartOptions.plugins,
           tooltip: {
-            enabled: false
-          }
-        }
-      }
-    })
-    return
+            enabled: false,
+          },
+        },
+      },
+    });
+    return;
   }
 
-  const labels = brandData.map(item => item.brand)
-  const values = brandData.map(item => item.count)
+  const labels = brandData.map((item) => item.brand);
+  const values = brandData.map((item) => item.count);
 
   const data = {
     labels,
-    datasets: [{
-      label: 'Parts Count',
-      data: values,
-      backgroundColor: '#3B82F6',
-      borderColor: '#2563EB',
-      borderWidth: 1
-    }]
-  }
+    datasets: [
+      {
+        label: "Parts Count",
+        data: values,
+        backgroundColor: "#3B82F6",
+        borderColor: "#2563EB",
+        borderWidth: 1,
+      },
+    ],
+  };
 
   if (chart) {
-    chart.destroy()
+    chart.destroy();
   }
 
   chart = new ChartJS(chartCanvas.value, {
-    type: 'bar',
+    type: "bar",
     data,
-    options: chartOptions
-  })
-}
+    options: chartOptions,
+  });
+};
 
 const updateChart = () => {
-  if (!chart) return
+  if (!chart) return;
 
-  const brandData = props.data.slice(0, 10) // Show top 10 brands
-  
+  const brandData = props.data.slice(0, 10); // Show top 10 brands
+
   if (!brandData || brandData.length === 0) {
     chart.data = {
-      labels: ['No data available'],
-      datasets: [{
-        data: [0],
-        backgroundColor: '#E5E7EB',
-        borderWidth: 0
-      }]
-    }
-    chart.update('active')
-    return
+      labels: ["No data available"],
+      datasets: [
+        {
+          data: [0],
+          backgroundColor: "#E5E7EB",
+          borderWidth: 0,
+        },
+      ],
+    };
+    chart.update("active");
+    return;
   }
 
-  const labels = brandData.map(item => item.brand)
-  const values = brandData.map(item => item.count)
+  const labels = brandData.map((item) => item.brand);
+  const values = brandData.map((item) => item.count);
 
   const newData = {
     labels,
-    datasets: [{
-      label: 'Parts Count',
-      data: values,
-      backgroundColor: '#3B82F6',
-      borderColor: '#2563EB',
-      borderWidth: 1
-    }]
-  }
+    datasets: [
+      {
+        label: "Parts Count",
+        data: values,
+        backgroundColor: "#3B82F6",
+        borderColor: "#2563EB",
+        borderWidth: 1,
+      },
+    ],
+  };
 
-  chart.data = newData
-  chart.update('active')
-}
+  chart.data = newData;
+  chart.update("active");
+};
 
 // Watch for data changes
-watch(() => props.data, () => {
-  updateChart()
-}, { deep: true })
+watch(
+  () => props.data,
+  () => {
+    updateChart();
+  },
+  { deep: true },
+);
 
 // Lifecycle
 onMounted(() => {
-  createChart()
-})
+  createChart();
+});
 
 onUnmounted(() => {
   if (chart) {
-    chart.destroy()
+    chart.destroy();
   }
-})
+});
 </script>

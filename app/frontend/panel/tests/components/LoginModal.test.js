@@ -2,10 +2,10 @@
  * Tests for LoginModal component
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
-import LoginModal from '@/components/LoginModal.vue'
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { mount } from "@vue/test-utils";
+import { createPinia, setActivePinia } from "pinia";
+import LoginModal from "@/components/LoginModal.vue";
 
 // Mock the auth store
 const mockAuthStore = {
@@ -13,106 +13,106 @@ const mockAuthStore = {
   isLoggedIn: false,
   user: null,
   loading: false,
-}
+};
 
-vi.mock('@/stores/auth', () => ({
+vi.mock("@/stores/auth", () => ({
   useAuthStore: () => mockAuthStore,
-}))
+}));
 
-describe('LoginModal', () => {
+describe("LoginModal", () => {
   beforeEach(() => {
-    setActivePinia(createPinia())
-    vi.clearAllMocks()
-  })
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
 
-  it('renders login form correctly', () => {
+  it("renders login form correctly", () => {
     const wrapper = mount(LoginModal, {
-      props: { show: true }
-    })
-    
-    expect(wrapper.find('input[type="text"]').exists()).toBe(true)
-    expect(wrapper.find('input[type="password"]').exists()).toBe(true)
-    expect(wrapper.find('button[type="submit"]').exists()).toBe(true)
-  })
+      props: { show: true },
+    });
 
-  it('has correct form labels', () => {
-    const wrapper = mount(LoginModal, {
-      props: { show: true }
-    })
-    
-    expect(wrapper.text()).toContain('Username')
-    expect(wrapper.text()).toContain('Password')
-  })
+    expect(wrapper.find('input[type="text"]').exists()).toBe(true);
+    expect(wrapper.find('input[type="password"]').exists()).toBe(true);
+    expect(wrapper.find('button[type="submit"]').exists()).toBe(true);
+  });
 
-  it('handles form submission', async () => {
+  it("has correct form labels", () => {
     const wrapper = mount(LoginModal, {
-      props: { show: true }
-    })
-    
+      props: { show: true },
+    });
+
+    expect(wrapper.text()).toContain("Username");
+    expect(wrapper.text()).toContain("Password");
+  });
+
+  it("handles form submission", async () => {
+    const wrapper = mount(LoginModal, {
+      props: { show: true },
+    });
+
     // Fill form
-    await wrapper.find('input[type="text"]').setValue('admin')
-    await wrapper.find('input[type="password"]').setValue('password')
-    
+    await wrapper.find('input[type="text"]').setValue("admin");
+    await wrapper.find('input[type="password"]').setValue("password");
+
     // Submit form
-    await wrapper.find('form').trigger('submit')
-    
+    await wrapper.find("form").trigger("submit");
+
     expect(mockAuthStore.login).toHaveBeenCalledWith({
-      username_or_email: 'admin',
-      password: 'password'
-    })
-  })
+      username_or_email: "admin",
+      password: "password",
+    });
+  });
 
-  it('shows loading state', async () => {
+  it("shows loading state", async () => {
     const wrapper = mount(LoginModal, {
-      props: { show: true }
-    })
-    
+      props: { show: true },
+    });
+
     // Set loading state by triggering it
-    wrapper.vm.loading = true
-    await wrapper.vm.$nextTick()
-    
-    expect(wrapper.text()).toContain('Logging in...')
-  })
+    wrapper.vm.loading = true;
+    await wrapper.vm.$nextTick();
 
-  it('handles login errors', async () => {
-    mockAuthStore.login.mockRejectedValue(new Error('Invalid credentials'))
+    expect(wrapper.text()).toContain("Logging in...");
+  });
+
+  it("handles login errors", async () => {
+    mockAuthStore.login.mockRejectedValue(new Error("Invalid credentials"));
     const wrapper = mount(LoginModal, {
-      props: { show: true }
-    })
-    
+      props: { show: true },
+    });
+
     // Fill and submit form
-    await wrapper.find('input[type="text"]').setValue('admin')
-    await wrapper.find('input[type="password"]').setValue('wrong')
-    await wrapper.find('form').trigger('submit')
-    
+    await wrapper.find('input[type="text"]').setValue("admin");
+    await wrapper.find('input[type="password"]').setValue("wrong");
+    await wrapper.find("form").trigger("submit");
+
     // Wait for error handling
-    await wrapper.vm.$nextTick()
-    
-    expect(mockAuthStore.login).toHaveBeenCalled()
-  })
+    await wrapper.vm.$nextTick();
 
-  it('has proper accessibility attributes', () => {
-    const wrapper = mount(LoginModal, {
-      props: { show: true }
-    })
-    
-    const usernameInput = wrapper.find('input[type="text"]')
-    const passwordInput = wrapper.find('input[type="password"]')
-    
-    expect(usernameInput.attributes('autocomplete')).toBe('username')
-    expect(passwordInput.attributes('autocomplete')).toBe('current-password')
-  })
+    expect(mockAuthStore.login).toHaveBeenCalled();
+  });
 
-  it('focuses username input on mount', async () => {
+  it("has proper accessibility attributes", () => {
     const wrapper = mount(LoginModal, {
-      props: { show: true }
-    })
-    
+      props: { show: true },
+    });
+
+    const usernameInput = wrapper.find('input[type="text"]');
+    const passwordInput = wrapper.find('input[type="password"]');
+
+    expect(usernameInput.attributes("autocomplete")).toBe("username");
+    expect(passwordInput.attributes("autocomplete")).toBe("current-password");
+  });
+
+  it("focuses username input on mount", async () => {
+    const wrapper = mount(LoginModal, {
+      props: { show: true },
+    });
+
     // Wait for mounted hook
-    await wrapper.vm.$nextTick()
-    
+    await wrapper.vm.$nextTick();
+
     // Check if focus was called (mocked)
-    const usernameInput = wrapper.find('input[type="text"]')
-    expect(usernameInput.exists()).toBe(true)
-  })
-})
+    const usernameInput = wrapper.find('input[type="text"]');
+    expect(usernameInput.exists()).toBe(true);
+  });
+});

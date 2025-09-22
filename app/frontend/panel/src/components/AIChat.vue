@@ -3,44 +3,95 @@
     <!-- Chat Header -->
     <div class="chat-header">
       <div class="chat-title">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        <svg
+          class="w-5 h-5 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+          />
         </svg>
         AI Assistant
       </div>
       <div class="chat-status">
-        <div class="status-indicator" :class="{ 'online': isOnline, 'offline': !isOnline }"></div>
-        <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
+        <div
+          class="status-indicator"
+          :class="{ online: isOnline, offline: !isOnline }"
+        ></div>
+        <span class="status-text">{{ isOnline ? "Online" : "Offline" }}</span>
       </div>
     </div>
 
     <!-- Chat Messages -->
-    <div class="chat-messages" ref="messagesContainer">
-      <div v-for="message in messages" :key="message.id" class="message" :class="message.type">
+    <div ref="messagesContainer" class="chat-messages">
+      <div
+        v-for="message in messages"
+        :key="message.id"
+        class="message"
+        :class="message.type"
+      >
         <div class="message-avatar">
           <div v-if="message.type === 'user'" class="user-avatar">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
             </svg>
           </div>
           <div v-else class="ai-avatar">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
             </svg>
           </div>
         </div>
         <div class="message-content">
-          <div class="message-text" v-html="formatMessage(message.content)"></div>
+          <div
+            class="message-text"
+            v-text="formatMessage(message.content)"
+          ></div>
           <div class="message-time">{{ formatTime(message.timestamp) }}</div>
         </div>
       </div>
-      
+
       <!-- Typing Indicator -->
       <div v-if="isTyping" class="message ai">
         <div class="message-avatar">
           <div class="ai-avatar">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
             </svg>
           </div>
         </div>
@@ -58,35 +109,46 @@
     <div class="chat-input-container">
       <div class="chat-input-wrapper">
         <textarea
+          ref="messageInput"
           v-model="inputMessage"
-          @keydown.enter.prevent="handleEnterKey"
-          @keydown.shift.enter="addNewLine"
           placeholder="Ask me anything about the system..."
           class="chat-input"
           :disabled="isLoading"
           rows="1"
-          ref="messageInput"
+          @keydown.enter.exact.prevent="handleEnterKey"
+          @keydown.shift.enter="addNewLine"
         ></textarea>
         <button
-          @click="sendMessage"
           :disabled="!inputMessage.trim() || isLoading"
           class="send-button"
+          @click="sendMessage"
         >
-          <svg v-if="!isLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          <svg
+            v-if="!isLoading"
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+            />
           </svg>
           <div v-else class="loading-spinner"></div>
         </button>
       </div>
-      
+
       <!-- Quick Actions -->
       <div class="quick-actions">
         <button
           v-for="action in quickActions"
           :key="action.id"
-          @click="sendQuickAction(action)"
           class="quick-action-button"
           :disabled="isLoading"
+          @click="sendQuickAction(action)"
         >
           {{ action.label }}
         </button>
@@ -96,175 +158,209 @@
 </template>
 
 <script>
-import { ref, reactive, onMounted, nextTick, watch } from 'vue'
-import { useAuthStore } from '../stores/auth'
+import { ref, onMounted, nextTick, watch } from "vue";
+import { useAuthStore } from "../stores/auth";
 
 export default {
-  name: 'AIChat',
+  name: "AIChat",
   setup() {
-    const authStore = useAuthStore()
-    const messagesContainer = ref(null)
-    const messageInput = ref(null)
-    
+    const authStore = useAuthStore();
+    const messagesContainer = ref(null);
+    const messageInput = ref(null);
+
     // Reactive state
-    const inputMessage = ref('')
-    const isLoading = ref(false)
-    const isTyping = ref(false)
-    const isOnline = ref(true)
-    const messages = ref([])
-    
+    const inputMessage = ref("");
+    const isLoading = ref(false);
+    const isTyping = ref(false);
+    const isOnline = ref(true);
+    const messages = ref([]);
+
     // Quick actions for common queries
     const quickActions = ref([
-      { id: 'system-status', label: 'System Status', query: 'What is the current system status?' },
-      { id: 'performance', label: 'Performance', query: 'Show me performance metrics' },
-      { id: 'errors', label: 'Recent Errors', query: 'What are the recent errors in the system?' },
-      { id: 'users', label: 'User Activity', query: 'Show me user activity summary' },
-      { id: 'ai-status', label: 'AI Status', query: 'What is the AI Gateway status?' }
-    ])
-    
+      {
+        id: "system-status",
+        label: "System Status",
+        query: "What is the current system status?",
+      },
+      {
+        id: "performance",
+        label: "Performance",
+        query: "Show me performance metrics",
+      },
+      {
+        id: "errors",
+        label: "Recent Errors",
+        query: "What are the recent errors in the system?",
+      },
+      {
+        id: "users",
+        label: "User Activity",
+        query: "Show me user activity summary",
+      },
+      {
+        id: "ai-status",
+        label: "AI Status",
+        query: "What is the AI Gateway status?",
+      },
+    ]);
+
     // Initialize chat with welcome message
     onMounted(() => {
-      addMessage('ai', 'Hello! I\'m your AI assistant. I can help you with system monitoring, performance analysis, troubleshooting, and answering questions about the China Car Parts system. How can I assist you today?')
-    })
-    
+      addMessage(
+        "ai",
+        "Hello! I'm your AI assistant. I can help you with system monitoring, performance analysis, troubleshooting, and answering questions about the China Car Parts system. How can I assist you today?",
+      );
+    });
+
     // Auto-scroll to bottom when new messages arrive
-    watch(messages, () => {
-      nextTick(() => {
-        scrollToBottom()
-      })
-    }, { deep: true })
-    
+    watch(
+      messages,
+      () => {
+        nextTick(() => {
+          scrollToBottom();
+        });
+      },
+      { deep: true },
+    );
+
     const scrollToBottom = () => {
       if (messagesContainer.value) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+        messagesContainer.value.scrollTop =
+          messagesContainer.value.scrollHeight;
       }
-    }
-    
+    };
+
     const addMessage = (type, content, timestamp = null) => {
       const message = {
         id: Date.now() + Math.random(),
         type,
         content,
-        timestamp: timestamp || new Date()
-      }
-      messages.value.push(message)
-    }
-    
+        timestamp: timestamp || new Date(),
+      };
+      messages.value.push(message);
+    };
+
     const formatMessage = (content) => {
       // Convert markdown-like formatting to HTML
       return content
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`(.*?)`/g, '<code>$1</code>')
-        .replace(/\n/g, '<br>')
-    }
-    
+        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.*?)\*/g, "<em>$1</em>")
+        .replace(/`(.*?)`/g, "<code>$1</code>")
+        .replace(/\n/g, "<br>");
+    };
+
     const formatTime = (timestamp) => {
-      return new Date(timestamp).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      })
-    }
-    
+      return new Date(timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
     const handleEnterKey = () => {
       if (!isLoading.value && inputMessage.value.trim()) {
-        sendMessage()
+        sendMessage();
       }
-    }
-    
+    };
+
     const addNewLine = () => {
-      inputMessage.value += '\n'
-    }
-    
+      inputMessage.value += "\n";
+    };
+
     const sendMessage = async () => {
-      if (!inputMessage.value.trim() || isLoading.value) return
-      
-      const userMessage = inputMessage.value.trim()
-      inputMessage.value = ''
-      
+      if (!inputMessage.value.trim() || isLoading.value) return;
+
+      const userMessage = inputMessage.value.trim();
+      inputMessage.value = "";
+
       // Add user message
-      addMessage('user', userMessage)
-      
+      addMessage("user", userMessage);
+
       // Show typing indicator
-      isTyping.value = true
-      isLoading.value = true
-      
+      isTyping.value = true;
+      isLoading.value = true;
+
       try {
         // Send message to AI service
-        const response = await fetch('/api/v1/ai/chat', {
-          method: 'POST',
+        const response = await fetch("/api/v1/ai/chat", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authStore.token}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authStore.token}`,
           },
           body: JSON.stringify({
             message: userMessage,
             context: {
               user_id: authStore.user?.id,
               timestamp: new Date().toISOString(),
-              session_id: getSessionId()
-            }
-          })
-        })
-        
+              session_id: getSessionId(),
+            },
+          }),
+        });
+
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
-        const data = await response.json()
-        
+
+        const data = await response.json();
+
         // Add AI response
-        addMessage('ai', data.response || 'I apologize, but I couldn\'t process your request at the moment.')
-        
+        addMessage(
+          "ai",
+          data.response ||
+            "I apologize, but I couldn't process your request at the moment.",
+        );
       } catch (error) {
-        console.error('Chat error:', error)
-        addMessage('ai', 'I apologize, but I\'m experiencing technical difficulties. Please try again later or contact support if the issue persists.')
+        console.error("Chat error:", error);
+        addMessage(
+          "ai",
+          "I apologize, but I'm experiencing technical difficulties. Please try again later or contact support if the issue persists.",
+        );
       } finally {
-        isTyping.value = false
-        isLoading.value = false
+        isTyping.value = false;
+        isLoading.value = false;
         // Focus back on input
         nextTick(() => {
           if (messageInput.value) {
-            messageInput.value.focus()
+            messageInput.value.focus();
           }
-        })
+        });
       }
-    }
-    
+    };
+
     const sendQuickAction = (action) => {
-      inputMessage.value = action.query
-      sendMessage()
-    }
-    
+      inputMessage.value = action.query;
+      sendMessage();
+    };
+
     const getSessionId = () => {
-      let sessionId = localStorage.getItem('ai_chat_session_id')
+      let sessionId = localStorage.getItem("ai_chat_session_id");
       if (!sessionId) {
-        sessionId = 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-        localStorage.setItem('ai_chat_session_id', sessionId)
+        sessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem("ai_chat_session_id", sessionId);
       }
-      return sessionId
-    }
-    
+      return sessionId;
+    };
+
     // Check AI service status
     const checkAIServiceStatus = async () => {
       try {
-        const response = await fetch('/api/v1/ai/status', {
+        const response = await fetch("/api/v1/ai/status", {
           headers: {
-            'Authorization': `Bearer ${authStore.token}`
-          }
-        })
-        isOnline.value = response.ok
+            Authorization: `Bearer ${authStore.token}`,
+          },
+        });
+        isOnline.value = response.ok;
       } catch (error) {
-        isOnline.value = false
+        isOnline.value = false;
       }
-    }
-    
+    };
+
     // Check status periodically
     onMounted(() => {
-      checkAIServiceStatus()
-      setInterval(checkAIServiceStatus, 30000) // Check every 30 seconds
-    })
-    
+      checkAIServiceStatus();
+      setInterval(checkAIServiceStatus, 30000); // Check every 30 seconds
+    });
+
     return {
       messagesContainer,
       messageInput,
@@ -280,10 +376,10 @@ export default {
       handleEnterKey,
       addNewLine,
       sendMessage,
-      sendQuickAction
-    }
-  }
-}
+      sendQuickAction,
+    };
+  },
+};
 </script>
 
 <style scoped>

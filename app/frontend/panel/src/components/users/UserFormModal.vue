@@ -4,29 +4,44 @@
     class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
     @click.self="$emit('close')"
   >
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+    <div
+      class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white"
+    >
       <div class="mt-3">
         <!-- Header -->
         <div class="flex items-center justify-between pb-4 border-b">
           <h3 class="text-lg font-medium text-gray-900">
-            {{ isEdit ? 'Edit User' : 'Create New User' }}
+            {{ isEdit ? "Edit User" : "Create New User" }}
           </h3>
           <button
-            @click="$emit('close')"
             class="text-gray-400 hover:text-gray-600"
+            @click="$emit('close')"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         <!-- Form -->
-        <form @submit.prevent="handleSubmit" class="mt-6 space-y-6">
+        <form class="mt-6 space-y-6" @submit.prevent="handleSubmit">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- First Name -->
             <div>
-              <label for="first_name" class="block text-sm font-medium text-gray-700">
+              <label
+                for="first_name"
+                class="block text-sm font-medium text-gray-700"
+              >
                 First Name *
               </label>
               <input
@@ -40,7 +55,10 @@
 
             <!-- Last Name -->
             <div>
-              <label for="last_name" class="block text-sm font-medium text-gray-700">
+              <label
+                for="last_name"
+                class="block text-sm font-medium text-gray-700"
+              >
                 Last Name *
               </label>
               <input
@@ -54,7 +72,10 @@
 
             <!-- Username -->
             <div>
-              <label for="username" class="block text-sm font-medium text-gray-700">
+              <label
+                for="username"
+                class="block text-sm font-medium text-gray-700"
+              >
                 Username *
               </label>
               <input
@@ -68,7 +89,10 @@
 
             <!-- Email -->
             <div>
-              <label for="email" class="block text-sm font-medium text-gray-700">
+              <label
+                for="email"
+                class="block text-sm font-medium text-gray-700"
+              >
                 Email *
               </label>
               <input
@@ -82,7 +106,10 @@
 
             <!-- Phone -->
             <div>
-              <label for="phone" class="block text-sm font-medium text-gray-700">
+              <label
+                for="phone"
+                class="block text-sm font-medium text-gray-700"
+              >
                 Phone
               </label>
               <input
@@ -113,7 +140,10 @@
 
             <!-- Password (only for new users) -->
             <div v-if="!isEdit">
-              <label for="password" class="block text-sm font-medium text-gray-700">
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700"
+              >
                 Password *
               </label>
               <input
@@ -128,7 +158,10 @@
 
             <!-- Timezone -->
             <div>
-              <label for="timezone" class="block text-sm font-medium text-gray-700">
+              <label
+                for="timezone"
+                class="block text-sm font-medium text-gray-700"
+              >
                 Timezone
               </label>
               <select
@@ -146,7 +179,10 @@
 
             <!-- Language -->
             <div>
-              <label for="language" class="block text-sm font-medium text-gray-700">
+              <label
+                for="language"
+                class="block text-sm font-medium text-gray-700"
+              >
                 Language
               </label>
               <select
@@ -188,10 +224,21 @@
           </div>
 
           <!-- Error Message -->
-          <div v-if="error" class="bg-red-50 border border-red-200 rounded-md p-4">
+          <div
+            v-if="error"
+            class="bg-red-50 border border-red-200 rounded-md p-4"
+          >
             <div class="flex">
-              <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              <svg
+                class="h-5 w-5 text-red-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clip-rule="evenodd"
+                />
               </svg>
               <div class="ml-3">
                 <p class="text-sm text-red-800">{{ error }}</p>
@@ -203,8 +250,8 @@
           <div class="flex justify-end space-x-3 pt-6 border-t">
             <button
               type="button"
-              @click="$emit('close')"
               class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              @click="$emit('close')"
             >
               Cancel
             </button>
@@ -214,14 +261,29 @@
               class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
               <span v-if="loading" class="flex items-center">
-                <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 Saving...
               </span>
               <span v-else>
-                {{ isEdit ? 'Update User' : 'Create User' }}
+                {{ isEdit ? "Update User" : "Create User" }}
               </span>
             </button>
           </div>
@@ -232,11 +294,11 @@
 </template>
 
 <script>
-import { ref, watch, onMounted } from 'vue'
-import { useUsersStore } from '@/stores/users'
+import { ref, watch, onMounted } from "vue";
+import { useUsersStore } from "@/stores/users";
 
 export default {
-  name: 'UserFormModal',
+  name: "UserFormModal",
   props: {
     show: {
       type: Boolean,
@@ -251,113 +313,124 @@ export default {
       default: false,
     },
   },
-  emits: ['close', 'save'],
+  emits: ["close", "save"],
   setup(props, { emit }) {
-    const usersStore = useUsersStore()
-    
-    const loading = ref(false)
-    const error = ref('')
-    
+    const usersStore = useUsersStore();
+
+    const loading = ref(false);
+    const error = ref("");
+
     const formData = ref({
-      first_name: '',
-      last_name: '',
-      username: '',
-      email: '',
-      phone: '',
-      role: 'user',
-      password: '',
-      timezone: 'UTC',
-      language: 'en',
+      first_name: "",
+      last_name: "",
+      username: "",
+      email: "",
+      phone: "",
+      role: "user",
+      password: "",
+      timezone: "UTC",
+      language: "en",
       is_active: true,
       is_verified: false,
-    })
+    });
 
     const resetForm = () => {
       formData.value = {
-        first_name: '',
-        last_name: '',
-        username: '',
-        email: '',
-        phone: '',
-        role: 'user',
-        password: '',
-        timezone: 'UTC',
-        language: 'en',
+        first_name: "",
+        last_name: "",
+        username: "",
+        email: "",
+        phone: "",
+        role: "user",
+        password: "",
+        timezone: "UTC",
+        language: "en",
         is_active: true,
         is_verified: false,
-      }
-      error.value = ''
-    }
+      };
+      error.value = "";
+    };
 
     const populateForm = () => {
       if (props.user) {
         formData.value = {
-          first_name: props.user.first_name || '',
-          last_name: props.user.last_name || '',
-          username: props.user.username || '',
-          email: props.user.email || '',
-          phone: props.user.phone || '',
-          role: props.user.role || 'user',
-          password: '', // Don't populate password for security
-          timezone: props.user.timezone || 'UTC',
-          language: props.user.language || 'en',
-          is_active: props.user.is_active !== undefined ? props.user.is_active : true,
-          is_verified: props.user.is_verified !== undefined ? props.user.is_verified : false,
-        }
+          first_name: props.user.first_name || "",
+          last_name: props.user.last_name || "",
+          username: props.user.username || "",
+          email: props.user.email || "",
+          phone: props.user.phone || "",
+          role: props.user.role || "user",
+          password: "", // Don't populate password for security
+          timezone: props.user.timezone || "UTC",
+          language: props.user.language || "en",
+          is_active:
+            props.user.is_active !== undefined ? props.user.is_active : true,
+          is_verified:
+            props.user.is_verified !== undefined
+              ? props.user.is_verified
+              : false,
+        };
       }
-    }
+    };
 
     const handleSubmit = async () => {
-      loading.value = true
-      error.value = ''
-      
+      loading.value = true;
+      error.value = "";
+
       try {
         if (props.isEdit) {
-          await usersStore.updateUser(props.user.id, formData.value)
+          await usersStore.updateUser(props.user.id, formData.value);
         } else {
-          await usersStore.createUser(formData.value)
+          await usersStore.createUser(formData.value);
         }
-        
-        emit('save')
+
+        emit("save");
       } catch (err) {
-        error.value = err.response?.data?.detail || err.message || 'An error occurred'
+        error.value =
+          err.response?.data?.detail || err.message || "An error occurred";
       } finally {
-        loading.value = false
+        loading.value = false;
       }
-    }
+    };
 
-    watch(() => props.show, (newValue) => {
-      if (newValue) {
-        if (props.user) {
-          populateForm()
-        } else {
-          resetForm()
+    watch(
+      () => props.show,
+      (newValue) => {
+        if (newValue) {
+          if (props.user) {
+            populateForm();
+          } else {
+            resetForm();
+          }
         }
-      }
-    })
+      },
+    );
 
-    watch(() => props.user, () => {
-      if (props.show && props.user) {
-        populateForm()
-      }
-    })
+    watch(
+      () => props.user,
+      () => {
+        if (props.show && props.user) {
+          populateForm();
+        }
+      },
+    );
 
     onMounted(() => {
       if (props.show) {
         if (props.user) {
-          populateForm()
+          populateForm();
         } else {
-          resetForm()
+          resetForm();
         }
       }
-    })
+    });
 
     return {
       loading,
       error,
       formData,
       handleSubmit,
-    }
+    };
   },
-}
+};
 </script>

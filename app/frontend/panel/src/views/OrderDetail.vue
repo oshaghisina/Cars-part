@@ -5,14 +5,11 @@
       <div class="flex justify-between items-center">
         <div>
           <div class="flex items-center space-x-3">
-            <router-link
-              to="/orders"
-              class="text-blue-600 hover:text-blue-900"
-            >
+            <router-link to="/orders" class="text-blue-600 hover:text-blue-900">
               ← Back to Orders
             </router-link>
             <h1 class="text-2xl font-bold text-gray-900">
-              Order #{{ orderId?.toString().padStart(5, '0') }}
+              Order #{{ orderId?.toString().padStart(5, "0") }}
             </h1>
           </div>
           <p class="text-gray-600 mt-2">Order details and management</p>
@@ -21,8 +18,8 @@
           <select
             v-if="ordersStore.currentOrder"
             :value="ordersStore.currentOrder.status"
-            @change="updateStatus($event.target.value)"
             class="px-3 py-2 border border-gray-300 rounded-md text-sm"
+            @change="updateStatus($event.target.value)"
           >
             <option value="new">New</option>
             <option value="in_progress">In Progress</option>
@@ -35,31 +32,39 @@
     </div>
 
     <div v-if="ordersStore.loading" class="text-center py-8">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+      ></div>
       <p class="mt-2 text-sm text-gray-500">Loading order...</p>
     </div>
-    
+
     <div v-else-if="ordersStore.error" class="text-center py-8">
       <p class="text-red-500">{{ ordersStore.error }}</p>
       <button
-        @click="loadOrder"
         class="mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        @click="loadOrder"
       >
         Retry
       </button>
     </div>
-    
-    <div v-else-if="ordersStore.currentOrder" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <div
+      v-else-if="ordersStore.currentOrder"
+      class="grid grid-cols-1 lg:grid-cols-3 gap-6"
+    >
       <!-- Order Information -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Order Items -->
         <div class="bg-white shadow rounded-lg p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Order Items</h3>
-          
-          <div v-if="ordersStore.currentOrder.items.length === 0" class="text-center py-4">
+
+          <div
+            v-if="ordersStore.currentOrder.items.length === 0"
+            class="text-center py-4"
+          >
             <p class="text-gray-500">No items in this order</p>
           </div>
-          
+
           <div v-else class="space-y-4">
             <div
               v-for="item in ordersStore.currentOrder.items"
@@ -105,10 +110,10 @@
           <h3 class="text-lg font-medium text-gray-900 mb-4">Order Notes</h3>
           <textarea
             v-model="notes"
-            @blur="updateNotes"
             rows="4"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Add order notes..."
+            @blur="updateNotes"
           ></textarea>
         </div>
       </div>
@@ -118,34 +123,48 @@
         <!-- Order Status -->
         <div class="bg-white shadow rounded-lg p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Order Status</h3>
-          
+
           <div class="space-y-3">
             <div class="flex justify-between">
               <span class="text-sm text-gray-500">Status:</span>
-              <span :class="getStatusBadgeClass(ordersStore.currentOrder.status)" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+              <span
+                :class="getStatusBadgeClass(ordersStore.currentOrder.status)"
+                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+              >
                 {{ getStatusText(ordersStore.currentOrder.status) }}
               </span>
             </div>
-            
+
             <div class="flex justify-between">
               <span class="text-sm text-gray-500">Created:</span>
-              <span class="text-sm text-gray-900">{{ formatDate(ordersStore.currentOrder.created_at) }}</span>
+              <span class="text-sm text-gray-900">{{
+                formatDate(ordersStore.currentOrder.created_at)
+              }}</span>
             </div>
-            
+
             <div class="flex justify-between">
               <span class="text-sm text-gray-500">Updated:</span>
-              <span class="text-sm text-gray-900">{{ formatDate(ordersStore.currentOrder.updated_at) }}</span>
+              <span class="text-sm text-gray-900">{{
+                formatDate(ordersStore.currentOrder.updated_at)
+              }}</span>
             </div>
-            
+
             <div class="flex justify-between">
               <span class="text-sm text-gray-500">Items:</span>
-              <span class="text-sm text-gray-900">{{ ordersStore.currentOrder.items.length }}</span>
+              <span class="text-sm text-gray-900">{{
+                ordersStore.currentOrder.items.length
+              }}</span>
             </div>
-            
+
             <div class="flex justify-between">
               <span class="text-sm text-gray-500">Matched:</span>
               <span class="text-sm text-gray-900">
-                {{ ordersStore.currentOrder.items.filter(item => item.matched_part_id).length }} / {{ ordersStore.currentOrder.items.length }}
+                {{
+                  ordersStore.currentOrder.items.filter(
+                    (item) => item.matched_part_id,
+                  ).length
+                }}
+                / {{ ordersStore.currentOrder.items.length }}
               </span>
             </div>
           </div>
@@ -154,7 +173,9 @@
         <!-- Customer Information -->
         <div class="bg-white shadow rounded-lg p-6">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Customer</h3>
-          <p class="text-sm text-gray-500">Lead ID: {{ ordersStore.currentOrder.lead_id }}</p>
+          <p class="text-sm text-gray-500">
+            Lead ID: {{ ordersStore.currentOrder.lead_id }}
+          </p>
           <router-link
             :to="`/leads/${ordersStore.currentOrder.lead_id}`"
             class="text-blue-600 hover:text-blue-900 text-sm"
@@ -169,28 +190,28 @@
           <div class="space-y-2">
             <button
               v-if="ordersStore.currentOrder.status === 'new'"
-              @click="updateStatus('in_progress')"
               class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              @click="updateStatus('in_progress')"
             >
               Start Processing
             </button>
             <button
               v-if="ordersStore.currentOrder.status === 'in_progress'"
-              @click="updateStatus('quoted')"
               class="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
+              @click="updateStatus('quoted')"
             >
               Mark as Quoted
             </button>
             <button
               v-if="ordersStore.currentOrder.status === 'quoted'"
-              @click="updateStatus('won')"
               class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+              @click="updateStatus('won')"
             >
               Mark as Completed
             </button>
             <button
-              @click="updateStatus('lost')"
               class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+              @click="updateStatus('lost')"
             >
               Mark as Lost
             </button>
@@ -202,75 +223,86 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { useOrdersStore } from '../stores/orders'
+import { ref, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
+import { useOrdersStore } from "../stores/orders";
 
 export default {
-  name: 'OrderDetail',
+  name: "OrderDetail",
   setup() {
-    const route = useRoute()
-    const ordersStore = useOrdersStore()
-    const orderId = ref(null)
-    const notes = ref('')
-    
+    const route = useRoute();
+    const ordersStore = useOrdersStore();
+    const orderId = ref(null);
+    const notes = ref("");
+
     const loadOrder = async () => {
       if (orderId.value) {
-        await ordersStore.fetchOrder(orderId.value)
+        await ordersStore.fetchOrder(orderId.value);
         if (ordersStore.currentOrder) {
-          notes.value = ordersStore.currentOrder.notes || ''
+          notes.value = ordersStore.currentOrder.notes || "";
         }
       }
-    }
-    
+    };
+
     onMounted(() => {
-      orderId.value = parseInt(route.params.id)
-      loadOrder()
-    })
-    
-    watch(() => route.params.id, (newId) => {
-      orderId.value = parseInt(newId)
-      loadOrder()
-    })
-    
+      orderId.value = parseInt(route.params.id);
+      loadOrder();
+    });
+
+    watch(
+      () => route.params.id,
+      (newId) => {
+        orderId.value = parseInt(newId);
+        loadOrder();
+      },
+    );
+
     const updateStatus = async (newStatus) => {
       if (orderId.value) {
-        await ordersStore.updateOrderStatus(orderId.value, newStatus, notes.value)
+        await ordersStore.updateOrderStatus(
+          orderId.value,
+          newStatus,
+          notes.value,
+        );
       }
-    }
-    
+    };
+
     const updateNotes = async () => {
       if (orderId.value && notes.value !== ordersStore.currentOrder?.notes) {
-        await ordersStore.updateOrderStatus(orderId.value, ordersStore.currentOrder.status, notes.value)
+        await ordersStore.updateOrderStatus(
+          orderId.value,
+          ordersStore.currentOrder.status,
+          notes.value,
+        );
       }
-    }
-    
+    };
+
     const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleString()
-    }
-    
+      return new Date(dateString).toLocaleString();
+    };
+
     const getStatusBadgeClass = (status) => {
       const classes = {
-        'new': 'bg-yellow-100 text-yellow-800',
-        'in_progress': 'bg-blue-100 text-blue-800',
-        'quoted': 'bg-purple-100 text-purple-800',
-        'won': 'bg-green-100 text-green-800',
-        'lost': 'bg-red-100 text-red-800'
-      }
-      return classes[status] || 'bg-gray-100 text-gray-800'
-    }
-    
+        new: "bg-yellow-100 text-yellow-800",
+        in_progress: "bg-blue-100 text-blue-800",
+        quoted: "bg-purple-100 text-purple-800",
+        won: "bg-green-100 text-green-800",
+        lost: "bg-red-100 text-red-800",
+      };
+      return classes[status] || "bg-gray-100 text-gray-800";
+    };
+
     const getStatusText = (status) => {
       const texts = {
-        'new': 'New',
-        'in_progress': 'In Progress',
-        'quoted': 'Quoted',
-        'won': 'Completed',
-        'lost': 'Lost'
-      }
-      return texts[status] || status
-    }
-    
+        new: "New",
+        in_progress: "In Progress",
+        quoted: "Quoted",
+        won: "Completed",
+        lost: "Lost",
+      };
+      return texts[status] || status;
+    };
+
     return {
       ordersStore,
       orderId,
@@ -280,8 +312,8 @@ export default {
       updateNotes,
       formatDate,
       getStatusBadgeClass,
-      getStatusText
-    }
-  }
-}
+      getStatusText,
+    };
+  },
+};
 </script>

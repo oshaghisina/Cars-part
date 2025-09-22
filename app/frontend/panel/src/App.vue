@@ -1,21 +1,18 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-50">
     <!-- Login Modal -->
-    <LoginModal 
-      :show="!authStore.isAuthenticated" 
-      @close="handleLoginClose" 
-    />
-    
+    <LoginModal :show="!authStore.isAuthenticated" @close="handleLoginClose" />
+
     <!-- Main App Content (only show when authenticated) -->
     <div v-if="authStore.isAuthenticated">
       <!-- Sidebar -->
       <Sidebar />
-      
+
       <!-- Main Content Area -->
       <div class="lg:pl-64">
         <!-- Top Bar -->
         <TopBar />
-        
+
         <!-- Page Content -->
         <main class="pt-20 py-6">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,48 +25,54 @@
 </template>
 
 <script>
-import { onMounted } from 'vue'
-import Sidebar from './components/Sidebar.vue'
-import TopBar from './components/TopBar.vue'
-import LoginModal from './components/LoginModal.vue'
-import { useAuthStore } from './stores/auth'
-import { useNavigationStore } from './stores/navigation'
+import { onMounted } from "vue";
+import Sidebar from "./components/Sidebar.vue";
+import TopBar from "./components/TopBar.vue";
+import LoginModal from "./components/LoginModal.vue";
+import { useAuthStore } from "./stores/auth";
+import { useNavigationStore } from "./stores/navigation";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     Sidebar,
     TopBar,
-    LoginModal
+    LoginModal,
   },
   setup() {
-    const authStore = useAuthStore()
-    const navigationStore = useNavigationStore()
-    
+    const authStore = useAuthStore();
+    const navigationStore = useNavigationStore();
+
     onMounted(() => {
       // Initialize auth state
-      authStore.initializeAuth()
-      
+      authStore.initializeAuth();
+
       // Initialize navigation state
-      navigationStore.initializeNavigation()
-    })
+      navigationStore.initializeNavigation();
+    });
 
     const handleLoginClose = () => {
       // Login modal closed - no action needed as it's controlled by isAuthenticated
-    }
-    
+    };
+
     return {
       authStore,
-      handleLoginClose
-    }
-  }
-}
+      handleLoginClose,
+    };
+  },
+};
 </script>
 
 <style>
 /* Global styles */
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
 }
 
 /* Smooth transitions for layout changes */
