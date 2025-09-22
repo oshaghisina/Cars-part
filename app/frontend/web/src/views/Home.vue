@@ -97,121 +97,26 @@
       </div>
     </section>
 
-    <!-- Popular Parts Section -->
+    <!-- Car Parts Showcase Section -->
     <section class="py-16 bg-gray-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12 font-persian">
-          <h2 class="text-3xl font-bold text-gray-900 mb-4 font-persian-bold font-persian font-persian-bold text-rtl">قطعات محبوب</h2>
-          <p class="text-lg text-gray-600 font-persian text-rtl font-persian font-persian text-rtl">محبوب‌ترین قطعات درخواستی ما را مرور کنید</p>
-        </div>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div 
-            v-for="part in popularParts" 
-            :key="part.id"
-            class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer"
-            @click="$router.push(`/part/${part.id}`)"
-          >
-            <div class="w-full h-32 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
-              <span class="text-4xl font-persian">{{ part.icon }}</span>
-            </div>
-            <h3 class="font-semibold text-lg mb-2 font-persian font-persian-bold text-rtl">{{ part.name }}</h3>
-            <p class="text-gray-600 text-sm mb-3 font-persian font-persian text-rtl">{{ part.description }}</p>
-            <div class="flex justify-between items-center">
-              <span class="text-blue-600 font-semibold font-persian">${{ part.price }}</span>
-              <span class="text-sm text-gray-500 font-persian">{{ part.stock }} in stock</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="text-center mt-8 font-persian">
-          <router-link 
-            to="/search" 
-            class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors font-persian"
-          >
-            View All Parts
-          </router-link>
-        </div>
+        <CarPartsShowcase />
       </div>
     </section>
   </div>
 </template>
 
 <script>
-import apiService from '../services/api.js'
+import CarPartsShowcase from '../components/CarPartsShowcase.vue'
 
 export default {
   name: 'خانه',
+  components: {
+    CarPartsShowcase
+  },
   data() {
     return {
-      popularParts: [],
-      loading: true,
-      error: null
-    }
-  },
-  async mounted() {
-    await this.loadPopularParts()
-  },
-  methods: {
-    async loadPopularParts() {
-      this.loading = true
-      this.error = null
-      
-      try {
-        // Get popular parts from API
-        const parts = await apiService.getPopularParts(4)
-        
-        // Format parts for display with icons
-        this.popularParts = parts.map((part, index) => {
-          const icons = ['🛑', '🔧', '💨', '⚡', '🔩', '⚙️', '🛠️', '🔌']
-          return {
-            ...apiService.formatPartForDisplay(part),
-            icon: icons[index % icons.length]
-          }
-        })
-        
-      } catch (error) {
-        console.error('Failed to load popular parts:', error)
-        this.error = 'Failed to load popular parts'
-        
-        // Fallback to mock data
-        this.popularParts = [
-          {
-            id: 1,
-            name: 'Brake Pads',
-            description: 'High-quality brake pads for Chinese vehicles',
-            price: '45.99',
-            stock: 12,
-            icon: '🛑'
-          },
-          {
-            id: 2,
-            name: 'Oil Filter',
-            description: 'Premium oil filters for optimal engine performance',
-            price: '12.50',
-            stock: 25,
-            icon: '🔧'
-          },
-          {
-            id: 3,
-            name: 'Air Filter',
-            description: 'Clean air filters for better engine efficiency',
-            price: '18.75',
-            stock: 8,
-            icon: '💨'
-          },
-          {
-            id: 4,
-            name: 'Spark Plugs',
-            description: 'High-performance spark plugs for smooth ignition',
-            price: '32.00',
-            stock: 15,
-            icon: '⚡'
-          }
-        ]
-      } finally {
-        this.loading = false
-      }
+      // Component data if needed
     }
   }
 }
