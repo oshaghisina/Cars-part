@@ -70,7 +70,7 @@ class HybridSearchEngine:
         parts: List[Dict[str, Any]],
         filters: Optional[Dict[str, Any]] = None,
         search_type: SearchType = SearchType.HYBRID,
-        **kwargs
+        **kwargs,
     ) -> List[SearchResult]:
         """
         Perform hybrid search on parts.
