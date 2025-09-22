@@ -289,9 +289,7 @@ class BotService:
         confirmation_message += f"دسته بندی: {best_part['category']}\n"
 
         if best_part.get("best_price"):
-            confirmation_message += f"💰 قیمت: {
-                best_part['best_price']:,} " f"{
-                best_part['prices'][0]['currency']}\n"
+            confirmation_message += f"💰 قیمت: {best_part['best_price']:,} {best_part['prices'][0]['currency']}\n"
 
         # Add AI insights
         if query_analysis:

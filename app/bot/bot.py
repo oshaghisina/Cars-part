@@ -237,9 +237,7 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
-                            status_text += f"قطعات یافت شده: " f"{
-                                order['matched_items']}/{
-                                order['total_items']}\n"
+                            status_text += f"قطعات یافت شده: {order['matched_items']}/{order['total_items']}\n"
 
                         await message.answer(status_text)
                 else:
@@ -316,9 +314,7 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
-                            status_text += f"قطعات یافت شده: " f"{
-                                order['matched_items']}/{
-                                order['total_items']}\n"
+                            status_text += f"قطعات یافت شده: {order['matched_items']}/{order['total_items']}\n"
 
                         await callback_query.message.answer(status_text)
                 else:

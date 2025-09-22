@@ -199,10 +199,7 @@ class AIOrchestrator:
                     )
 
                     logger.warning(
-                        f"Semantic search failed: {
-                            response.metadata.get(
-                                'error',
-                                'Unknown error') if response else 'No response'}")
+                        f"Semantic search failed: {response.metadata.get('error', 'Unknown error') if response else 'No response'}")
                     return []
 
             except Exception as e:

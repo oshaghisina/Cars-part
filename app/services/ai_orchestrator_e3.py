@@ -108,8 +108,7 @@ class AIOrchestratorE3Extensions:
                 )
 
                 logger.info(
-                    f"Hybrid search completed successfully. Found {
-                        len(search_results)} results.")
+                    f"Hybrid search completed successfully. Found {len(search_results)} results.")
                 return search_results
 
             except Exception as e:

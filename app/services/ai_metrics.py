@@ -353,8 +353,7 @@ class AIMetricsCollector:
         # Check overall success rate
         if summary["overall_success_rate"] < 0.95:
             health_status["issues"].append(
-                f"Low overall success rate: {
-                    summary['overall_success_rate']:.2%}")
+                f"Low overall success rate: {summary['overall_success_rate']:.2%}")
             health_status["recommendations"].append(
                 "Investigate provider failures and error patterns")
 

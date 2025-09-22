@@ -440,9 +440,7 @@ class AIRecommendationsEngine:
         if category_counts:
             most_common_category = category_counts.most_common(1)[0]
             insights.append(
-                f"Most purchased category: {
-                    most_common_category[0]} ({
-                    most_common_category[1]} times)")
+                f"Most purchased category: {most_common_category[0]} ({most_common_category[1]} times)")
 
         if brand_counts:
             most_common_brand = brand_counts.most_common(1)[0]

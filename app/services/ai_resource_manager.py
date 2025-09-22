@@ -106,11 +106,7 @@ class ResourcePool:
 
             self.total_destroyed += 1
             logger.debug(
-                f"Destroyed {
-                    self.resource_type} resource: {
-                    resource.get(
-                        'id',
-                        'unknown')}")
+                f"Destroyed {self.resource_type} resource: {resource.get('id', 'unknown')}")
 
         except Exception as e:
             logger.error(f"Failed to destroy {self.resource_type} resource: {e}")

@@ -213,22 +213,7 @@ class OpenAIProvider(AIProvider):
             # Create embeddings for all parts
             part_texts = []
             for part in parts:
-                text = f"{
-                    part.get(
-                        'part_name',
-                        '')} {
-                    part.get(
-                        'brand_oem',
-                        '')} {
-                    part.get(
-                        'vehicle_make',
-                        '')} {
-                            part.get(
-                                'vehicle_model',
-                                '')} {
-                                    part.get(
-                                        'category',
-                                        '')}"
+                text = f"{part.get('part_name', '')} {part.get('brand_oem', '')} {part.get('vehicle_make', '')} {part.get('vehicle_model', '')} {part.get('category', '')}"
                 part_texts.append(text)
 
             part_embeddings = await OpenAIHelpers.create_embeddings(self._client, part_texts, self.embedding_model)

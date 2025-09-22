@@ -68,10 +68,7 @@ class AIPolicyEngine:
                 eligible_providers.append(provider)
             else:
                 logger.debug(
-                    f"Provider '{name}' not eligible for '{
-                        task_type.value}' " f"(available: {
-                        provider.is_available()}, capabilities: {
-                        provider.get_capabilities()})")
+                    f"Provider '{name}' not eligible for '{task_type.value}' (available: {provider.is_available()}, capabilities: {provider.get_capabilities()})")
 
         if not eligible_providers:
             logger.warning(f"No eligible providers found for task type '{task_type.value}'.")
