@@ -42,11 +42,19 @@ class LanguageProcessor:
             "persian_numbers": re.compile(r"[\u06F0-\u06F9]"),
             "persian_words": re.compile(r"\b[\u0600-\u06FF]+\b"),
             "persian_car_brands": re.compile(
-                r"\b(چری|جک|بریلیانس|بید|جیلی|گریت وال|ام جی|هیوندای|کیا|نیسان|تویوتا|هوندا|میتسوبیشی|سوزوکی|مزدا|سوبارو|ایسوزو|داچیا|رنو|پژو|سیتروئن|فیات|آلفا رومئو|لانچیا|مازراتی|فراری|لامبورگینی|مکلارن|آستون مارتین|بنتلی|رولز رویس|بامو|مرسدس|آئودی|پورشه|فولکس واگن|اسکودا|سیات|آلفا رومئو)\b",
+                r"\b(چری|جک|بریلیانس|بید|جیلی|گریت وال|ام جی|هیوندای|کیا|"
+                r"نیسان|تویوتا|هوندا|میتسوبیشی|سوزوکی|مزدا|سوبارو|ایسوزو|"
+                r"داچیا|رنو|پژو|سیتروئن|فیات|آلفا رومئو|لانچیا|مازراتی|"
+                r"فراری|لامبورگینی|مکلارن|آستون مارتین|بنتلی|رولز رویس|"
+                r"بامو|مرسدس|آئودی|پورشه|فولکس واگن|اسکودا|سیات|آلفا رومئو)\b",
                 re.IGNORECASE,
             ),
             "persian_part_types": re.compile(
-                r"\b(لنت|فیلتر|موتور|تعلیق|گیربکس|کلاچ|دifferential|کمک فنر|فنر|کمربند|تسمه|شمع|سیم|کابل|باطری|آلترناتور|استارت|پمپ|رادیاتور|ترموستات|سنسور|شیر|شلنگ|لوله|میل|شفت|یاتاقان|بوش|واشر|پیچ|مهره|پولک|رینگ|تایر|لاستیک|چرخ|فرمان|دستی|اتومات|دستی|کامپیوتر|ای سی یو|مپ|سنسور|شیر|شلنگ|لوله|میل|شفت|یاتاقان|بوش|واشر|پیچ|مهره|پولک|رینگ|تایر|لاستیک|چرخ|فرمان|دستی|اتومات|دستی|کامپیوتر|ای سی یو|مپ)\b",
+                r"\b(لنت|فیلتر|موتور|تعلیق|گیربکس|کلاچ|دifferential|کمک فنر|"
+                r"فنر|کمربند|تسمه|شمع|سیم|کابل|باطری|آلترناتور|استارت|پمپ|"
+                r"رادیاتور|ترموستات|سنسور|شیر|شلنگ|لوله|میل|شفت|یاتاقان|"
+                r"بوش|واشر|پیچ|مهره|پولک|رینگ|تایر|لاستیک|چرخ|فرمان|دستی|"
+                r"اتومات|کامپیوتر|ای سی یو|مپ)\b",
                 re.IGNORECASE,
             ),
         }
@@ -58,11 +66,19 @@ class LanguageProcessor:
             "english_numbers": re.compile(r"[0-9]"),
             "english_words": re.compile(r"\b[a-zA-Z]+\b"),
             "english_car_brands": re.compile(
-                r"\b(Chery|JAC|Brilliance|BYD|Geely|Great Wall|MG|Hyundai|Kia|Nissan|Toyota|Honda|Mitsubishi|Suzuki|Mazda|Subaru|Isuzu|Dacia|Renault|Peugeot|Citroen|Fiat|Alfa Romeo|Lancia|Maserati|Ferrari|Lamborghini|McLaren|Aston Martin|Bentley|Rolls Royce|BMW|Mercedes|Audi|Porsche|Volkswagen|Skoda|Seat)\b",
+                r"\b(Chery|JAC|Brilliance|BYD|Geely|Great Wall|MG|Hyundai|Kia|"
+                r"Nissan|Toyota|Honda|Mitsubishi|Suzuki|Mazda|Subaru|Isuzu|Dacia|"
+                r"Renault|Peugeot|Citroen|Fiat|Alfa Romeo|Lancia|Maserati|Ferrari|"
+                r"Lamborghini|McLaren|Aston Martin|Bentley|Rolls Royce|BMW|Mercedes|"
+                r"Audi|Porsche|Volkswagen|Skoda|Seat)\b",
                 re.IGNORECASE,
             ),
             "english_part_types": re.compile(
-                r"\b(brake|filter|engine|suspension|transmission|clutch|differential|shock|spring|belt|spark|wire|cable|battery|alternator|starter|pump|radiator|thermostat|sensor|valve|hose|pipe|shaft|bearing|bush|gasket|screw|nut|washer|ring|tire|wheel|steering|manual|automatic|computer|ECU|MAP)\b",
+                r"\b(brake|filter|engine|suspension|transmission|clutch|differential|"
+                r"shock|spring|belt|spark|wire|cable|battery|alternator|starter|pump|"
+                r"radiator|thermostat|sensor|valve|hose|pipe|shaft|bearing|bush|"
+                r"gasket|screw|nut|washer|ring|tire|wheel|steering|manual|automatic|"
+                r"computer|ECU|MAP)\b",
                 re.IGNORECASE,
             ),
         }

@@ -164,12 +164,20 @@ class PartsService:
                     "vehicle_trim": str(row.get("vehicle_trim", "")).strip()
                     if pd.notna(row.get("vehicle_trim"))
                     else None,
-                    "oem_code": str(row.get("oem_code", "")).strip() if pd.notna(row.get("oem_code")) else None,
+                    "oem_code": (
+                        str(row.get("oem_code", "")).strip() 
+                        if pd.notna(row.get("oem_code")) 
+                        else None
+                    ),
                     "category": str(row["category"]).strip(),
                     "subcategory": str(row.get("subcategory", "")).strip()
                     if pd.notna(row.get("subcategory"))
                     else None,
-                    "position": str(row.get("position", "")).strip() if pd.notna(row.get("position")) else None,
+                    "position": (
+                        str(row.get("position", "")).strip() 
+                        if pd.notna(row.get("position")) 
+                        else None
+                    ),
                     "unit": str(row.get("unit", "pcs")).strip(),
                     "pack_size": int(row["pack_size"]) if pd.notna(row.get("pack_size")) else None,
                     "status": "active",

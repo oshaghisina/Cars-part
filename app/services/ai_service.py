@@ -298,7 +298,10 @@ Respond with just 3 queries, one per line, no explanations."""
                           for result in results if result.get("brand_oem")]))
 
             # Based on this car parts search query and results, generate 3 helpful suggestions:
-            intro = "Based on this car parts search query and results, " "generate 3 helpful suggestions:"
+            intro = (
+                "Based on this car parts search query and results, "
+                "generate 3 helpful suggestions:"
+            )
             prompt = f"""{intro}
 
 Query: {query}
