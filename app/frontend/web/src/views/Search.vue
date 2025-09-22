@@ -3,7 +3,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Search Header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-4 font-persian-bold text-rtl font-persian font-persian-bold text-rtl">جستجوی قطعات خودرو</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-4 font-persian-bold text-rtl">
+          {{ categoryName ? `قطعات ${categoryName}` : 'جستجوی قطعات خودرو' }}
+        </h1>
+        <p v-if="categoryName" class="text-lg text-gray-600 font-persian text-rtl mb-4">
+          مشاهده تمام محصولات در دسته‌بندی {{ categoryName }}
+        </p>
         
         <!-- Search Form -->
         <div class="bg-white rounded-lg shadow-md p-6">
@@ -147,10 +152,38 @@ export default {
       searchResults: [],
       loading: false,
       hasSearched: false,
-      error: null
+      error: null,
+      categoryName: null,
+      categorySlug: null
+    }
+  },
+  mounted() {
+    // Check for category filter from URL query
+    this.checkCategoryFilter()
+  },
+  watch: {
+    '$route.query'() {
+      this.checkCategoryFilter()
     }
   },
   methods: {
+    checkCategoryFilter() {
+      // Get category from URL query parameters
+      const category = this.$route.query.category
+      const categoryName = this.$route.query.categoryName
+      
+      if (category && categoryName) {
+        this.categorySlug = category
+        this.categoryName = categoryName
+        
+        // Auto-search when category is selected
+        this.searchParts()
+      } else {
+        this.categorySlug = null
+        this.categoryName = null
+      }
+    },
+    
     async searchParts() {
       this.loading = true
       this.hasSearched = true
@@ -179,6 +212,11 @@ export default {
           } else {
             searchParams.search = this.searchForm.model
           }
+        }
+        
+        // Add category filter
+        if (this.categorySlug) {
+          searchParams.category = this.categorySlug
         }
         
         // Call real API
