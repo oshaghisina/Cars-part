@@ -1,34 +1,36 @@
 <template>
-  <div id="app" class="min-h-screen bg-gray-50">
+  <div id="app" class="min-h-screen bg-gray-50" dir="rtl">
     <!-- Navigation Header -->
     <nav class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
+        <div class="flex justify-between h-16" dir="rtl">
+          <!-- Logo Section (Right side in RTL) -->
           <div class="flex items-center">
-            <router-link to="/" class="flex items-center space-x-2">
+            <router-link to="/" class="flex items-center space-x-2 space-x-reverse">
               <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-lg">🚗</span>
-            </div>
-            <span class="text-xl font-bold text-gray-900 font-persian-bold">قطعات خودرو چین</span>
+                <span class="text-white font-bold text-lg">🚗</span>
+              </div>
+              <span class="text-xl font-bold text-gray-900 font-persian-bold text-rtl">قطعات خودرو چین</span>
             </router-link>
           </div>
           
-          <div class="flex items-center space-x-4">
+          <!-- Navigation Menu (Left side in RTL) -->
+          <div class="flex items-center space-x-4 space-x-reverse">
             <router-link 
               to="/search" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium font-persian"
+              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium font-persian text-rtl"
             >
               جستجوی قطعات
             </router-link>
             <router-link 
               to="/track" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium font-persian"
+              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium font-persian text-rtl"
             >
               پیگیری سفارش
             </router-link>
             <button 
               @click="showContactForm = true"
-              class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 font-persian"
+              class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 font-persian text-rtl"
             >
               دریافت پیشنهاد
             </button>
