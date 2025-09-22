@@ -35,6 +35,11 @@
       </div>
     </section>
 
+    <!-- Iran Delivery Map Section -->
+    <section class="py-16">
+      <IranDeliveryMap />
+    </section>
+
     <!-- Features Section -->
     <section class="py-16 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,11 +80,13 @@
 
 <script>
 import CategoryManagement from '../components/CategoryManagement.vue'
+import IranDeliveryMap from '../components/IranDeliveryMap.vue'
 
 export default {
   name: 'خانه',
   components: {
-    CategoryManagement
+    CategoryManagement,
+    IranDeliveryMap
   },
   data() {
     return {
