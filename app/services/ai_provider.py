@@ -12,12 +12,13 @@ Future implementation will include:
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 
 class TaskType(Enum):
     """AI task types supported by providers."""
+
     SEMANTIC_SEARCH = "semantic_search"
     INTELLIGENT_SEARCH = "intelligent_search"
     QUERY_ANALYSIS = "query_analysis"
@@ -27,14 +28,16 @@ class TaskType(Enum):
 
 class AIResponse:
     """Standardized AI response format."""
-    
-    def __init__(self, 
-                 content: Any,
-                 metadata: Dict[str, Any],
-                 provider: str,
-                 task_type: TaskType,
-                 cost: Optional[float] = None,
-                 tokens_used: Optional[int] = None):
+
+    def __init__(
+        self,
+        content: Any,
+        metadata: Dict[str, Any],
+        provider: str,
+        task_type: TaskType,
+        cost: Optional[float] = None,
+        tokens_used: Optional[int] = None,
+    ):
         self.content = content
         self.metadata = metadata
         self.provider = provider
@@ -45,6 +48,7 @@ class AIResponse:
 
 class ProviderStatus(Enum):
     """Status of AI provider."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -53,48 +57,39 @@ class ProviderStatus(Enum):
 
 class AIProvider(ABC):
     """Abstract base class for AI providers."""
-    
+
     def __init__(self, name: str, config: Dict[str, Any]):
         self.name = name
         self.config = config
         self._status = ProviderStatus.UNKNOWN
         self._error_count = 0
         self._max_errors = config.get("max_errors", 5)
-    
+
     @abstractmethod
-    async def execute_task(self, 
-                    task_type: TaskType, 
-                    context: Dict[str, Any], 
-                    **kwargs) -> AIResponse:
+    async def execute_task(self, task_type: TaskType, context: Dict[str, Any], **kwargs) -> AIResponse:
         """
         Execute an AI task.
-        
+
         Args:
             task_type: Type of AI task to execute
             context: Context data for the task
             **kwargs: Additional task-specific parameters
-            
+
         Returns:
             AIResponse: Standardized response
         """
-        pass
-    
+
     @abstractmethod
     def is_available(self) -> bool:
         """Check if the provider is available and healthy."""
-        pass
-    
+
     @abstractmethod
     def get_capabilities(self) -> List[TaskType]:
         """Get list of task types this provider supports."""
-        pass
-    
+
     @abstractmethod
-    def estimate_cost(self, 
-                     task_type: TaskType, 
-                     context: Dict[str, Any]) -> float:
+    def estimate_cost(self, task_type: TaskType, context: Dict[str, Any]) -> float:
         """Estimate cost for a task before execution."""
-        pass
 
     def is_healthy(self) -> bool:
         """Check if the provider is healthy."""
@@ -121,6 +116,6 @@ class AIProvider(ABC):
         """Handle a successful operation."""
         if self._error_count > 0:
             self._error_count = max(0, self._error_count - 1)
-        
+
         if self._error_count == 0:
             self._update_status(ProviderStatus.HEALTHY)

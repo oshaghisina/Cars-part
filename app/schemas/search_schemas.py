@@ -21,9 +21,7 @@ class SearchRequest(BaseModel):
     """Basic search request"""
 
     query: str = Field(..., min_length=1, max_length=255)
-    modules: List[str] = Field(
-        default_factory=lambda: ["parts", "vehicles", "orders", "leads", "users"]
-    )
+    modules: List[str] = Field(default_factory=lambda: ["parts", "vehicles", "orders", "leads", "users"])
     page: int = Field(default=0, ge=0)
     per_page: int = Field(default=25, ge=1, le=100)
 
@@ -32,9 +30,7 @@ class AdvancedSearchRequest(BaseModel):
     """Advanced search request with filters"""
 
     query: Optional[str] = None
-    modules: List[str] = Field(
-        default_factory=lambda: ["parts", "vehicles", "orders", "leads", "users"]
-    )
+    modules: List[str] = Field(default_factory=lambda: ["parts", "vehicles", "orders", "leads", "users"])
     filters: Optional[SearchFilters] = None
     sort_by: Optional[Literal["relevance", "title", "created_at"]] = "relevance"
     sort_order: Optional[Literal["asc", "desc"]] = "desc"

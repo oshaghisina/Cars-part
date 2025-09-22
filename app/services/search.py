@@ -96,16 +96,12 @@ class SearchService:
         """Search using synonyms table."""
         # Search Persian synonyms
         persian_synonyms = (
-            self.db.query(Synonym)
-            .filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "fa")
-            .all()
+            self.db.query(Synonym).filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "fa").all()
         )
 
         # Search English synonyms
         english_synonyms = (
-            self.db.query(Synonym)
-            .filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "en")
-            .all()
+            self.db.query(Synonym).filter(Synonym.keyword.ilike(f"%{query}%"), Synonym.lang == "en").all()
         )
 
         results = []
@@ -113,11 +109,7 @@ class SearchService:
         # Process Persian matches (higher priority)
         for synonym in persian_synonyms:
             if synonym.part_id:
-                part = (
-                    self.db.query(Part)
-                    .filter(Part.id == synonym.part_id, Part.status == "active")
-                    .first()
-                )
+                part = self.db.query(Part).filter(Part.id == synonym.part_id, Part.status == "active").first()
 
                 if part:
                     # Calculate score based on synonym weight and match quality
@@ -137,17 +129,11 @@ class SearchService:
         # Process English matches (lower priority)
         for synonym in english_synonyms:
             if synonym.part_id:
-                part = (
-                    self.db.query(Part)
-                    .filter(Part.id == synonym.part_id, Part.status == "active")
-                    .first()
-                )
+                part = self.db.query(Part).filter(Part.id == synonym.part_id, Part.status == "active").first()
 
                 if part:
                     match_score = fuzz.ratio(query, synonym.keyword) / 100.0
-                    score = (
-                        synonym.weight * match_score * 0.8
-                    )  # Lower weight for English
+                    score = synonym.weight * match_score * 0.8  # Lower weight for English
 
                     results.append(
                         {
@@ -178,9 +164,7 @@ class SearchService:
             # Only include if score is above threshold
             if max_score >= 60:  # 60% similarity threshold
                 # Normalize score
-                normalized_score = (
-                    max_score / 100.0 * 0.7
-                )  # Lower weight for fuzzy matches
+                normalized_score = max_score / 100.0 * 0.7  # Lower weight for fuzzy matches
 
                 matched_field = "part_name"
                 if vehicle_score == max_score:
@@ -279,7 +263,5 @@ class SearchService:
             "match_type": result["match_type"],
             "matched_field": result["matched_field"],
             "prices": prices,
-            "best_price": min(prices, key=lambda p: p["price"])["price"]
-            if prices
-            else None,
+            "best_price": min(prices, key=lambda p: p["price"])["price"] if prices else None,
         }

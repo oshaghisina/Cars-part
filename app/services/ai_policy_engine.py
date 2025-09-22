@@ -10,7 +10,7 @@ It will be implemented in Epic E2 of the implementation plan.
 import logging
 from typing import Any, Dict, List, Optional
 
-from app.services.ai_provider import AIProvider, TaskType, ProviderStatus
+from app.services.ai_provider import AIProvider, ProviderStatus, TaskType
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class AIPolicyEngine:
     def initialize(self, config: Dict[str, Any]) -> None:
         """
         Initializes the policy engine with configuration.
-        
+
         Args:
             config: Configuration dictionary for policies.
         """
@@ -45,14 +45,14 @@ class AIPolicyEngine:
     ) -> Optional[AIProvider]:
         """
         Selects the best AI provider based on policies, capabilities, and health.
-        
+
         Args:
             task_type: The type of AI task to execute.
             providers: A dictionary of available AIProvider instances.
             context: The context data for the AI task.
             user_id: Optional user ID for user-specific policies.
             provider_preference: Optional preferred provider name.
-        
+
         Returns:
             The selected AIProvider instance, or None if no suitable provider is found.
         """
@@ -67,7 +67,10 @@ class AIPolicyEngine:
             if provider.is_available() and task_type in provider.get_capabilities():
                 eligible_providers.append(provider)
             else:
-                logger.debug(f"Provider '{name}' not eligible for '{task_type.value}' (available: {provider.is_available()}, capabilities: {provider.get_capabilities()})")
+                logger.debug(
+                    f"Provider '{name}' not eligible for '{task_type.value}' "
+                    f"(available: {provider.is_available()}, capabilities: {provider.get_capabilities()})"
+                )
 
         if not eligible_providers:
             logger.warning(f"No eligible providers found for task type '{task_type.value}'.")
@@ -130,7 +133,8 @@ class AIPolicyEngine:
                 providers_with_cost.append((provider, cost))
             except Exception as e:
                 logger.warning(f"Could not estimate cost for provider '{provider.name}': {e}")
-                providers_with_cost.append((provider, float('inf'))) # Put providers with errors at the end
+                # Put providers with errors at the end
+                providers_with_cost.append((provider, float("inf")))
 
         providers_with_cost.sort(key=lambda x: x[1])
         logger.debug("Applied cost policy.")
@@ -145,11 +149,10 @@ class AIPolicyEngine:
         logger.debug("Applied performance policy (placeholder).")
         return providers
 
-    def _apply_capability_policy(
-        self, providers: List[AIProvider], task_type: TaskType
-    ) -> List[AIProvider]:
+    def _apply_capability_policy(self, providers: List[AIProvider], task_type: TaskType) -> List[AIProvider]:
         """Filter providers by explicit task capability (already done in select_provider, but can refine)."""
-        # This step is mostly handled before, but could be used for more granular capability matching
+        # This step is mostly handled before, but could be used for more granular
+        # capability matching
         logger.debug("Applied capability policy.")
         return [p for p in providers if task_type in p.get_capabilities()]
 
@@ -159,10 +162,12 @@ class AIPolicyEngine:
         """Ensure fallback providers are considered if primary ones fail or are unhealthy."""
         # This policy ensures that if the primary provider is unhealthy or degraded,
         # healthy fallback providers are given preference.
-        
+
         # Separate healthy from degraded/unhealthy
         healthy_providers = [p for p in providers if p.get_status() == ProviderStatus.HEALTHY]
-        degraded_unhealthy_providers = [p for p in providers if p.get_status() in [ProviderStatus.DEGRADED, ProviderStatus.UNHEALTHY]]
+        degraded_unhealthy_providers = [
+            p for p in providers if p.get_status() in [ProviderStatus.DEGRADED, ProviderStatus.UNHEALTHY]
+        ]
 
         # Prioritize healthy providers
         if healthy_providers:

@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     ai_gateway_max_retries: int = 3
     ai_gateway_circuit_breaker_threshold: int = 5
     ai_gateway_circuit_breaker_timeout: int = 60
-    
+
     # AI Gateway Advanced Configuration
     ai_fallback_enabled: bool = True
     ai_fallback_order: str = "openai,stub"
@@ -93,16 +93,12 @@ class Settings(BaseSettings):
     @property
     def admin_telegram_ids_list(self) -> List[int]:
         """Parse admin telegram IDs from comma-separated string."""
-        return [
-            int(id.strip()) for id in self.admin_telegram_ids.split(",") if id.strip()
-        ]
+        return [int(id.strip()) for id in self.admin_telegram_ids.split(",") if id.strip()]
 
     @property
     def ai_gateway_fallback_providers_list(self) -> List[str]:
         """Parse AI Gateway fallback providers from comma-separated string."""
-        return [
-            provider.strip() for provider in self.ai_gateway_fallback_providers.split(",") if provider.strip()
-        ]
+        return [provider.strip() for provider in self.ai_gateway_fallback_providers.split(",") if provider.strip()]
 
     class Config:
         env_file = ".env"

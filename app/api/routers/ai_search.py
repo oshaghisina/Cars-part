@@ -75,9 +75,7 @@ async def intelligent_search(
 
 
 @router.post("/intelligent/bulk", response_model=BulkIntelligentSearchResponse)
-async def bulk_intelligent_search(
-    request: BulkIntelligentSearchRequest, db: Session = Depends(get_db)
-):
+async def bulk_intelligent_search(request: BulkIntelligentSearchRequest, db: Session = Depends(get_db)):
     """Perform bulk intelligent search for multiple queries."""
     if not request.queries:
         raise HTTPException(status_code=400, detail="Queries list cannot be empty")
@@ -99,9 +97,7 @@ async def bulk_intelligent_search(
                 detail="AI service is not available. Please check OpenAI API key configuration.",
             )
 
-        results = ai_service.bulk_intelligent_search(
-            request.queries, request.limit_per_query
-        )
+        results = ai_service.bulk_intelligent_search(request.queries, request.limit_per_query)
         return BulkIntelligentSearchResponse(results=results)
 
     except Exception as e:
@@ -133,9 +129,7 @@ async def get_part_recommendations(
         return PartRecommendationResponse(recommendations=recommendations)
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to get recommendations: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get recommendations: {str(e)}")
 
 
 @router.get("/semantic", response_model=List[Dict[str, Any]])

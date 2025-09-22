@@ -164,20 +164,14 @@ class PartsService:
                     "vehicle_trim": str(row.get("vehicle_trim", "")).strip()
                     if pd.notna(row.get("vehicle_trim"))
                     else None,
-                    "oem_code": str(row.get("oem_code", "")).strip()
-                    if pd.notna(row.get("oem_code"))
-                    else None,
+                    "oem_code": str(row.get("oem_code", "")).strip() if pd.notna(row.get("oem_code")) else None,
                     "category": str(row["category"]).strip(),
                     "subcategory": str(row.get("subcategory", "")).strip()
                     if pd.notna(row.get("subcategory"))
                     else None,
-                    "position": str(row.get("position", "")).strip()
-                    if pd.notna(row.get("position"))
-                    else None,
+                    "position": str(row.get("position", "")).strip() if pd.notna(row.get("position")) else None,
                     "unit": str(row.get("unit", "pcs")).strip(),
-                    "pack_size": int(row["pack_size"])
-                    if pd.notna(row.get("pack_size"))
-                    else None,
+                    "pack_size": int(row["pack_size"]) if pd.notna(row.get("pack_size")) else None,
                     "status": "active",
                 }
 
@@ -185,14 +179,10 @@ class PartsService:
                 part = self.create_part(part_data)
                 if part:
                     imported += 1
-                    details.append(
-                        f"Row {index + 2}: Part '{part.part_name}' created successfully"
-                    )
+                    details.append(f"Row {index + 2}: Part '{part.part_name}' created successfully")
                 else:
                     errors += 1
-                    details.append(
-                        f"Row {index + 2}: Failed to create part '{part_data['part_name']}'"
-                    )
+                    details.append(f"Row {index + 2}: Failed to create part '{part_data['part_name']}'")
 
             except Exception as e:
                 errors += 1
@@ -203,9 +193,7 @@ class PartsService:
     def get_categories(self) -> List[str]:
         """Get all unique categories."""
         categories = (
-            self.db.query(distinct(Part.category))
-            .filter(Part.category.isnot(None), Part.status == "active")
-            .all()
+            self.db.query(distinct(Part.category)).filter(Part.category.isnot(None), Part.status == "active").all()
         )
         return [cat[0] for cat in categories if cat[0]]
 
@@ -244,10 +232,6 @@ class PartsService:
             "total_parts": total_parts,
             "active_parts": active_parts,
             "inactive_parts": inactive_parts,
-            "category_stats": [
-                {"category": cat, "count": count} for cat, count in category_stats
-            ],
-            "make_stats": [
-                {"make": make, "count": count} for make, count in make_stats
-            ],
+            "category_stats": [{"category": cat, "count": count} for cat, count in category_stats],
+            "make_stats": [{"make": make, "count": count} for make, count in make_stats],
         }

@@ -33,9 +33,7 @@ class SettingsService:
         # type: ignore[misc]
         return {setting.key: setting.value for setting in settings}
 
-    def set_setting(
-        self, key: str, value: str, updated_by: Optional[int] = None
-    ) -> Setting:
+    def set_setting(self, key: str, value: str, updated_by: Optional[int] = None) -> Setting:
         """Set a setting value."""
         setting = self.db.query(Setting).filter(Setting.key == key).first()
 
@@ -53,9 +51,7 @@ class SettingsService:
         logger.info(f"Setting updated: {key} = {value}")
         return setting
 
-    def set_settings(
-        self, settings: Dict[str, str], updated_by: Optional[int] = None
-    ) -> Dict[str, str]:
+    def set_settings(self, settings: Dict[str, str], updated_by: Optional[int] = None) -> Dict[str, str]:
         """Set multiple settings."""
         results = {}
 

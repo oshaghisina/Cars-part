@@ -6,27 +6,28 @@ vehicle compatibility, and part relationships.
 """
 
 import logging
-import math
-from typing import Any, Dict, List, Optional, Tuple
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from enum import Enum
-from collections import defaultdict, Counter
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 
 class RecommendationType(Enum):
     """Types of recommendations."""
+
     COMPLEMENTARY = "complementary"  # Parts that work together
-    ALTERNATIVE = "alternative"      # Alternative brands/models
-    MAINTENANCE = "maintenance"      # Maintenance-related parts
-    UPGRADE = "upgrade"             # Upgrade options
+    ALTERNATIVE = "alternative"  # Alternative brands/models
+    MAINTENANCE = "maintenance"  # Maintenance-related parts
+    UPGRADE = "upgrade"  # Upgrade options
     FREQUENTLY_BOUGHT = "frequently_bought"  # Popular combinations
 
 
 @dataclass
 class Recommendation:
     """Represents a part recommendation."""
+
     part_id: int
     part_name: str
     brand_oem: str
@@ -45,6 +46,7 @@ class Recommendation:
 @dataclass
 class UserProfile:
     """User profile for personalized recommendations."""
+
     user_id: str
     purchase_history: List[Dict[str, Any]]
     search_history: List[str]
@@ -70,25 +72,20 @@ class AIRecommendationsEngine:
             "brake_pad": ["brake_disc", "brake_caliper", "brake_fluid", "brake_sensor"],
             "brake_disc": ["brake_pad", "brake_caliper", "brake_fluid"],
             "brake_caliper": ["brake_pad", "brake_disc", "brake_fluid"],
-            
             # Engine system relationships
             "air_filter": ["oil_filter", "fuel_filter", "spark_plug"],
             "oil_filter": ["air_filter", "engine_oil", "oil_pan_gasket"],
             "spark_plug": ["ignition_coil", "spark_plug_wire", "distributor_cap"],
-            
             # Suspension relationships
             "shock_absorber": ["spring", "strut_mount", "bushing"],
             "spring": ["shock_absorber", "strut_mount", "bushing"],
-            
             # Transmission relationships
             "clutch_kit": ["clutch_master_cylinder", "clutch_slave_cylinder", "clutch_cable"],
             "transmission_filter": ["transmission_fluid", "transmission_gasket"],
-            
             # Electrical relationships
             "battery": ["alternator", "starter", "battery_cable"],
             "alternator": ["battery", "serpentine_belt", "voltage_regulator"],
             "starter": ["battery", "starter_solenoid", "ignition_switch"],
-            
             # Cooling system relationships
             "radiator": ["thermostat", "coolant", "radiator_hose", "water_pump"],
             "water_pump": ["thermostat", "coolant", "timing_belt"],
@@ -124,18 +121,18 @@ class AIRecommendationsEngine:
         part_data: Dict[str, Any],
         user_profile: Optional[UserProfile] = None,
         recommendation_types: Optional[List[RecommendationType]] = None,
-        limit: int = 5
+        limit: int = 5,
     ) -> List[Recommendation]:
         """
         Get AI-powered recommendations for a part.
-        
+
         Args:
             part_id: ID of the reference part
             part_data: Data about the reference part
             user_profile: Optional user profile for personalization
             recommendation_types: Types of recommendations to generate
             limit: Maximum number of recommendations
-            
+
         Returns:
             List of recommendations sorted by relevance
         """
@@ -175,18 +172,16 @@ class AIRecommendationsEngine:
         return unique_recommendations[:limit]
 
     async def _get_complementary_recommendations(
-        self, 
-        part_data: Dict[str, Any], 
-        user_profile: Optional[UserProfile]
+        self, part_data: Dict[str, Any], user_profile: Optional[UserProfile]
     ) -> List[Recommendation]:
         """Get complementary parts that work together."""
         recommendations = []
         part_category = part_data.get("category", "").lower()
         part_name = part_data.get("part_name", "").lower()
-        
+
         # Find related parts based on category and name
         related_categories = self._find_related_categories(part_category, part_name)
-        
+
         # This would typically query the database for parts in related categories
         # For now, we'll create mock recommendations
         for category in related_categories:
@@ -204,25 +199,23 @@ class AIRecommendationsEngine:
                 recommendation_type=RecommendationType.COMPLEMENTARY,
                 reason=f"Works together with {part_data.get('part_name', 'this part')}",
                 confidence=0.7,
-                raw_data={}
+                raw_data={},
             )
             recommendations.append(recommendation)
-        
+
         return recommendations
 
     async def _get_alternative_recommendations(
-        self, 
-        part_data: Dict[str, Any], 
-        user_profile: Optional[UserProfile]
+        self, part_data: Dict[str, Any], user_profile: Optional[UserProfile]
     ) -> List[Recommendation]:
         """Get alternative brands or models for the same part."""
         recommendations = []
         current_brand = part_data.get("brand_oem", "")
         vehicle_make = part_data.get("vehicle_make", "")
-        
+
         # Find compatible brands
         compatible_brands = self.brand_compatibility.get(vehicle_make, [])
-        
+
         for brand in compatible_brands:
             if brand != current_brand:
                 recommendation = Recommendation(
@@ -238,27 +231,25 @@ class AIRecommendationsEngine:
                     recommendation_type=RecommendationType.ALTERNATIVE,
                     reason=f"Alternative brand: {brand}",
                     confidence=0.6,
-                    raw_data={}
+                    raw_data={},
                 )
                 recommendations.append(recommendation)
-        
+
         return recommendations
 
     async def _get_maintenance_recommendations(
-        self, 
-        part_data: Dict[str, Any], 
-        user_profile: Optional[UserProfile]
+        self, part_data: Dict[str, Any], user_profile: Optional[UserProfile]
     ) -> List[Recommendation]:
         """Get maintenance-related recommendations."""
         recommendations = []
         part_category = part_data.get("category", "").lower()
-        
+
         # Find maintenance tasks that include this part
         maintenance_tasks = []
         for task, parts in self.maintenance_schedules.items():
             if any(part in part_category for part in parts):
                 maintenance_tasks.append(task)
-        
+
         # Generate recommendations for other parts in the same maintenance task
         for task in maintenance_tasks:
             related_parts = self.maintenance_schedules[task]
@@ -277,22 +268,20 @@ class AIRecommendationsEngine:
                         recommendation_type=RecommendationType.MAINTENANCE,
                         reason=f"Recommended for {task}",
                         confidence=0.5,
-                        raw_data={}
+                        raw_data={},
                     )
                     recommendations.append(recommendation)
-        
+
         return recommendations
 
     async def _get_upgrade_recommendations(
-        self, 
-        part_data: Dict[str, Any], 
-        user_profile: Optional[UserProfile]
+        self, part_data: Dict[str, Any], user_profile: Optional[UserProfile]
     ) -> List[Recommendation]:
         """Get upgrade recommendations."""
         recommendations = []
         part_category = part_data.get("category", "").lower()
         current_price = part_data.get("price", 0)
-        
+
         # Generate upgrade recommendations (higher quality/price parts)
         upgrade_categories = {
             "brake_pad": "performance_brake_pad",
@@ -300,7 +289,7 @@ class AIRecommendationsEngine:
             "spark_plug": "iridium_spark_plug",
             "shock_absorber": "performance_shock_absorber",
         }
-        
+
         if part_category in upgrade_categories:
             upgrade_category = upgrade_categories[part_category]
             recommendation = Recommendation(
@@ -316,20 +305,18 @@ class AIRecommendationsEngine:
                 recommendation_type=RecommendationType.UPGRADE,
                 reason="Performance upgrade option",
                 confidence=0.4,
-                raw_data={}
+                raw_data={},
             )
             recommendations.append(recommendation)
-        
+
         return recommendations
 
     async def _get_frequently_bought_recommendations(
-        self, 
-        part_data: Dict[str, Any], 
-        user_profile: Optional[UserProfile]
+        self, part_data: Dict[str, Any], user_profile: Optional[UserProfile]
     ) -> List[Recommendation]:
         """Get frequently bought together recommendations."""
         recommendations = []
-        
+
         # This would typically use purchase history data
         # For now, we'll use static popular combinations
         popular_combinations = {
@@ -337,7 +324,7 @@ class AIRecommendationsEngine:
             "air_filter": ["oil_filter", "cabin_filter"],
             "spark_plug": ["ignition_coil", "spark_plug_wire"],
         }
-        
+
         part_category = part_data.get("category", "").lower()
         if part_category in popular_combinations:
             for related_part in popular_combinations[part_category]:
@@ -354,33 +341,33 @@ class AIRecommendationsEngine:
                     recommendation_type=RecommendationType.FREQUENTLY_BOUGHT,
                     reason="Frequently bought together",
                     confidence=0.3,
-                    raw_data={}
+                    raw_data={},
                 )
                 recommendations.append(recommendation)
-        
+
         return recommendations
 
     def _find_related_categories(self, category: str, part_name: str) -> List[str]:
         """Find related categories based on part relationships."""
         related = []
-        
+
         # Check direct relationships
         for part_type, related_parts in self.part_relationships.items():
             if part_type in category or part_type in part_name:
                 related.extend(related_parts)
-        
+
         # Check reverse relationships
         for part_type, related_parts in self.part_relationships.items():
             if category in related_parts or part_name in related_parts:
                 related.append(part_type)
-        
+
         return list(set(related))
 
     def _deduplicate_recommendations(self, recommendations: List[Recommendation]) -> List[Recommendation]:
         """Remove duplicate recommendations based on part_id."""
         seen = set()
         unique_recommendations = []
-        
+
         for rec in recommendations:
             if rec.part_id not in seen:
                 seen.add(rec.part_id)
@@ -391,49 +378,36 @@ class AIRecommendationsEngine:
                     if existing.part_id == rec.part_id and rec.recommendation_score > existing.recommendation_score:
                         unique_recommendations[i] = rec
                         break
-        
+
         return unique_recommendations
 
-    def update_user_profile(
-        self, 
-        user_profile: UserProfile, 
-        purchase: Dict[str, Any]
-    ) -> UserProfile:
+    def update_user_profile(self, user_profile: UserProfile, purchase: Dict[str, Any]) -> UserProfile:
         """Update user profile with new purchase data."""
         user_profile.purchase_history.append(purchase)
-        
+
         # Update preferences based on purchase history
         categories = [p.get("category", "") for p in user_profile.purchase_history]
         category_counts = Counter(categories)
         user_profile.preferences["favorite_categories"] = dict(category_counts.most_common(5))
-        
+
         # Update brand preferences
         brands = [p.get("brand_oem", "") for p in user_profile.purchase_history]
         brand_counts = Counter(brands)
         user_profile.preferences["favorite_brands"] = dict(brand_counts.most_common(3))
-        
+
         return user_profile
 
-    def get_personalized_recommendations(
-        self, 
-        user_profile: UserProfile, 
-        limit: int = 10
-    ) -> List[Recommendation]:
+    def get_personalized_recommendations(self, user_profile: UserProfile, limit: int = 10) -> List[Recommendation]:
         """Get personalized recommendations based on user profile."""
         recommendations = []
-        
+
         # Get recommendations based on purchase history
         recent_purchases = user_profile.purchase_history[-5:]  # Last 5 purchases
-        
+
         for purchase in recent_purchases:
-            part_recommendations = self.get_recommendations(
-                purchase.get("id", 0),
-                purchase,
-                user_profile,
-                limit=2
-            )
+            part_recommendations = self.get_recommendations(purchase.get("id", 0), purchase, user_profile, limit=2)
             recommendations.extend(part_recommendations)
-        
+
         # Sort by score and return top recommendations
         recommendations.sort(key=lambda x: x.recommendation_score, reverse=True)
         return recommendations[:limit]
@@ -442,36 +416,36 @@ class AIRecommendationsEngine:
         """Analyze user purchase patterns for insights."""
         if not user_profile.purchase_history:
             return {"insights": [], "recommendations": []}
-        
+
         # Analyze categories
         categories = [p.get("category", "") for p in user_profile.purchase_history]
         category_counts = Counter(categories)
-        
+
         # Analyze brands
         brands = [p.get("brand_oem", "") for p in user_profile.purchase_history]
         brand_counts = Counter(brands)
-        
+
         # Analyze price ranges
         prices = [p.get("price", 0) for p in user_profile.purchase_history if p.get("price")]
         avg_price = sum(prices) / len(prices) if prices else 0
-        
+
         insights = []
-        
+
         if category_counts:
             most_common_category = category_counts.most_common(1)[0]
             insights.append(f"Most purchased category: {most_common_category[0]} ({most_common_category[1]} times)")
-        
+
         if brand_counts:
             most_common_brand = brand_counts.most_common(1)[0]
             insights.append(f"Preferred brand: {most_common_brand[0]} ({most_common_brand[1]} times)")
-        
+
         if avg_price > 0:
             insights.append(f"Average purchase price: ${avg_price:.2f}")
-        
+
         return {
             "insights": insights,
             "category_distribution": dict(category_counts),
             "brand_distribution": dict(brand_counts),
             "average_price": avg_price,
-            "total_purchases": len(user_profile.purchase_history)
+            "total_purchases": len(user_profile.purchase_history),
         }

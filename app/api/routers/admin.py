@@ -25,15 +25,11 @@ router = APIRouter()
 
 
 @router.get("/settings", response_model=SettingsResponse)
-async def get_settings(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
-):
+async def get_settings(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Get system settings."""
     # Check if user is admin
     if current_user.role not in ["admin", "super_admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     settings_service = SettingsService(db)
     settings = settings_service.get_settings()
@@ -50,16 +46,12 @@ async def update_settings(
     """Update system settings."""
     # Check if user is admin
     if current_user.role not in ["admin", "super_admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     settings_service = SettingsService(db)
     updated_settings = settings_service.set_settings(settings, int(current_user.id))
 
-    logger.info(
-        f"Settings updated by user {current_user.username}: {list(settings.keys())}"
-    )
+    logger.info(f"Settings updated by user {current_user.username}: {list(settings.keys())}")
 
     return {"message": "Settings updated successfully", "updated": updated_settings}
 
@@ -74,9 +66,7 @@ async def list_admin_users(
     """List all admin users."""
     # Check if user is admin
     if current_user.role not in ["admin", "super_admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     # Get total count
     total = db.query(func.count(User.id)).scalar()
@@ -120,9 +110,7 @@ async def create_admin_user(
     """Create a new admin user."""
     # Check if user is super_admin
     if current_user.role != "super_admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required")
 
     user_service = UserService(db)
 
@@ -159,15 +147,11 @@ async def create_admin_user(
 
 
 @router.get("/status", response_model=SystemStatusResponse)
-async def get_system_status(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
-):
+async def get_system_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Get system status and statistics."""
     # Check if user is admin
     if current_user.role not in ["admin", "super_admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     # Get basic statistics
     from app.db.models import Order, Part

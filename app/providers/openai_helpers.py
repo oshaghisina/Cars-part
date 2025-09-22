@@ -6,8 +6,8 @@ This module contains helper methods for the OpenAI provider implementation.
 
 import asyncio
 import json
-import time
 import re
+import time
 from typing import Any, Dict, List, Optional
 
 from openai import AsyncOpenAI
@@ -20,17 +20,16 @@ class OpenAIHelpers:
     async def create_embeddings(client: AsyncOpenAI, texts: List[str], model: str) -> Optional[List[List[float]]]:
         """Create embeddings for a list of texts."""
         try:
-            response = await client.embeddings.create(
-                model=model,
-                input=texts
-            )
+            response = await client.embeddings.create(model=model, input=texts)
             return [embedding.embedding for embedding in response.data]
         except Exception as e:
             print(f"Error creating embeddings: {e}")
             return None
 
     @staticmethod
-    async def generate_text(client: AsyncOpenAI, prompt: str, model: str, max_tokens: int, temperature: float) -> Optional[str]:
+    async def generate_text(
+        client: AsyncOpenAI, prompt: str, model: str, max_tokens: int, temperature: float
+    ) -> Optional[str]:
         """Generate text using OpenAI API."""
         try:
             response = await client.chat.completions.create(
@@ -89,7 +88,9 @@ Respond in JSON format:
             return {"intent": "search", "entities": [], "language": "unknown"}
 
     @staticmethod
-    async def generate_suggestions(client: AsyncOpenAI, query: str, analysis: Dict[str, Any], results: List[str], model: str) -> List[str]:
+    async def generate_suggestions(
+        client: AsyncOpenAI, query: str, analysis: Dict[str, Any], results: List[str], model: str
+    ) -> List[str]:
         """Generate smart suggestions based on search results."""
         # Extract categories from results
         categories = list(set([result.get("category", "") for result in results if result.get("category")]))
@@ -98,8 +99,10 @@ Respond in JSON format:
         prompt = f"""Based on this car parts search query and results, generate 3 helpful suggestions:
 
 Query: {query}
-Found categories: {', '.join(categories)}
-Found brands: {', '.join(brands)}
+Found categories: {
+            ', '.join(categories)}
+Found brands: {
+            ', '.join(brands)}
 
 Generate suggestions like:
 - Related parts the user might need
@@ -111,7 +114,7 @@ Respond with just 3 suggestions, one per line, in the same language as the query
         try:
             response = await OpenAIHelpers.generate_text(client, prompt, model, 150, 0.4)
             if response:
-                suggestions = response.strip().split('\n')
+                suggestions = response.strip().split("\n")
                 return [s.strip() for s in suggestions if s.strip()][:3]
             return []
         except Exception as e:
@@ -123,6 +126,7 @@ Respond with just 3 suggestions, one per line, in the same language as the query
         """Calculate cosine similarity between two vectors."""
         try:
             import numpy as np
+
             a_np = np.array(a)
             b_np = np.array(b)
             return float(np.dot(a_np, b_np) / (np.linalg.norm(a_np) * np.linalg.norm(b_np)))
@@ -130,22 +134,26 @@ Respond with just 3 suggestions, one per line, in the same language as the query
             return 0.0
 
     @staticmethod
-    async def check_rate_limits(request_times: List[float], token_usage: List[tuple], 
-                              requests_per_minute: int, tokens_per_minute: int):
+    async def check_rate_limits(
+        request_times: List[float],
+        token_usage: List[tuple],
+        requests_per_minute: int,
+        tokens_per_minute: int,
+    ):
         """Check and enforce rate limits."""
         now = time.time()
-        
+
         # Clean old request times (older than 1 minute)
         request_times[:] = [t for t in request_times if now - t < 60]
         token_usage[:] = [(t, tokens) for t, tokens in token_usage if now - t < 60]
-        
+
         # Check request rate limit
         if len(request_times) >= requests_per_minute:
             sleep_time = 60 - (now - request_times[0])
             if sleep_time > 0:
                 print(f"Rate limit reached, sleeping for {sleep_time:.2f} seconds")
                 await asyncio.sleep(sleep_time)
-        
+
         # Check token rate limit
         current_tokens = sum(tokens for _, tokens in token_usage)
         if current_tokens >= tokens_per_minute:
@@ -182,7 +190,7 @@ Respond with just 3 suggestions, one per line, in the same language as the query
             "suspension": ["تعلیق", "suspension"],
             "transmission": ["گیربکس", "transmission"],
         }
-        
+
         text_lower = text.lower()
         for part_type, keywords in part_types.items():
             if any(keyword in text_lower for keyword in keywords):

@@ -12,10 +12,9 @@ Future implementation will include:
 - Metrics and monitoring endpoints
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Any, Dict, List, Optional
-from app.core.auth import get_current_user
-from app.core.config import settings
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Query
 
 router = APIRouter(prefix="/ai", tags=["ai-admin"])
 
@@ -61,7 +60,7 @@ async def list_traces(
     limit: int = Query(default=20, le=100),
     offset: int = Query(default=0, ge=0),
     user_id: Optional[str] = Query(default=None),
-    task_type: Optional[str] = Query(default=None)
+    task_type: Optional[str] = Query(default=None),
 ):
     """List AI request traces."""
     # TODO: Implement in Epic E7

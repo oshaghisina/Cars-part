@@ -42,9 +42,7 @@ class WizardSessionResponse(BaseModel):
 
 
 @router.post("/sessions", response_model=WizardSessionResponse)
-async def create_wizard_session(
-    request: WizardSessionCreate, db: Session = Depends(get_db)
-):
+async def create_wizard_session(request: WizardSessionCreate, db: Session = Depends(get_db)):
     """Create a new wizard session."""
     wizard_service = WizardService(db)
 
@@ -102,9 +100,7 @@ async def get_wizard_session(user_id: str, db: Session = Depends(get_db)):
 
 
 @router.put("/sessions/{user_id}", response_model=WizardSessionResponse)
-async def update_wizard_session(
-    user_id: str, request: WizardSessionUpdate, db: Session = Depends(get_db)
-):
+async def update_wizard_session(user_id: str, request: WizardSessionUpdate, db: Session = Depends(get_db)):
     """Update wizard session."""
     wizard_service = WizardService(db)
     session = wizard_service.get_session(user_id)
@@ -157,9 +153,7 @@ async def get_available_brands(db: Session = Depends(get_db)):
 
 
 @router.get("/models", response_model=List[str])
-async def get_available_models(
-    brand: str = Query(..., description="Car brand"), db: Session = Depends(get_db)
-):
+async def get_available_models(brand: str = Query(..., description="Car brand"), db: Session = Depends(get_db)):
     """Get list of available models for a brand."""
     wizard_service = WizardService(db)
     return wizard_service.get_available_models(brand)

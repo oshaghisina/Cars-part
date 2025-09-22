@@ -26,9 +26,7 @@ class OrderService:
         """
         try:
             # Create the order
-            new_order = Order(
-                lead_id=lead_id, status="new", notes="Order created via Telegram bot"
-            )
+            new_order = Order(lead_id=lead_id, status="new", notes="Order created via Telegram bot")
 
             self.db.add(new_order)
             self.db.flush()  # Get the order ID
@@ -70,16 +68,9 @@ class OrderService:
 
     def get_orders_by_lead(self, lead_id: int) -> List[Order]:
         """Get all orders for a lead."""
-        return (
-            self.db.query(Order)
-            .filter(Order.lead_id == lead_id)
-            .order_by(Order.created_at.desc())
-            .all()
-        )
+        return self.db.query(Order).filter(Order.lead_id == lead_id).order_by(Order.created_at.desc()).all()
 
-    def update_order_status(
-        self, order_id: int, status: str, notes: str = None
-    ) -> Dict:
+    def update_order_status(self, order_id: int, status: str, notes: str = None) -> Dict:
         """Update order status."""
         order = self.db.query(Order).filter(Order.id == order_id).first()
 
@@ -96,9 +87,7 @@ class OrderService:
 
     def get_order_summary(self, order: Order) -> Dict:
         """Get formatted order summary."""
-        order_items = (
-            self.db.query(OrderItem).filter(OrderItem.order_id == order.id).all()
-        )
+        order_items = self.db.query(OrderItem).filter(OrderItem.order_id == order.id).all()
 
         total_items = len(order_items)
         matched_items = sum(1 for item in order_items if item.matched_part_id)

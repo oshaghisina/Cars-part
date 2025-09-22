@@ -23,11 +23,7 @@ class WizardService:
 
     def get_session(self, user_id: str) -> Optional[WizardSession]:
         """Get existing wizard session for user."""
-        return (
-            self.db.query(WizardSession)
-            .filter(WizardSession.user_id == user_id)
-            .first()
-        )
+        return self.db.query(WizardSession).filter(WizardSession.user_id == user_id).first()
 
     def update_session_state(self, user_id: str, state: str) -> bool:
         """Update wizard session state."""
@@ -76,17 +72,10 @@ class WizardService:
 
     def get_available_models(self, brand: str) -> List[str]:
         """Get list of available models for a brand."""
-        models = (
-            self.db.query(Part.vehicle_model)
-            .filter(Part.brand_oem == brand)
-            .distinct()
-            .all()
-        )
+        models = self.db.query(Part.vehicle_model).filter(Part.brand_oem == brand).distinct().all()
         return [model[0] for model in models if model[0]]
 
-    def get_available_categories(
-        self, brand: str = None, model: str = None
-    ) -> List[str]:
+    def get_available_categories(self, brand: str = None, model: str = None) -> List[str]:
         """Get list of available part categories."""
         query = self.db.query(Part.category).distinct()
 
@@ -98,9 +87,7 @@ class WizardService:
         categories = query.all()
         return [category[0] for category in categories if category[0]]
 
-    def get_available_parts(
-        self, brand: str = None, model: str = None, category: str = None
-    ) -> List[Dict[str, Any]]:
+    def get_available_parts(self, brand: str = None, model: str = None, category: str = None) -> List[Dict[str, Any]]:
         """Get list of available parts with optional filters."""
         query = self.db.query(Part)
 
@@ -126,9 +113,7 @@ class WizardService:
             for part in parts
         ]
 
-    def search_parts_by_criteria(
-        self, vehicle_data: Dict[str, Any], part_data: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    def search_parts_by_criteria(self, vehicle_data: Dict[str, Any], part_data: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Search parts based on collected wizard data."""
         query = self.db.query(Part)
 

@@ -48,9 +48,7 @@ class CategoryService:
             query = query.filter(search_filter)
 
         return (
-            query.options(
-                selectinload(PartCategory.children), selectinload(PartCategory.parts)
-            )
+            query.options(selectinload(PartCategory.children), selectinload(PartCategory.parts))
             .order_by(PartCategory.sort_order, PartCategory.name)
             .offset(skip)
             .limit(limit)
@@ -59,13 +57,9 @@ class CategoryService:
 
     def get_category_by_id(self, category_id: int) -> Optional[PartCategory]:
         """Get category by ID."""
-        return (
-            self.db.query(PartCategory).filter(PartCategory.id == category_id).first()
-        )
+        return self.db.query(PartCategory).filter(PartCategory.id == category_id).first()
 
-    def get_root_categories(
-        self, is_active: Optional[bool] = None
-    ) -> List[PartCategory]:
+    def get_root_categories(self, is_active: Optional[bool] = None) -> List[PartCategory]:
         """Get all root categories (level 0)."""
         query = self.db.query(PartCategory).filter(PartCategory.parent_id.is_(None))
 
@@ -106,9 +100,7 @@ class CategoryService:
             query = query.filter(PartCategory.is_active)
 
         # Get all categories and build the tree
-        all_categories = query.order_by(
-            PartCategory.sort_order, PartCategory.name
-        ).all()
+        all_categories = query.order_by(PartCategory.sort_order, PartCategory.name).all()
 
         # Create a dictionary for quick lookup
         category_dict = {cat.id: cat for cat in all_categories}
@@ -140,11 +132,7 @@ class CategoryService:
                 if parent:
                     level = parent.level + 1
                     # type: ignore[comparison-overlap]
-                    path = (
-                        f"{parent.path}/{category_data['name']}"
-                        if parent.path
-                        else f"/{category_data['name']}"
-                    )
+                    path = f"{parent.path}/{category_data['name']}" if parent.path else f"/{category_data['name']}"
                 else:
                     raise ValueError("Invalid parent_id")
             else:
@@ -163,9 +151,7 @@ class CategoryService:
             logger.error(f"Error creating category: {e}")
             return None
 
-    def update_category(
-        self, category_id: int, category_data: Dict[str, Any]
-    ) -> Optional[PartCategory]:
+    def update_category(self, category_id: int, category_data: Dict[str, Any]) -> Optional[PartCategory]:
         """Update an existing category."""
         try:
             category = self.get_category_by_id(category_id)
@@ -185,11 +171,7 @@ class CategoryService:
                             category.level = parent.level + 1
                             # type: ignore[assignment]  # type:
                             # ignore[assignment]
-                            category.path = (
-                                f"{parent.path}/{category.name}"
-                                if parent.path
-                                else f"/{category.name}"
-                            )
+                            category.path = f"{parent.path}/{category.name}" if parent.path else f"/{category.name}"
                         else:
                             raise ValueError("Invalid parent_id")
                     else:
@@ -198,9 +180,7 @@ class CategoryService:
                         category.path = f"/{category.name}"
 
                     # Update paths for all descendants
-                    self._update_descendant_paths(
-                        category_id, category.path
-                    )  # type: ignore[arg-type]
+                    self._update_descendant_paths(category_id, category.path)  # type: ignore[arg-type]
 
             # Update other fields
             for key, value in category_data.items():
@@ -255,11 +235,7 @@ class CategoryService:
                     category.parent_id = new_parent_id
                     category.level = parent.level + 1  # type: ignore[assignment]
                     # type: ignore[assignment]
-                    category.path = (
-                        f"{parent.path}/{category.name}"
-                        if parent.path
-                        else f"/{category.name}"
-                    )
+                    category.path = f"{parent.path}/{category.name}" if parent.path else f"/{category.name}"
                 else:
                     category.parent_id = None  # type: ignore[assignment]
                     category.level = 0  # type: ignore[assignment]
@@ -335,23 +311,15 @@ class CategoryService:
     def get_category_stats(self) -> Dict[str, Any]:
         """Get category statistics."""
         total_categories = self.db.query(PartCategory).count()
-        active_categories = (
-            self.db.query(PartCategory).filter(PartCategory.is_active).count()
-        )
+        active_categories = self.db.query(PartCategory).filter(PartCategory.is_active).count()
         root_categories = (
-            self.db.query(PartCategory)
-            .filter(PartCategory.parent_id.is_(None), PartCategory.is_active)
-            .count()
+            self.db.query(PartCategory).filter(PartCategory.parent_id.is_(None), PartCategory.is_active).count()
         )
 
         # Get categories by level
         level_stats = {}
         for level in range(0, 5):  # Assuming max 5 levels
-            count = (
-                self.db.query(PartCategory)
-                .filter(PartCategory.level == level, PartCategory.is_active)
-                .count()
-            )
+            count = self.db.query(PartCategory).filter(PartCategory.level == level, PartCategory.is_active).count()
             if count > 0:
                 level_stats[f"level_{level}"] = count
 

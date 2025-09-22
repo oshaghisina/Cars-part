@@ -50,9 +50,7 @@ async def list_parts(
     status: Optional[str] = Query(None, description="Filter by status"),
     category: Optional[str] = Query(None, description="Filter by category"),
     vehicle_make: Optional[str] = Query(None, description="Filter by vehicle make"),
-    search: Optional[str] = Query(
-        None, description="Search in part name, OEM code, or vehicle model"
-    ),
+    search: Optional[str] = Query(None, description="Search in part name, OEM code, or vehicle model"),
     db: Session = Depends(get_db),
 ):
     parts_service = PartsService(db)

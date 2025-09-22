@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 
 from openai import AsyncOpenAI
 
-from app.services.ai_provider import AIProvider, TaskType, AIResponse
+from app.services.ai_provider import AIProvider, AIResponse, TaskType
 
 
 class OpenAIProvider(AIProvider):
@@ -26,13 +26,13 @@ class OpenAIProvider(AIProvider):
         self.temperature = config.get("temperature", 0.3)
         self.timeout = config.get("timeout", 30)
         self.max_retries = config.get("max_retries", 3)
-        
+
         # Rate limiting
         self.requests_per_minute = config.get("requests_per_minute", 60)
         self.tokens_per_minute = config.get("tokens_per_minute", 40000)
         self._request_times = []
         self._token_usage = []
-        
+
         # Cost tracking (approximate costs as of 2024)
         self.cost_per_1k_tokens = {
             "gpt-3.5-turbo": {"input": 0.0015, "output": 0.002},
@@ -41,11 +41,11 @@ class OpenAIProvider(AIProvider):
             "text-embedding-3-small": {"input": 0.00002, "output": 0.0},
             "text-embedding-3-large": {"input": 0.00013, "output": 0.0},
         }
-        
+
         # Initialize OpenAI client
         self._client = None
         self._initialize_client()
-        
+
         # Supported capabilities
         self._capabilities = [
             TaskType.SEMANTIC_SEARCH,
@@ -62,7 +62,7 @@ class OpenAIProvider(AIProvider):
                 print(f"OpenAI API key not provided for provider '{self.name}'")
                 self._update_status(self._get_status_enum().UNHEALTHY)
                 return
-                
+
             self._client = AsyncOpenAI(
                 api_key=self.api_key,
                 base_url=self.base_url,
@@ -77,20 +77,18 @@ class OpenAIProvider(AIProvider):
     def _get_status_enum(self):
         """Get the ProviderStatus enum."""
         from app.services.ai_provider import ProviderStatus
+
         return ProviderStatus
 
-    async def execute_task(self, 
-                          task_type: TaskType, 
-                          context: Dict[str, Any], 
-                          **kwargs) -> AIResponse:
+    async def execute_task(self, task_type: TaskType, context: Dict[str, Any], **kwargs) -> AIResponse:
         """
         Execute an AI task using OpenAI APIs.
-        
+
         Args:
             task_type: Type of AI task to execute
             context: Context data for the task
             **kwargs: Additional task-specific parameters
-            
+
         Returns:
             AIResponse: Standardized response
         """
@@ -105,7 +103,7 @@ class OpenAIProvider(AIProvider):
         try:
             # Check rate limits
             await self._check_rate_limits()
-            
+
             if task_type == TaskType.SEMANTIC_SEARCH:
                 return await self._execute_semantic_search(context, **kwargs)
             elif task_type == TaskType.INTELLIGENT_SEARCH:
@@ -123,7 +121,7 @@ class OpenAIProvider(AIProvider):
                     provider=self.name,
                     task_type=task_type,
                 )
-                
+
         except Exception as e:
             self._handle_error(e)
             return AIResponse(
@@ -149,7 +147,11 @@ class OpenAIProvider(AIProvider):
             parts = context.get("parts", [])
             estimated_tokens = len(query.split()) * 2 + len(parts) * 50  # Rough estimate
             return self._calculate_cost(self.embedding_model, estimated_tokens, True)
-        elif task_type in [TaskType.INTELLIGENT_SEARCH, TaskType.QUERY_ANALYSIS, TaskType.SUGGESTION_GENERATION]:
+        elif task_type in [
+            TaskType.INTELLIGENT_SEARCH,
+            TaskType.QUERY_ANALYSIS,
+            TaskType.SUGGESTION_GENERATION,
+        ]:
             query = context.get("query", "")
             estimated_tokens = len(query.split()) * 4  # Rough estimate
             return self._calculate_cost(self.default_model, estimated_tokens, True)
@@ -160,26 +162,26 @@ class OpenAIProvider(AIProvider):
         """Calculate cost for a specific model and token count."""
         if model not in self.cost_per_1k_tokens:
             return 0.0
-        
+
         cost_per_1k = self.cost_per_1k_tokens[model]["input" if is_input else "output"]
         return (tokens / 1000) * cost_per_1k
 
     async def _check_rate_limits(self):
         """Check and enforce rate limits."""
         from app.providers.openai_helpers import OpenAIHelpers
+
         await OpenAIHelpers.check_rate_limits(
-            self._request_times, self._token_usage, 
-            self.requests_per_minute, self.tokens_per_minute
+            self._request_times, self._token_usage, self.requests_per_minute, self.tokens_per_minute
         )
 
     async def _execute_semantic_search(self, context: Dict[str, Any], **kwargs) -> AIResponse:
         """Execute semantic search using embeddings."""
         from app.providers.openai_helpers import OpenAIHelpers
-        
+
         query = context.get("query", "")
         parts = context.get("parts", [])
         limit = kwargs.get("limit", 10)
-        
+
         if not query or not parts:
             return AIResponse(
                 content=[],
@@ -197,7 +199,7 @@ class OpenAIProvider(AIProvider):
                     provider=self.name,
                     task_type=TaskType.SEMANTIC_SEARCH,
                 )
-                
+
             query_embedding = await OpenAIHelpers.create_embeddings(self._client, [query], self.embedding_model)
             if not query_embedding:
                 return AIResponse(
@@ -257,9 +259,9 @@ class OpenAIProvider(AIProvider):
     async def _execute_intelligent_search(self, context: Dict[str, Any], **kwargs) -> AIResponse:
         """Execute intelligent search with query understanding and expansion."""
         from app.providers.openai_helpers import OpenAIHelpers
-        
+
         query = context.get("query", "")
-        
+
         if not query:
             return AIResponse(
                 content={"success": False, "parts": [], "error": "No query provided"},
@@ -272,17 +274,23 @@ class OpenAIProvider(AIProvider):
             # Analyze the query
             if not self._client:
                 return AIResponse(
-                    content={"success": False, "parts": [], "error": "OpenAI client not initialized"},
+                    content={
+                        "success": False,
+                        "parts": [],
+                        "error": "OpenAI client not initialized",
+                    },
                     metadata={"error": "OpenAI client not initialized"},
                     provider=self.name,
                     task_type=TaskType.INTELLIGENT_SEARCH,
                 )
-                
+
             analysis = await OpenAIHelpers.analyze_query(self._client, query, self.default_model)
-            
+
             # Generate suggestions
-            suggestions = await OpenAIHelpers.generate_suggestions(self._client, query, analysis, [], self.default_model)
-            
+            suggestions = await OpenAIHelpers.generate_suggestions(
+                self._client, query, analysis, [], self.default_model
+            )
+
             # For now, return analysis and suggestions (semantic search would be called separately)
             result = {
                 "success": True,
@@ -311,9 +319,9 @@ class OpenAIProvider(AIProvider):
     async def _execute_query_analysis(self, context: Dict[str, Any], **kwargs) -> AIResponse:
         """Execute query analysis to extract intent and entities."""
         from app.providers.openai_helpers import OpenAIHelpers
-        
+
         query = context.get("query", "")
-        
+
         if not query:
             return AIResponse(
                 content=None,
@@ -330,9 +338,9 @@ class OpenAIProvider(AIProvider):
                     provider=self.name,
                     task_type=TaskType.QUERY_ANALYSIS,
                 )
-                
+
             analysis = await OpenAIHelpers.analyze_query(self._client, query, self.default_model)
-            
+
             self._handle_success()
             return AIResponse(
                 content=analysis,
@@ -348,11 +356,11 @@ class OpenAIProvider(AIProvider):
     async def _execute_suggestion_generation(self, context: Dict[str, Any], **kwargs) -> AIResponse:
         """Execute suggestion generation."""
         from app.providers.openai_helpers import OpenAIHelpers
-        
+
         query = context.get("query", "")
         analysis = context.get("analysis", {})
         results = context.get("results", [])
-        
+
         if not query:
             return AIResponse(
                 content=[],
@@ -369,9 +377,11 @@ class OpenAIProvider(AIProvider):
                     provider=self.name,
                     task_type=TaskType.SUGGESTION_GENERATION,
                 )
-                
-            suggestions = await OpenAIHelpers.generate_suggestions(self._client, query, analysis, results, self.default_model)
-            
+
+            suggestions = await OpenAIHelpers.generate_suggestions(
+                self._client, query, analysis, results, self.default_model
+            )
+
             self._handle_success()
             return AIResponse(
                 content=suggestions,
@@ -392,11 +402,11 @@ class OpenAIProvider(AIProvider):
     async def _execute_part_recommendations(self, context: Dict[str, Any], **kwargs) -> AIResponse:
         """Execute part recommendations based on a specific part."""
         from app.providers.openai_helpers import OpenAIHelpers
-        
+
         part_id = context.get("part_id")
         part_data = context.get("part_data", {})
         limit = kwargs.get("limit", 5)
-        
+
         if not part_id and not part_data:
             return AIResponse(
                 content=[],
@@ -430,15 +440,15 @@ Return only the part names, one per line:"""
                     provider=self.name,
                     task_type=TaskType.PART_RECOMMENDATIONS,
                 )
-                
+
             response = await OpenAIHelpers.generate_text(self._client, prompt, self.default_model, 200, 0.5)
-            
+
             recommendations = []
             if response:
-                lines = response.strip().split('\n')
+                lines = response.strip().split("\n")
                 for line in lines:
                     line = line.strip()
-                    if line and not line.startswith(('1.', '2.', '3.', '4.', '5.')):
+                    if line and not line.startswith(("1.", "2.", "3.", "4.", "5.")):
                         recommendations.append(line)
 
             self._handle_success()

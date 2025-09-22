@@ -6,10 +6,10 @@ ensuring consistent output formats across different providers and task types.
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Union
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from app.services.ai_provider import TaskType, AIResponse
+from app.services.ai_provider import AIResponse, TaskType
 
 logger = logging.getLogger(__name__)
 
@@ -31,50 +31,49 @@ class AINormalizer:
     def normalize_response(self, response: AIResponse, task_type: TaskType) -> AIResponse:
         """
         Normalize an AI response to ensure consistent format.
-        
+
         Args:
             response: Raw AI response
             task_type: Type of task that generated the response
-            
+
         Returns:
             Normalized AI response
         """
         try:
             if not response.content:
                 return response
-            
+
             # Apply task-specific normalization
             if task_type in self.response_templates:
                 normalized_content = self.response_templates[task_type](response.content)
             else:
                 normalized_content = self._normalize_generic_response(response.content)
-            
+
             # Add metadata if missing
             if not response.metadata:
                 response.metadata = {}
-            
-            response.metadata.update({
-                "normalized": True,
-                "normalization_timestamp": datetime.utcnow().isoformat(),
-                "original_content_type": type(response.content).__name__,
-                "normalized_content_type": type(normalized_content).__name__
-            })
-            
+
+            response.metadata.update(
+                {
+                    "normalized": True,
+                    "normalization_timestamp": datetime.utcnow().isoformat(),
+                    "original_content_type": type(response.content).__name__,
+                    "normalized_content_type": type(normalized_content).__name__,
+                }
+            )
+
             # Update the response content
             response.content = normalized_content
-            
+
             logger.debug(f"Normalized {task_type.value} response from {response.provider}")
             return response
-            
+
         except Exception as e:
             logger.error(f"Error normalizing {task_type.value} response: {e}")
             # Return original response with error metadata
             if not response.metadata:
                 response.metadata = {}
-            response.metadata.update({
-                "normalization_error": str(e),
-                "normalization_failed": True
-            })
+            response.metadata.update({"normalization_error": str(e), "normalization_failed": True})
             return response
 
     def _normalize_semantic_search_response(self, content: Any) -> List[Dict[str, Any]]:
@@ -95,18 +94,20 @@ class AINormalizer:
                         "price": self._extract_price(item),
                         "availability": self._extract_availability(item),
                         "description": self._extract_description(item),
-                        "raw_data": item  # Keep original for debugging
+                        "raw_data": item,  # Keep original for debugging
                     }
                     normalized_results.append(normalized_item)
                 else:
                     # Convert non-dict items to standard format
-                    normalized_results.append({
-                        "part_name": str(item),
-                        "search_score": 0.5,
-                        "match_type": "unknown",
-                        "matched_field": "raw_conversion",
-                        "raw_data": item
-                    })
+                    normalized_results.append(
+                        {
+                            "part_name": str(item),
+                            "search_score": 0.5,
+                            "match_type": "unknown",
+                            "matched_field": "raw_conversion",
+                            "raw_data": item,
+                        }
+                    )
             return normalized_results
         else:
             # Single item response
@@ -123,7 +124,7 @@ class AINormalizer:
                 "search_type": content.get("search_type", "intelligent"),
                 "total_results": len(content.get("parts", [])),
                 "processing_time_ms": content.get("processing_time_ms"),
-                "raw_response": content
+                "raw_response": content,
             }
             return normalized
         else:
@@ -134,7 +135,7 @@ class AINormalizer:
                 "suggestions": [],
                 "search_type": "basic",
                 "error": "Invalid response format",
-                "raw_response": content
+                "raw_response": content,
             }
 
     def _normalize_query_analysis_response(self, content: Any) -> Dict[str, Any]:
@@ -150,7 +151,7 @@ class AINormalizer:
                 "specific_requirements": content.get("specific_requirements", []),
                 "confidence": content.get("confidence", 0.8),
                 "entities": content.get("entities", []),
-                "raw_analysis": content
+                "raw_analysis": content,
             }
         else:
             return {
@@ -158,7 +159,7 @@ class AINormalizer:
                 "language": "unknown",
                 "entities": [],
                 "confidence": 0.0,
-                "raw_analysis": content
+                "raw_analysis": content,
             }
 
     def _normalize_suggestion_response(self, content: Any) -> List[str]:
@@ -167,7 +168,7 @@ class AINormalizer:
             return [str(item).strip() for item in content if item and str(item).strip()]
         elif isinstance(content, str):
             # Split by newlines and clean up
-            suggestions = [line.strip() for line in content.split('\n') if line.strip()]
+            suggestions = [line.strip() for line in content.split("\n") if line.strip()]
             return suggestions
         else:
             return [str(content).strip()] if content else []
@@ -178,31 +179,37 @@ class AINormalizer:
             normalized_recommendations = []
             for item in content:
                 if isinstance(item, dict):
-                    normalized_recommendations.append({
-                        "part_name": item.get("part_name", str(item)),
-                        "category": item.get("category"),
-                        "brand": item.get("brand"),
-                        "price_range": item.get("price_range"),
-                        "compatibility": item.get("compatibility"),
-                        "reason": item.get("reason", "Recommended"),
-                        "confidence": item.get("confidence", 0.7),
-                        "raw_recommendation": item
-                    })
+                    normalized_recommendations.append(
+                        {
+                            "part_name": item.get("part_name", str(item)),
+                            "category": item.get("category"),
+                            "brand": item.get("brand"),
+                            "price_range": item.get("price_range"),
+                            "compatibility": item.get("compatibility"),
+                            "reason": item.get("reason", "Recommended"),
+                            "confidence": item.get("confidence", 0.7),
+                            "raw_recommendation": item,
+                        }
+                    )
                 else:
-                    normalized_recommendations.append({
-                        "part_name": str(item),
-                        "reason": "Recommended",
-                        "confidence": 0.5,
-                        "raw_recommendation": item
-                    })
+                    normalized_recommendations.append(
+                        {
+                            "part_name": str(item),
+                            "reason": "Recommended",
+                            "confidence": 0.5,
+                            "raw_recommendation": item,
+                        }
+                    )
             return normalized_recommendations
         else:
-            return [{
-                "part_name": str(content),
-                "reason": "Recommended",
-                "confidence": 0.5,
-                "raw_recommendation": content
-            }]
+            return [
+                {
+                    "part_name": str(content),
+                    "reason": "Recommended",
+                    "confidence": 0.5,
+                    "raw_recommendation": content,
+                }
+            ]
 
     def _normalize_generic_response(self, content: Any) -> Any:
         """Normalize generic response."""
@@ -216,30 +223,29 @@ class AINormalizer:
         """Normalize a list of parts."""
         if not isinstance(parts, list):
             return []
-        
+
         normalized_parts = []
         for part in parts:
             if isinstance(part, dict):
-                normalized_parts.append({
-                    "part_name": self._extract_part_name(part),
-                    "brand_oem": self._extract_brand(part),
-                    "vehicle_make": self._extract_vehicle_make(part),
-                    "vehicle_model": self._extract_vehicle_model(part),
-                    "category": self._extract_category(part),
-                    "search_score": self._extract_search_score(part),
-                    "match_type": self._extract_match_type(part),
-                    "matched_field": self._extract_matched_field(part),
-                    "price": self._extract_price(part),
-                    "availability": self._extract_availability(part),
-                    "description": self._extract_description(part),
-                    "raw_data": part
-                })
+                normalized_parts.append(
+                    {
+                        "part_name": self._extract_part_name(part),
+                        "brand_oem": self._extract_brand(part),
+                        "vehicle_make": self._extract_vehicle_make(part),
+                        "vehicle_model": self._extract_vehicle_model(part),
+                        "category": self._extract_category(part),
+                        "search_score": self._extract_search_score(part),
+                        "match_type": self._extract_match_type(part),
+                        "matched_field": self._extract_matched_field(part),
+                        "price": self._extract_price(part),
+                        "availability": self._extract_availability(part),
+                        "description": self._extract_description(part),
+                        "raw_data": part,
+                    }
+                )
             else:
-                normalized_parts.append({
-                    "part_name": str(part),
-                    "raw_data": part
-                })
-        
+                normalized_parts.append({"part_name": str(part), "raw_data": part})
+
         return normalized_parts
 
     def _normalize_query_analysis(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
@@ -253,51 +259,36 @@ class AINormalizer:
             "position": analysis.get("position"),
             "specific_requirements": analysis.get("specific_requirements", []),
             "confidence": analysis.get("confidence", 0.8),
-            "entities": analysis.get("entities", [])
+            "entities": analysis.get("entities", []),
         }
 
     def _normalize_suggestions(self, suggestions: List[Any]) -> List[str]:
         """Normalize suggestions list."""
         if not isinstance(suggestions, list):
             return []
-        
+
         return [str(item).strip() for item in suggestions if item and str(item).strip()]
 
     # Helper methods for extracting specific fields
     def _extract_part_name(self, item: Dict[str, Any]) -> str:
         """Extract part name from item."""
-        return (item.get("part_name") or 
-                item.get("name") or 
-                item.get("title") or 
-                str(item.get("id", "")))
+        return item.get("part_name") or item.get("name") or item.get("title") or str(item.get("id", ""))
 
     def _extract_brand(self, item: Dict[str, Any]) -> str:
         """Extract brand from item."""
-        return (item.get("brand_oem") or 
-                item.get("brand") or 
-                item.get("manufacturer") or 
-                "")
+        return item.get("brand_oem") or item.get("brand") or item.get("manufacturer") or ""
 
     def _extract_vehicle_make(self, item: Dict[str, Any]) -> str:
         """Extract vehicle make from item."""
-        return (item.get("vehicle_make") or 
-                item.get("make") or 
-                item.get("car_brand") or 
-                "")
+        return item.get("vehicle_make") or item.get("make") or item.get("car_brand") or ""
 
     def _extract_vehicle_model(self, item: Dict[str, Any]) -> str:
         """Extract vehicle model from item."""
-        return (item.get("vehicle_model") or 
-                item.get("model") or 
-                item.get("car_model") or 
-                "")
+        return item.get("vehicle_model") or item.get("model") or item.get("car_model") or ""
 
     def _extract_category(self, item: Dict[str, Any]) -> str:
         """Extract category from item."""
-        return (item.get("category") or 
-                item.get("type") or 
-                item.get("part_type") or 
-                "")
+        return item.get("category") or item.get("type") or item.get("part_type") or ""
 
     def _extract_search_score(self, item: Dict[str, Any]) -> float:
         """Extract search score from item."""
@@ -308,15 +299,11 @@ class AINormalizer:
 
     def _extract_match_type(self, item: Dict[str, Any]) -> str:
         """Extract match type from item."""
-        return (item.get("match_type") or 
-                item.get("match_method") or 
-                "unknown")
+        return item.get("match_type") or item.get("match_method") or "unknown"
 
     def _extract_matched_field(self, item: Dict[str, Any]) -> str:
         """Extract matched field from item."""
-        return (item.get("matched_field") or 
-                item.get("field") or 
-                "unknown")
+        return item.get("matched_field") or item.get("field") or "unknown"
 
     def _extract_price(self, item: Dict[str, Any]) -> Optional[float]:
         """Extract price from item."""
@@ -326,7 +313,8 @@ class AINormalizer:
         elif isinstance(price, str):
             # Try to extract numeric value
             import re
-            numbers = re.findall(r'\d+\.?\d*', price)
+
+            numbers = re.findall(r"\d+\.?\d*", price)
             if numbers:
                 return float(numbers[0])
         return None
@@ -337,33 +325,30 @@ class AINormalizer:
         if isinstance(availability, bool):
             return availability
         elif isinstance(availability, str):
-            return availability.lower() in ['true', 'yes', 'available', 'in stock']
+            return availability.lower() in ["true", "yes", "available", "in stock"]
         return True  # Default to available
 
     def _extract_description(self, item: Dict[str, Any]) -> str:
         """Extract description from item."""
-        return (item.get("description") or 
-                item.get("details") or 
-                item.get("summary") or 
-                "")
+        return item.get("description") or item.get("details") or item.get("summary") or ""
 
     def validate_response_format(self, response: AIResponse, task_type: TaskType) -> List[str]:
         """
         Validate that a response conforms to expected format.
-        
+
         Args:
             response: Response to validate
             task_type: Expected task type
-            
+
         Returns:
             List of validation errors (empty if valid)
         """
         errors = []
-        
+
         if not response.content:
             errors.append("Response content is empty")
             return errors
-        
+
         if task_type == TaskType.SEMANTIC_SEARCH:
             if not isinstance(response.content, list):
                 errors.append("Semantic search response should be a list")
@@ -373,7 +358,7 @@ class AINormalizer:
                         errors.append(f"Item {i} in semantic search response should be a dict")
                     elif "part_name" not in item:
                         errors.append(f"Item {i} missing required 'part_name' field")
-        
+
         elif task_type == TaskType.INTELLIGENT_SEARCH:
             if not isinstance(response.content, dict):
                 errors.append("Intelligent search response should be a dict")
@@ -382,20 +367,20 @@ class AINormalizer:
                 for field in required_fields:
                     if field not in response.content:
                         errors.append(f"Missing required field '{field}' in intelligent search response")
-        
+
         elif task_type == TaskType.QUERY_ANALYSIS:
             if not isinstance(response.content, dict):
                 errors.append("Query analysis response should be a dict")
             else:
                 if "intent" not in response.content:
                     errors.append("Missing required 'intent' field in query analysis response")
-        
+
         elif task_type == TaskType.SUGGESTION_GENERATION:
             if not isinstance(response.content, list):
                 errors.append("Suggestion response should be a list")
-        
+
         elif task_type == TaskType.PART_RECOMMENDATIONS:
             if not isinstance(response.content, list):
                 errors.append("Recommendation response should be a list")
-        
+
         return errors
