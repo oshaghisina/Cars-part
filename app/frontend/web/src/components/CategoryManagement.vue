@@ -86,6 +86,16 @@
 </template>
 
 <script>
+// Import images for proper Vite bundling
+import img10101 from '@/assets/images/parts/10101.png'
+import img10102 from '@/assets/images/parts/10102.png'
+import img10104 from '@/assets/images/parts/10104.png'
+import img10105 from '@/assets/images/parts/10105.png'
+import img10106 from '@/assets/images/parts/10106.png'
+import img10110 from '@/assets/images/parts/10110.png'
+import img10111 from '@/assets/images/parts/10111.png'
+import img10113 from '@/assets/images/parts/10113.png'
+
 export default {
   name: 'CategoryManagement',
   data() {
@@ -95,7 +105,7 @@ export default {
           id: 1,
           name: 'موتور و قطعات موتور',
           description: 'قطعات اصلی موتور و سیستم احتراق',
-          image: '/src/assets/images/parts/10101.png',
+          image: img10101,
           icon: '🔧',
           productCount: 45,
           popularItems: 'لنت ترمز، فیلتر روغن، شمع احتراق',
@@ -105,7 +115,7 @@ export default {
           id: 2,
           name: 'سیستم ترمز',
           description: 'لنت ترمز، دیسک ترمز و سیستم ترمز',
-          image: '/src/assets/images/parts/10102.png',
+          image: img10102,
           icon: '🛑',
           productCount: 28,
           popularItems: 'لنت ترمز جلو، دیسک ترمز، کالیپر',
@@ -115,7 +125,7 @@ export default {
           id: 3,
           name: 'سیستم خنک‌کننده',
           description: 'رادیاتور، پمپ آب و ترموستات',
-          image: '/src/assets/images/parts/10104.png',
+          image: img10104,
           icon: '🌡️',
           productCount: 32,
           popularItems: 'رادیاتور، پمپ آب، ترموستات',
@@ -125,7 +135,7 @@ export default {
           id: 4,
           name: 'سیستم سوخت',
           description: 'پمپ بنزین، فیلتر سوخت و انژکتور',
-          image: '/src/assets/images/parts/10105.png',
+          image: img10105,
           icon: '⛽',
           productCount: 18,
           popularItems: 'پمپ بنزین، فیلتر سوخت، انژکتور',
@@ -135,7 +145,7 @@ export default {
           id: 5,
           name: 'سیستم برق',
           description: 'باتری، آلترناتور و سیستم برق',
-          image: '/src/assets/images/parts/10106.png',
+          image: img10106,
           icon: '⚡',
           productCount: 52,
           popularItems: 'باتری، آلترناتور، استارت',
@@ -145,7 +155,7 @@ export default {
           id: 6,
           name: 'سیستم تعلیق',
           description: 'فنر، کمک‌فنر و سیستم تعلیق',
-          image: '/src/assets/images/parts/10110.png',
+          image: img10110,
           icon: '🚗',
           productCount: 38,
           popularItems: 'فنر، کمک‌فنر، بوش',
@@ -155,7 +165,7 @@ export default {
           id: 7,
           name: 'سیستم اگزوز',
           description: 'منیفولد، کاتالیست و سیستم اگزوز',
-          image: '/src/assets/images/parts/10111.png',
+          image: img10111,
           icon: '💨',
           productCount: 24,
           popularItems: 'منیفولد، کاتالیست، لوله اگزوز',
@@ -165,7 +175,7 @@ export default {
           id: 8,
           name: 'قطعات داخلی',
           description: 'دکمه‌ها، دستگیره‌ها و قطعات داخلی',
-          image: '/src/assets/images/parts/10113.png',
+          image: img10113,
           icon: '🚪',
           productCount: 67,
           popularItems: 'دکمه‌ها، دستگیره‌ها، آینه',

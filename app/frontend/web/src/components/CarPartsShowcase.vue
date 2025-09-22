@@ -94,6 +94,16 @@
 </template>
 
 <script>
+// Import images for proper Vite bundling
+import img10101 from '@/assets/images/parts/10101.png'
+import img10102 from '@/assets/images/parts/10102.png'
+import img10104 from '@/assets/images/parts/10104.png'
+import img10105 from '@/assets/images/parts/10105.png'
+import img10106 from '@/assets/images/parts/10106.png'
+import img10110 from '@/assets/images/parts/10110.png'
+import img10111 from '@/assets/images/parts/10111.png'
+import img10113 from '@/assets/images/parts/10113.png'
+
 export default {
   name: 'CarPartsShowcase',
   data() {
@@ -105,7 +115,7 @@ export default {
           description: 'لنت ترمز با کیفیت بالا برای خودروهای چینی',
           price: '۲۵۰,۰۰۰ تومان',
           stock: 15,
-          image: '/src/assets/images/parts/10101.png',
+          image: img10101,
           isNew: true,
           isPopular: false
         },
@@ -115,7 +125,7 @@ export default {
           description: 'فیلتر روغن اصلی برای موتورهای چینی',
           price: '۸۵,۰۰۰ تومان',
           stock: 32,
-          image: '/src/assets/images/parts/10102.png',
+          image: img10102,
           isNew: false,
           isPopular: true
         },
@@ -125,7 +135,7 @@ export default {
           description: 'شمع احتراق با کیفیت بالا',
           price: '۱۲۰,۰۰۰ تومان',
           stock: 8,
-          image: '/src/assets/images/parts/10104.png',
+          image: img10104,
           isNew: false,
           isPopular: false
         },
@@ -135,7 +145,7 @@ export default {
           description: 'کمربند تایم اصلی برای موتور',
           price: '۱۸۰,۰۰۰ تومان',
           stock: 12,
-          image: '/src/assets/images/parts/10105.png',
+          image: img10105,
           isNew: true,
           isPopular: false
         },
@@ -145,7 +155,7 @@ export default {
           description: 'پمپ آب اصلی برای سیستم خنک‌کننده',
           price: '۳۲۰,۰۰۰ تومان',
           stock: 6,
-          image: '/src/assets/images/parts/10106.png',
+          image: img10106,
           isNew: false,
           isPopular: true
         },
@@ -155,7 +165,7 @@ export default {
           description: 'ترموستات موتور با کیفیت بالا',
           price: '۹۵,۰۰۰ تومان',
           stock: 20,
-          image: '/src/assets/images/parts/10110.png',
+          image: img10110,
           isNew: false,
           isPopular: false
         },
@@ -165,7 +175,7 @@ export default {
           description: 'سنسور اکسیژن برای سیستم سوخت',
           price: '۲۸۰,۰۰۰ تومان',
           stock: 4,
-          image: '/src/assets/images/parts/10111.png',
+          image: img10111,
           isNew: true,
           isPopular: false
         },
@@ -175,7 +185,7 @@ export default {
           description: 'کویل احتراق با کیفیت بالا',
           price: '۱۵۰,۰۰۰ تومان',
           stock: 18,
-          image: '/src/assets/images/parts/10113.png',
+          image: img10113,
           isNew: false,
           isPopular: true
         }
