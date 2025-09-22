@@ -430,9 +430,7 @@ class AIOrchestrator:
                 return response.content
             else:
                 logger.warning(
-                    f"Suggestion generation failed: {
-                        response.metadata.get(
-                            'error', 'Unknown error')}")
+                    f"Suggestion generation failed: {response.metadata.get('error', 'Unknown error')}")
                 return []
 
         except Exception as e:

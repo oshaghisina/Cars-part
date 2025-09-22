@@ -415,32 +415,39 @@ class AIMetricsCollector:
 
             # Request count
             lines.append(
-                f'ai_requests_total{{provider="{provider}", task_type="{task_type}"}} {metrics.request_count}')
+                f'ai_requests_total{{provider="{provider}", task_type="{task_type}"}} '
+                f'{metrics.request_count}')
 
             # Success count
             lines.append(
-                f'ai_successes_total{{provider="{provider}", task_type="{task_type}"}} {metrics.success_count}'
+                f'ai_successes_total{{provider="{provider}", task_type="{task_type}"}} '
+                f'{metrics.success_count}'
             )
 
             # Failure count
             lines.append(
-                f'ai_failures_total{{provider="{provider}", task_type="{task_type}"}} {metrics.failure_count}')
+                f'ai_failures_total{{provider="{provider}", task_type="{task_type}"}} '
+                f'{metrics.failure_count}')
 
             # Duration metrics
             lines.append(
-                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.5"}} {metrics.p50_duration_ms / 1000}'
+                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.5"}} '
+                f'{metrics.p50_duration_ms / 1000}'
             )
             lines.append(
-                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.95"}} {metrics.p95_duration_ms / 1000}'
+                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.95"}} '
+                f'{metrics.p95_duration_ms / 1000}'
             )
             lines.append(
-                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.99"}} {metrics.p99_duration_ms / 1000}'
+                f'ai_duration_seconds{{provider="{provider}", task_type="{task_type}", quantile="0.99"}} '
+                f'{metrics.p99_duration_ms / 1000}'
             )
 
             # Cost metrics
             for cost_key, cost in metrics.cost_tracking.items():
                 lines.append(
-                    f'ai_cost_total{{provider="{provider}", task_type="{task_type}", cost_type="{cost_key}"}} {cost}'
+                    f'ai_cost_total{{provider="{provider}", task_type="{task_type}", cost_type="{cost_key}"}} '
+                    f'{cost}'
                 )
 
         return "\n".join(lines)

@@ -213,10 +213,8 @@ class ResourcePool:
                         self.unhealthy.add(resource)
                         self.available.discard(resource)
                         self.in_use.discard(resource)
-                        logger.warning(
-                            f"Resource failed health check: {
-                                resource.get(
-                                    'id', 'unknown')}")
+                    logger.warning(
+                        f"Resource failed health check: {resource.get('id', 'unknown')}")
                 except Exception as e:
                     logger.error(f"Health check failed for resource: {e}")
                     self.unhealthy.add(resource)
