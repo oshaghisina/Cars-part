@@ -13,6 +13,12 @@ cd app/frontend/panel
 if [ ! -d "node_modules" ]; then
     echo "📦 Installing frontend dependencies..."
     npm install
+elif [ -f "package-lock.json" ]; then
+    echo "📦 Installing dependencies from package-lock.json..."
+    npm ci
+else
+    echo "📦 Installing frontend dependencies..."
+    npm install
 fi
 
 # Start development server
