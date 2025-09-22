@@ -13,7 +13,13 @@ import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import redis
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    redis = None
+
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -93,7 +99,7 @@ class AICacheManager:
         
         # Redis connection
         self._redis_client: Optional[redis.Redis] = None
-        if enable_redis:
+        if enable_redis and REDIS_AVAILABLE:
             try:
                 redis_url = redis_url or getattr(settings, 'redis_url', 'redis://localhost:6379/0')
                 self._redis_client = redis.from_url(redis_url, decode_responses=True)
@@ -104,6 +110,9 @@ class AICacheManager:
                 logger.warning(f"Failed to connect to Redis: {e}. Falling back to memory-only cache.")
                 self._redis_client = None
                 self.enable_redis = False
+        elif enable_redis and not REDIS_AVAILABLE:
+            logger.warning("Redis package not available. Using memory-only cache.")
+            self.enable_redis = False
         
         # Cache statistics
         self._stats = {
@@ -441,7 +450,7 @@ class AICacheManager:
 
 
 # Global cache manager instance
-cache_manager = AICacheManager()
+cache_manager = AICacheManager(enable_redis=REDIS_AVAILABLE)
 
 
 class CacheDecorator:

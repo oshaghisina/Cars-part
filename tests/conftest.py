@@ -2,11 +2,16 @@
 Pytest configuration and fixtures for China Car Parts tests
 """
 
+import os
 import pytest
 import asyncio
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
+
+# Set test environment before importing app
+os.environ.setdefault("APP_ENV", "test")
+os.environ.setdefault("AI_GATEWAY_ENABLED", "false")
 
 from app.api.main import app
 from app.db.models import Base

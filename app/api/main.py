@@ -17,8 +17,11 @@ from app.api.routers import (
     search,
     users,
 )
-from app.api.routers import ai_admin, ai_advanced, ai_chat
 from app.core.config import settings
+
+# Conditionally import AI modules only if AI Gateway is enabled
+if getattr(settings, 'ai_gateway_enabled', False):
+    from app.api.routers import ai_admin, ai_advanced, ai_chat
 
 # Create FastAPI application
 app = FastAPI(
@@ -70,15 +73,17 @@ app.include_router(
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 
-# Include AI advanced router for Epic E3 features
-app.include_router(ai_advanced.router, prefix="/api/v1", tags=["ai-advanced"])
-
-# Include AI chat router
-app.include_router(ai_chat.router, prefix="/api/v1", tags=["ai-chat"])
-
-# Include AI admin router only if experimental mode is enabled
-if getattr(settings, 'ai_gateway_experimental', False):
-    app.include_router(ai_admin.router, prefix="/api/v1", tags=["ai-admin"])
+# Include AI routers only if AI Gateway is enabled
+if getattr(settings, 'ai_gateway_enabled', False):
+    # Include AI advanced router for Epic E3 features
+    app.include_router(ai_advanced.router, prefix="/api/v1", tags=["ai-advanced"])
+    
+    # Include AI chat router
+    app.include_router(ai_chat.router, prefix="/api/v1", tags=["ai-chat"])
+    
+    # Include AI admin router only if experimental mode is enabled
+    if getattr(settings, 'ai_gateway_experimental', False):
+        app.include_router(ai_admin.router, prefix="/api/v1", tags=["ai-admin"])
 
 
 @app.get("/api/v1/health")
