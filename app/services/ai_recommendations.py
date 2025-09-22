@@ -376,7 +376,8 @@ class AIRecommendationsEngine:
             else:
                 # If duplicate found, keep the one with higher score
                 for i, existing in enumerate(unique_recommendations):
-                    if existing.part_id == rec.part_id and rec.recommendation_score > existing.recommendation_score:
+                    if (existing.part_id == rec.part_id and 
+                            rec.recommendation_score > existing.recommendation_score):
                         unique_recommendations[i] = rec
                         break
 
@@ -439,8 +440,10 @@ class AIRecommendationsEngine:
 
         if category_counts:
             most_common_category = category_counts.most_common(1)[0]
+            category_name = most_common_category[0]
+            category_count = most_common_category[1]
             insights.append(
-                f"Most purchased category: {most_common_category[0]} ({most_common_category[1]} times)")
+                f"Most purchased category: {category_name} ({category_count} times)")
 
         if brand_counts:
             most_common_brand = brand_counts.most_common(1)[0]

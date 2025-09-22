@@ -98,8 +98,14 @@ if dp:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🧙‍♂️ راهنمای گام به گام", callback_data="start_wizard"), InlineKeyboardButton(
-                        text="🔍 جستجوی قطعات", callback_data="search_parts"), ], [
+                        text="🧙‍♂️ راهنمای گام به گام", 
+                        callback_data="start_wizard"
+                    ), 
+                    InlineKeyboardButton(
+                        text="🔍 جستجوی قطعات", 
+                        callback_data="search_parts"
+                    ), 
+                ], [
                     InlineKeyboardButton(
                         text="📋 سفارشات من", callback_data="my_orders"), InlineKeyboardButton(
                         text="❓ راهنمای استفاده", callback_data="help"), ], [
@@ -237,7 +243,9 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
-                            status_text += f"قطعات یافت شده: {order['matched_items']}/{order['total_items']}\n"
+                            matched = order['matched_items']
+                            total = order['total_items']
+                            status_text += f"قطعات یافت شده: {matched}/{total}\n"
 
                         await message.answer(status_text)
                 else:
@@ -291,7 +299,11 @@ if dp:
     async def handle_search_parts(callback_query: CallbackQuery, state: FSMContext):
         await callback_query.answer()
         await state.set_state(SearchStates.waiting_for_search)
-        await callback_query.message.answer("🔍 **جستجوی قطعات**\n\n" "لطفاً نام قطعه مورد نظر خود را ارسال کنید:")
+        message_text = (
+            "🔍 **جستجوی قطعات**\n\n"
+            "لطفاً نام قطعه مورد نظر خود را ارسال کنید:"
+        )
+        await callback_query.message.answer(message_text)
 
     @dp.callback_query(lambda c: c.data == "my_orders")
     async def handle_my_orders(callback_query: CallbackQuery):
@@ -314,7 +326,9 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
-                            status_text += f"قطعات یافت شده: {order['matched_items']}/{order['total_items']}\n"
+                            matched = order['matched_items']
+                            total = order['total_items']
+                            status_text += f"قطعات یافت شده: {matched}/{total}\n"
 
                         await callback_query.message.answer(status_text)
                 else:
@@ -385,7 +399,9 @@ if dp:
             ]
         )
 
-        await callback_query.message.answer(welcome_text, reply_markup=keyboard, parse_mode="Markdown")
+        await callback_query.message.answer(
+            welcome_text, reply_markup=keyboard, parse_mode="Markdown"
+        )
 
     @dp.message(lambda message: not message.text.startswith("/"))
     async def message_handler(message: Message):
@@ -415,7 +431,9 @@ if dp:
                         if "found" not in item:  # Found part
                             price_text = ""
                             if item["best_price"]:
-                                price_text = f" - قیمت: {item['best_price']:,.0f} {item['currency']}"
+                                price = item['best_price']
+                                currency = item['currency']
+                                price_text = f" - قیمت: {price:,.0f} {currency}"
 
                             detail_text = (
                                 f"✅ {item['query']}\n"
@@ -532,15 +550,18 @@ if dp:
 
                 if order_result["success"]:
                     await callback_query.message.answer(order_result["message"])
-                    await callback_query.message.answer(
-                        "تیم ما به زودی با شما تماس خواهد گرفت. " "برای پیگیری سفارش از دستور /orders استفاده کنید."
+                    follow_up_message = (
+                        "تیم ما به زودی با شما تماس خواهد گرفت. "
+                        "برای پیگیری سفارش از دستور /orders استفاده کنید."
                     )
+                    await callback_query.message.answer(follow_up_message)
                 else:
                     await callback_query.message.answer(order_result["message"])
 
         except Exception as e:
             logger.error(f"Error in part confirmation: {e}")
-            await callback_query.message.answer("خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید.")
+            error_message = "خطایی در ثبت سفارش رخ داد. لطفاً دوباره تلاش کنید."
+            await callback_query.message.answer(error_message)
         finally:
             db.close()
 

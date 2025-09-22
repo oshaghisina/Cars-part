@@ -158,10 +158,7 @@ class ResourcePool:
                         self.total_requests += 1
 
                         logger.debug(
-                            f"Created and acquired {
-                                self.resource_type} resource: " f"{
-                                resource.get(
-                                    'id', 'unknown')}")
+                            f"Created and acquired {self.resource_type} resource: {resource.get('id', 'unknown')}")
                         return resource
                     except Exception as e:
                         logger.error(f"Failed to create new resource: {e}")

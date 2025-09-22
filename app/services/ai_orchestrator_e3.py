@@ -213,8 +213,9 @@ class AIOrchestratorE3Extensions:
                     cost=0.0,
                 )
 
+                rec_count = len(rec_results)
                 logger.info(
-                    f"Smart recommendations completed successfully. Generated {len(rec_results)} recommendations.")
+                    f"Smart recommendations completed successfully. Generated {rec_count} recommendations.")
                 return rec_results
 
             except Exception as e:
@@ -241,7 +242,12 @@ class AIOrchestratorE3Extensions:
             logger.debug("AI Gateway disabled. Skipping query processing.")
             return {"success": False, "error": "AI Gateway disabled", "query": query}
 
-        with TraceContext(self.orchestrator.tracer, "natural_language_query", user_id=user_id, query=query[:50]):
+        with TraceContext(
+            self.orchestrator.tracer, 
+            "natural_language_query", 
+            user_id=user_id, 
+            query=query[:50]
+        ):
             start_time = time.time()
 
             try:

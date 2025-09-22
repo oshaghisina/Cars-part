@@ -90,14 +90,11 @@ class AIPolicyEngine:
         if ranked_providers:
             selected = ranked_providers[0]
             logger.info(
-                f"Selected provider '{
-                    selected.name}' for task '{
-                    task_type.value}' based on policies.")
+                f"Selected provider '{selected.name}' for task '{task_type.value}' based on policies.")
             return selected
         else:
             logger.warning(
-                f"No provider selected after applying policies for task '{
-                    task_type.value}'.")
+                f"No provider selected after applying policies for task '{task_type.value}'.")
             return None
 
     def _apply_policies(

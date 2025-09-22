@@ -415,8 +415,7 @@ class AIMetricsCollector:
 
             # Request count
             lines.append(
-                f'ai_requests_total{{provider="{provider}", task_type="{task_type}"}} {
-                    metrics.request_count}')
+                f'ai_requests_total{{provider="{provider}", task_type="{task_type}"}} {metrics.request_count}')
 
             # Success count
             lines.append(
