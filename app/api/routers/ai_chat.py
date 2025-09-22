@@ -210,8 +210,10 @@ async def handle_performance_query(message: str, context: Dict[str, Any]) -> str
             response += "**Overall Performance**:\n"
             response += f"- Success Rate: {global_metrics.get('success_rate', 0):.1f}%\n"
             response += f"- Error Rate: {global_metrics.get('error_rate', 0):.1f}%\n"
-            response += f"- Average Response Time: {global_metrics.get('average_response_time', 0):.3f}s\n"
-            response += f"- Throughput: {global_metrics.get('throughput_rpm', 0):.1f} requests/min\n"
+            avg_time = global_metrics.get('average_response_time', 0)
+            response += f"- Average Response Time: {avg_time:.3f}s\n"
+            throughput = global_metrics.get('throughput_rpm', 0)
+            response += f"- Throughput: {throughput:.1f} requests/min\n"
             response += f"- Average Cost: ${global_metrics.get('average_cost', 0):.4f}\n"
             response += f"- Average Tokens: {global_metrics.get('average_tokens', 0):.0f}\n"
 

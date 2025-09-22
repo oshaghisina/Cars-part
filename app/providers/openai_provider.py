@@ -201,7 +201,8 @@ class OpenAIProvider(AIProvider):
                     task_type=TaskType.SEMANTIC_SEARCH,
                 )
 
-            query_embedding = await OpenAIHelpers.create_embeddings(self._client, [query], self.embedding_model)
+            query_embedding = await OpenAIHelpers.create_embeddings(
+                self._client, [query], self.embedding_model)
             if not query_embedding:
                 return AIResponse(
                     content=[],
@@ -213,10 +214,15 @@ class OpenAIProvider(AIProvider):
             # Create embeddings for all parts
             part_texts = []
             for part in parts:
-                text = f"{part.get('part_name', '')} {part.get('brand_oem', '')} {part.get('vehicle_make', '')} {part.get('vehicle_model', '')} {part.get('category', '')}"
+                text = (
+                    f"{part.get('part_name', '')} {part.get('brand_oem', '')} "
+                    f"{part.get('vehicle_make', '')} {part.get('vehicle_model', '')} "
+                    f"{part.get('category', '')}"
+                )
                 part_texts.append(text)
 
-            part_embeddings = await OpenAIHelpers.create_embeddings(self._client, part_texts, self.embedding_model)
+            part_embeddings = await OpenAIHelpers.create_embeddings(
+                self._client, part_texts, self.embedding_model)
             if not part_embeddings:
                 return AIResponse(
                     content=[],
@@ -442,7 +448,8 @@ Return only the part names, one per line:"""
                     task_type=TaskType.PART_RECOMMENDATIONS,
                 )
 
-            response = await OpenAIHelpers.generate_text(self._client, prompt, self.default_model, 200, 0.5)
+            response = await OpenAIHelpers.generate_text(
+                self._client, prompt, self.default_model, 200, 0.5)
 
             recommendations = []
             if response:

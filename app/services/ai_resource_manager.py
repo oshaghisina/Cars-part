@@ -144,11 +144,7 @@ class ResourcePool:
                     self.total_requests += 1
 
                     logger.debug(
-                        f"Acquired {
-                            self.resource_type} resource: {
-                            resource.get(
-                                'id',
-                                'unknown')}")
+                        f"Acquired {self.resource_type} resource: {resource.get('id', 'unknown')}")
                     return resource
 
                 # Try to create a new resource if under max size

@@ -82,8 +82,7 @@ class AIPolicyEngine:
                 return preferred_provider
             else:
                 logger.warning(
-                    f"Preferred provider '{provider_preference}' not eligible for task '{
-                        task_type.value}'.")
+                    f"Preferred provider '{provider_preference}' not eligible for task '{task_type.value}'.")
 
         # Apply policies to rank providers
         ranked_providers = self._apply_policies(eligible_providers, task_type, context, user_id)

@@ -314,10 +314,12 @@ class AIClient:
         self._circuit_breaker_state[provider_name]["failures"] += 1
         self._circuit_breaker_state[provider_name]["last_failure"] = time.time()
 
-        if self._circuit_breaker_state[provider_name]["failures"] >= self._circuit_breaker_threshold:
+        if (self._circuit_breaker_state[provider_name]["failures"] >=
+                self._circuit_breaker_threshold):
             self._circuit_breaker_state[provider_name]["state"] = "open"
             logger.warning(
-                f"Circuit breaker opened for provider '{provider_name}' after {self._circuit_breaker_threshold} failures")
+                f"Circuit breaker opened for provider '{provider_name}' "
+                f"after {self._circuit_breaker_threshold} failures")
 
     def _is_gateway_enabled(self) -> bool:
         """Check if AI Gateway is enabled via feature flag."""

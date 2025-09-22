@@ -274,9 +274,7 @@ class AIOrchestrator:
                 return result
             else:
                 logger.warning(
-                    f"Intelligent search failed: {
-                        response.metadata.get(
-                            'error', 'Unknown error')}")
+                    f"Intelligent search failed: {response.metadata.get('error', 'Unknown error')}")
                 return {
                     "success": False,
                     "parts": [],

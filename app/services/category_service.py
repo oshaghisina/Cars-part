@@ -133,8 +133,8 @@ class CategoryService:
                     level = parent.level + 1
                     # type: ignore[comparison-overlap]
                     path = (
-                        f"{parent.path}/{category_data['name']}" 
-                        if parent.path 
+                        f"{parent.path}/{category_data['name']}"
+                        if parent.path
                         else f"/{category_data['name']}"
                     )
                 else:
@@ -179,8 +179,8 @@ class CategoryService:
                             # type: ignore[assignment]  # type:
                             # ignore[assignment]
                             category.path = (
-                                f"{parent.path}/{category.name}" 
-                                if parent.path 
+                                f"{parent.path}/{category.name}"
+                                if parent.path
                                 else f"/{category.name}"
                             )
                         else:
@@ -248,8 +248,8 @@ class CategoryService:
                     category.level = parent.level + 1  # type: ignore[assignment]
                     # type: ignore[assignment]
                     category.path = (
-                        f"{parent.path}/{category.name}" 
-                        if parent.path 
+                        f"{parent.path}/{category.name}"
+                        if parent.path
                         else f"/{category.name}"
                     )
                 else:

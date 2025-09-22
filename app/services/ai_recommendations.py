@@ -445,9 +445,7 @@ class AIRecommendationsEngine:
         if brand_counts:
             most_common_brand = brand_counts.most_common(1)[0]
             insights.append(
-                f"Preferred brand: {
-                    most_common_brand[0]} ({
-                    most_common_brand[1]} times)")
+                f"Preferred brand: {most_common_brand[0]} ({most_common_brand[1]} times)")
 
         if avg_price > 0:
             insights.append(f"Average purchase price: ${avg_price:.2f}")

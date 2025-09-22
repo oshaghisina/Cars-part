@@ -376,8 +376,7 @@ class AIMetricsCollector:
             perf = summary["performance_summary"]
             if "avg_duration_ms" in perf and perf["avg_duration_ms"] > 5000:  # 5 seconds
                 health_status["issues"].append(
-                    f"Slow average response time: {
-                        perf['avg_duration_ms']:.0f}ms")
+                    f"Slow average response time: {perf['avg_duration_ms']:.0f}ms")
                 health_status["recommendations"].append(
                     "Optimize provider configurations or consider fallbacks")
 

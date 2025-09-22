@@ -214,8 +214,7 @@ class AIOrchestratorE3Extensions:
                 )
 
                 logger.info(
-                    f"Smart recommendations completed successfully. Generated {
-                        len(rec_results)} recommendations.")
+                    f"Smart recommendations completed successfully. Generated {len(rec_results)} recommendations.")
                 return rec_results
 
             except Exception as e:

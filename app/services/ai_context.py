@@ -59,8 +59,9 @@ class AIContextBuilder:
             # Enforce token budget
             optimized_prompt = self.enforce_token_budget(prompt, self.token_budget)
 
+            token_count = self._count_tokens(optimized_prompt)
             logger.debug(
-                f"Built prompt for {task_type.value} with {self._count_tokens(optimized_prompt)} tokens")
+                f"Built prompt for {task_type.value} with {token_count} tokens")
             return optimized_prompt
 
         except Exception as e:

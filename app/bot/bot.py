@@ -415,15 +415,12 @@ if dp:
                         if "found" not in item:  # Found part
                             price_text = ""
                             if item["best_price"]:
-                                price_text = f" - قیمت: {
-                                    item['best_price']:,.0f} " f"{
-                                    item['currency']}"
+                                price_text = f" - قیمت: {item['best_price']:,.0f} {item['currency']}"
 
                             detail_text = (
-                                f"✅ {
-                                    item['query']}\n" f"{
-                                    item['part_name']} {
-                                    item['vehicle_model']}" f"{price_text}")
+                                f"✅ {item['query']}\n"
+                                f"{item['part_name']} {item['vehicle_model']}{price_text}"
+                            )
                             await message.answer(detail_text)
                         else:
                             # Not found

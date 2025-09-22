@@ -102,7 +102,7 @@ Respond in JSON format:
             set([result.get("brand_oem", "") for result in results if result.get("brand_oem")])
         )
 
-        prompt = f"""Based on this car parts search query and results, 
+        prompt = f"""Based on this car parts search query and results,
 generate 3 helpful suggestions:
 
 Query: {query}

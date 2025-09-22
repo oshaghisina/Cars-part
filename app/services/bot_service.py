@@ -110,7 +110,11 @@ class BotService:
                         "part_name": part_data["part_name"],
                         "vehicle_model": part_data["vehicle_model"],
                         "best_price": part_data["best_price"],
-                        "currency": part_data["prices"][0]["currency"] if part_data["prices"] else None,
+                        "currency": (
+                            part_data["prices"][0]["currency"]
+                            if part_data["prices"]
+                            else None
+                        ),
                     })
             else:
                 results_summary.append({"query": query, "found": False,
@@ -122,7 +126,8 @@ class BotService:
         elif found_count == len([q for q in queries if q.strip()]):
             summary_message = f"✅ تمام {found_count} قطعه یافت شد."
         else:
-            summary_message = f"✅ {found_count} از " f"{len([q for q in queries if q.strip()])} قطعه یافت شد."
+            total_queries = len([q for q in queries if q.strip()])
+            summary_message = f"✅ {found_count} از {total_queries} قطعه یافت شد."
 
         return {
             "success": True,
@@ -265,10 +270,13 @@ class BotService:
         """Format AI search result for bot response."""
         if not ai_result["success"] or not ai_result["parts"]:
             return {
-                "found": False, "message": (
+                "found": False,
+                "message": (
                     "متأسفانه قطعه مورد نظر یافت نشد. "
-                    "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."), "suggestions": ai_result.get(
-                    "suggestions", []), }
+                    "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."
+                ),
+                "suggestions": ai_result.get("suggestions", [])
+            }
 
         best_part = ai_result["parts"][0]
         query_analysis = ai_result.get("query_analysis", {})
@@ -289,7 +297,9 @@ class BotService:
         confirmation_message += f"دسته بندی: {best_part['category']}\n"
 
         if best_part.get("best_price"):
-            confirmation_message += f"💰 قیمت: {best_part['best_price']:,} {best_part['prices'][0]['currency']}\n"
+            price = best_part['best_price']
+            currency = best_part['prices'][0]['currency']
+            confirmation_message += f"💰 قیمت: {price:,} {currency}\n"
 
         # Add AI insights
         if query_analysis:
