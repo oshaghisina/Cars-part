@@ -424,8 +424,7 @@ class AIMetricsCollector:
 
             # Failure count
             lines.append(
-                f'ai_failures_total{{provider="{provider}", task_type="{task_type}"}} {
-                    metrics.failure_count}')
+                f'ai_failures_total{{provider="{provider}", task_type="{task_type}"}} {metrics.failure_count}')
 
             # Duration metrics
             lines.append(

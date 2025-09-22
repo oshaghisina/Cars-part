@@ -185,24 +185,14 @@ class ResourcePool:
                 if mark_unhealthy:
                     self.unhealthy.add(resource)
                     logger.warning(
-                        f"Marked {
-                            self.resource_type} resource as unhealthy: " f"{
-                            resource.get(
-                                'id',
-                                'unknown')}")
+                        f"Marked {self.resource_type} resource as unhealthy: {resource.get('id', 'unknown')}")
                 else:
                     self.available.add(resource)
                     logger.debug(
-                        f"Released {
-                            self.resource_type} resource: {
-                            resource.get(
-                                'id',
-                                'unknown')}")
+                        f"Released {self.resource_type} resource: {resource.get('id', 'unknown')}")
             else:
                 logger.warning(
-                    f"Attempted to release resource not in use: {
-                        resource.get(
-                            'id', 'unknown')}")
+                    f"Attempted to release resource not in use: {resource.get('id', 'unknown')}")
 
     async def _health_check_loop(self):
         """Background task for health checking resources."""

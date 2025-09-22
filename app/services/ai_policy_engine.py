@@ -67,8 +67,11 @@ class AIPolicyEngine:
             if provider.is_available() and task_type in provider.get_capabilities():
                 eligible_providers.append(provider)
             else:
+                available = provider.is_available()
+                capabilities = provider.get_capabilities()
                 logger.debug(
-                    f"Provider '{name}' not eligible for '{task_type.value}' (available: {provider.is_available()}, capabilities: {provider.get_capabilities()})")
+                    f"Provider '{name}' not eligible for '{task_type.value}' "
+                    f"(available: {available}, capabilities: {capabilities})")
 
         if not eligible_providers:
             logger.warning(f"No eligible providers found for task type '{task_type.value}'.")
@@ -82,15 +85,18 @@ class AIPolicyEngine:
                 return preferred_provider
             else:
                 logger.warning(
-                    f"Preferred provider '{provider_preference}' not eligible for task '{task_type.value}'.")
+                    f"Preferred provider '{provider_preference}' not eligible "
+                    f"for task '{task_type.value}'.")
 
         # Apply policies to rank providers
-        ranked_providers = self._apply_policies(eligible_providers, task_type, context, user_id)
+        ranked_providers = self._apply_policies(
+            eligible_providers, task_type, context, user_id)
 
         if ranked_providers:
             selected = ranked_providers[0]
             logger.info(
-                f"Selected provider '{selected.name}' for task '{task_type.value}' based on policies.")
+                f"Selected provider '{selected.name}' for task '{task_type.value}' "
+                f"based on policies.")
             return selected
         else:
             logger.warning(
@@ -154,7 +160,10 @@ class AIPolicyEngine:
             self,
             providers: List[AIProvider],
             task_type: TaskType) -> List[AIProvider]:
-        """Filter providers by explicit task capability (already done in select_provider, but can refine)."""
+        """Filter providers by explicit task capability.
+
+        Already done in select_provider, but can refine.
+        """
         # This step is mostly handled before, but could be used for more granular
         # capability matching
         logger.debug("Applied capability policy.")

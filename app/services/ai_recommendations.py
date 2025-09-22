@@ -376,7 +376,7 @@ class AIRecommendationsEngine:
             else:
                 # If duplicate found, keep the one with higher score
                 for i, existing in enumerate(unique_recommendations):
-                    if (existing.part_id == rec.part_id and 
+                    if (existing.part_id == rec.part_id and
                             rec.recommendation_score > existing.recommendation_score):
                         unique_recommendations[i] = rec
                         break

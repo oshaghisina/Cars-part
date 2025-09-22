@@ -378,9 +378,7 @@ class AIOrchestrator:
                 return response.content
             else:
                 logger.warning(
-                    f"Query analysis failed: {
-                        response.metadata.get(
-                            'error', 'Unknown error')}")
+                    f"Query analysis failed: {response.metadata.get('error', 'Unknown error')}")
                 return {"intent": "search", "entities": [], "language": "unknown"}
 
         except Exception as e:

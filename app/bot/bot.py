@@ -98,13 +98,13 @@ if dp:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🧙‍♂️ راهنمای گام به گام", 
+                        text="🧙‍♂️ راهنمای گام به گام",
                         callback_data="start_wizard"
-                    ), 
+                    ),
                     InlineKeyboardButton(
-                        text="🔍 جستجوی قطعات", 
+                        text="🔍 جستجوی قطعات",
                         callback_data="search_parts"
-                    ), 
+                    ),
                 ], [
                     InlineKeyboardButton(
                         text="📋 سفارشات من", callback_data="my_orders"), InlineKeyboardButton(
