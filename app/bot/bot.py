@@ -98,19 +98,17 @@ if dp:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🧙‍♂️ راهنمای گام به گام",
-                        callback_data="start_wizard"
+                        text="🧙‍♂️ راهنمای گام به گام", callback_data="start_wizard"
                     ),
-                    InlineKeyboardButton(
-                        text="🔍 جستجوی قطعات",
-                        callback_data="search_parts"
-                    ),
-                ], [
-                    InlineKeyboardButton(
-                        text="📋 سفارشات من", callback_data="my_orders"), InlineKeyboardButton(
-                        text="❓ راهنمای استفاده", callback_data="help"), ], [
-                    InlineKeyboardButton(
-                        text="⚙️ تنظیمات", callback_data="settings")], ])
+                    InlineKeyboardButton(text="🔍 جستجوی قطعات", callback_data="search_parts"),
+                ],
+                [
+                    InlineKeyboardButton(text="📋 سفارشات من", callback_data="my_orders"),
+                    InlineKeyboardButton(text="❓ راهنمای استفاده", callback_data="help"),
+                ],
+                [InlineKeyboardButton(text="⚙️ تنظیمات", callback_data="settings")],
+            ]
+        )
 
         await message.answer(welcome_text, reply_markup=keyboard, parse_mode="Markdown")
 
@@ -243,8 +241,8 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
-                            matched = order['matched_items']
-                            total = order['total_items']
+                            matched = order["matched_items"]
+                            total = order["total_items"]
                             status_text += f"قطعات یافت شده: {matched}/{total}\n"
 
                         await message.answer(status_text)
@@ -299,10 +297,7 @@ if dp:
     async def handle_search_parts(callback_query: CallbackQuery, state: FSMContext):
         await callback_query.answer()
         await state.set_state(SearchStates.waiting_for_search)
-        message_text = (
-            "🔍 **جستجوی قطعات**\n\n"
-            "لطفاً نام قطعه مورد نظر خود را ارسال کنید:"
-        )
+        message_text = "🔍 **جستجوی قطعات**\n\n" "لطفاً نام قطعه مورد نظر خود را ارسال کنید:"
         await callback_query.message.answer(message_text)
 
     @dp.callback_query(lambda c: c.data == "my_orders")
@@ -326,8 +321,8 @@ if dp:
                         status_text += f"تعداد قطعات: {order['total_items']}\n"
 
                         if order["matched_items"] > 0:
-                            matched = order['matched_items']
-                            total = order['total_items']
+                            matched = order["matched_items"]
+                            total = order["total_items"]
                             status_text += f"قطعات یافت شده: {matched}/{total}\n"
 
                         await callback_query.message.answer(status_text)
@@ -431,8 +426,8 @@ if dp:
                         if "found" not in item:  # Found part
                             price_text = ""
                             if item["best_price"]:
-                                price = item['best_price']
-                                currency = item['currency']
+                                price = item["best_price"]
+                                currency = item["currency"]
                                 price_text = f" - قیمت: {price:,.0f} {currency}"
 
                             detail_text = (
@@ -546,7 +541,8 @@ if dp:
                 }
 
                 order_result = bot_service.create_order_from_search_results(
-                    telegram_user_id, [search_result])
+                    telegram_user_id, [search_result]
+                )
 
                 if order_result["success"]:
                     await callback_query.message.answer(order_result["message"])

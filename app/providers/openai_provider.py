@@ -80,8 +80,9 @@ class OpenAIProvider(AIProvider):
 
         return ProviderStatus
 
-    async def execute_task(self, task_type: TaskType,
-                           context: Dict[str, Any], **kwargs) -> AIResponse:
+    async def execute_task(
+        self, task_type: TaskType, context: Dict[str, Any], **kwargs
+    ) -> AIResponse:
         """
         Execute an AI task using OpenAI APIs.
 
@@ -202,7 +203,8 @@ class OpenAIProvider(AIProvider):
                 )
 
             query_embedding = await OpenAIHelpers.create_embeddings(
-                self._client, [query], self.embedding_model)
+                self._client, [query], self.embedding_model
+            )
             if not query_embedding:
                 return AIResponse(
                     content=[],
@@ -222,7 +224,8 @@ class OpenAIProvider(AIProvider):
                 part_texts.append(text)
 
             part_embeddings = await OpenAIHelpers.create_embeddings(
-                self._client, part_texts, self.embedding_model)
+                self._client, part_texts, self.embedding_model
+            )
             if not part_embeddings:
                 return AIResponse(
                     content=[],
@@ -449,7 +452,8 @@ Return only the part names, one per line:"""
                 )
 
             response = await OpenAIHelpers.generate_text(
-                self._client, prompt, self.default_model, 200, 0.5)
+                self._client, prompt, self.default_model, 200, 0.5
+            )
 
             recommendations = []
             if response:

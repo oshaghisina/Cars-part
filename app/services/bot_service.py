@@ -49,7 +49,8 @@ class BotService:
                 "found": False,
                 "message": (
                     "متأسفانه قطعه مورد نظر یافت نشد. "
-                    "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."),
+                    "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."
+                ),
                 "suggestions": [],
             }
 
@@ -87,9 +88,12 @@ class BotService:
         """
         if len(queries) > 10:  # Bulk limit
             return {
-                "success": False, "message": (
+                "success": False,
+                "message": (
                     "تعداد قطعات بیش از حد مجاز است (حداکثر ۱۰ قطعه). "
-                    "لطفاً لیست را کوتاه‌تر کنید."), }
+                    "لطفاً لیست را کوتاه‌تر کنید."
+                ),
+            }
 
         results_summary = []
         found_count = 0
@@ -111,14 +115,14 @@ class BotService:
                         "vehicle_model": part_data["vehicle_model"],
                         "best_price": part_data["best_price"],
                         "currency": (
-                            part_data["prices"][0]["currency"]
-                            if part_data["prices"]
-                            else None
+                            part_data["prices"][0]["currency"] if part_data["prices"] else None
                         ),
-                    })
+                    }
+                )
             else:
-                results_summary.append({"query": query, "found": False,
-                                       "message": part_result["message"]})
+                results_summary.append(
+                    {"query": query, "found": False, "message": part_result["message"]}
+                )
 
         # Create summary message
         if found_count == 0:
@@ -166,9 +170,8 @@ class BotService:
         return result
 
     def create_order_from_search_results(
-            self,
-            telegram_user_id: str,
-            search_results: List[Dict]) -> Dict:
+        self, telegram_user_id: str, search_results: List[Dict]
+    ) -> Dict:
         """
         Create order from confirmed search results.
 
@@ -212,7 +215,8 @@ class BotService:
 
         # Create order
         order_result = self.order_service.create_order(
-            lead_id=lead_result["lead"].id, order_items=order_items)
+            lead_id=lead_result["lead"].id, order_items=order_items
+        )
 
         return order_result
 
@@ -275,7 +279,7 @@ class BotService:
                     "متأسفانه قطعه مورد نظر یافت نشد. "
                     "لطفاً نام دقیق‌تر قطعه یا مدل خودرو را وارد کنید."
                 ),
-                "suggestions": ai_result.get("suggestions", [])
+                "suggestions": ai_result.get("suggestions", []),
             }
 
         best_part = ai_result["parts"][0]
@@ -297,8 +301,8 @@ class BotService:
         confirmation_message += f"دسته بندی: {best_part['category']}\n"
 
         if best_part.get("best_price"):
-            price = best_part['best_price']
-            currency = best_part['prices'][0]['currency']
+            price = best_part["best_price"]
+            currency = best_part["prices"][0]["currency"]
             confirmation_message += f"💰 قیمت: {price:,} {currency}\n"
 
         # Add AI insights

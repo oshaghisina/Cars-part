@@ -60,8 +60,7 @@ class AIContextBuilder:
             optimized_prompt = self.enforce_token_budget(prompt, self.token_budget)
 
             token_count = self._count_tokens(optimized_prompt)
-            logger.debug(
-                f"Built prompt for {task_type.value} with {token_count} tokens")
+            logger.debug(f"Built prompt for {task_type.value} with {token_count} tokens")
             return optimized_prompt
 
         except Exception as e:
@@ -206,9 +205,8 @@ class AIContextBuilder:
 
         # Extract car-related entities
         car_brands = re.findall(
-            r"\b(Chery|JAC|Brilliance|BYD|Geely|Great Wall|MG)\b",
-            text,
-            re.IGNORECASE)
+            r"\b(Chery|JAC|Brilliance|BYD|Geely|Great Wall|MG)\b", text, re.IGNORECASE
+        )
         entities.extend(car_brands)
 
         # Extract Persian car brands

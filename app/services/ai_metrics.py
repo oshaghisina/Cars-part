@@ -120,8 +120,9 @@ class AIMetricsCollector:
         # Update cost tracking
         if cost is not None:
             provider_cost_key = f"{provider}_cost"
-            metrics.cost_tracking[provider_cost_key] = metrics.cost_tracking.get(
-                provider_cost_key, 0.0) + cost
+            metrics.cost_tracking[provider_cost_key] = (
+                metrics.cost_tracking.get(provider_cost_key, 0.0) + cost
+            )
 
         metrics.last_updated = datetime.utcnow()
 
@@ -141,8 +142,9 @@ class AIMetricsCollector:
                 MetricType.COUNTER,
             )
 
-    def record_provider_health(self, provider: str, status: str,
-                               response_time_ms: Optional[float] = None):
+    def record_provider_health(
+        self, provider: str, status: str, response_time_ms: Optional[float] = None
+    ):
         """Record provider health metrics."""
         self._add_metric_point(
             "ai_provider_health",
@@ -179,8 +181,9 @@ class AIMetricsCollector:
             MetricType.GAUGE,
         )
 
-    def _add_metric_point(self, name: str, value: float,
-                          tags: Dict[str, str], metric_type: MetricType):
+    def _add_metric_point(
+        self, name: str, value: float, tags: Dict[str, str], metric_type: MetricType
+    ):
         """Add a metric point."""
         metric_point = MetricPoint(
             name=name, value=value, timestamp=datetime.utcnow(), tags=tags, metric_type=metric_type
@@ -220,17 +223,11 @@ class AIMetricsCollector:
 
         # Aggregate by provider and task type
         provider_metrics = defaultdict(
-            lambda: {
-                "requests": 0,
-                "successes": 0,
-                "failures": 0,
-                "total_cost": 0.0})
+            lambda: {"requests": 0, "successes": 0, "failures": 0, "total_cost": 0.0}
+        )
         task_type_metrics = defaultdict(
-            lambda: {
-                "requests": 0,
-                "successes": 0,
-                "failures": 0,
-                "avg_duration": 0.0})
+            lambda: {"requests": 0, "successes": 0, "failures": 0, "avg_duration": 0.0}
+        )
 
         for key, metrics in self.metrics.items():
             provider, task_type = key.split(":", 1)
@@ -252,14 +249,17 @@ class AIMetricsCollector:
 
         # Calculate success rates and average durations
         for provider, data in provider_metrics.items():
-            data["success_rate"] = data["successes"] / \
-                data["requests"] if data["requests"] > 0 else 0.0
+            data["success_rate"] = (
+                data["successes"] / data["requests"] if data["requests"] > 0 else 0.0
+            )
 
         for task_type, data in task_type_metrics.items():
-            data["success_rate"] = data["successes"] / \
-                data["requests"] if data["requests"] > 0 else 0.0
-            data["avg_duration"] = data["avg_duration"] / \
-                data["requests"] if data["requests"] > 0 else 0.0
+            data["success_rate"] = (
+                data["successes"] / data["requests"] if data["requests"] > 0 else 0.0
+            )
+            data["avg_duration"] = (
+                data["avg_duration"] / data["requests"] if data["requests"] > 0 else 0.0
+            )
 
         summary["providers"] = dict(provider_metrics)
         summary["task_types"] = dict(task_type_metrics)
@@ -269,8 +269,8 @@ class AIMetricsCollector:
         summary["cost_summary"] = {
             "total_cost": total_cost,
             "by_provider": {
-                provider: data["total_cost"] for provider,
-                data in provider_metrics.items()},
+                provider: data["total_cost"] for provider, data in provider_metrics.items()
+            },
         }
 
         # Performance summary
@@ -302,8 +302,9 @@ class AIMetricsCollector:
                     "request_count": metrics.request_count,
                     "success_count": metrics.success_count,
                     "failure_count": metrics.failure_count,
-                    "success_rate": metrics.success_count /
-                    metrics.request_count if metrics.request_count > 0 else 0.0,
+                    "success_rate": metrics.success_count / metrics.request_count
+                    if metrics.request_count > 0
+                    else 0.0,
                     "avg_duration_ms": metrics.avg_duration_ms,
                     "min_duration_ms": metrics.min_duration_ms,
                     "max_duration_ms": metrics.max_duration_ms,
@@ -326,8 +327,9 @@ class AIMetricsCollector:
                     "request_count": metrics.request_count,
                     "success_count": metrics.success_count,
                     "failure_count": metrics.failure_count,
-                    "success_rate": metrics.success_count /
-                    metrics.request_count if metrics.request_count > 0 else 0.0,
+                    "success_rate": metrics.success_count / metrics.request_count
+                    if metrics.request_count > 0
+                    else 0.0,
                     "avg_duration_ms": metrics.avg_duration_ms,
                     "min_duration_ms": metrics.min_duration_ms,
                     "max_duration_ms": metrics.max_duration_ms,
@@ -353,9 +355,11 @@ class AIMetricsCollector:
         # Check overall success rate
         if summary["overall_success_rate"] < 0.95:
             health_status["issues"].append(
-                f"Low overall success rate: {summary['overall_success_rate']:.2%}")
+                f"Low overall success rate: {summary['overall_success_rate']:.2%}"
+            )
             health_status["recommendations"].append(
-                "Investigate provider failures and error patterns")
+                "Investigate provider failures and error patterns"
+            )
 
         # Check provider health
         for provider, data in summary["providers"].items():
@@ -376,9 +380,11 @@ class AIMetricsCollector:
             perf = summary["performance_summary"]
             if "avg_duration_ms" in perf and perf["avg_duration_ms"] > 5000:  # 5 seconds
                 health_status["issues"].append(
-                    f"Slow average response time: {perf['avg_duration_ms']:.0f}ms")
+                    f"Slow average response time: {perf['avg_duration_ms']:.0f}ms"
+                )
                 health_status["recommendations"].append(
-                    "Optimize provider configurations or consider fallbacks")
+                    "Optimize provider configurations or consider fallbacks"
+                )
 
         # Check costs
         if "cost_summary" in summary:
@@ -389,8 +395,9 @@ class AIMetricsCollector:
 
         # Determine overall health
         if health_status["issues"]:
-            health_status["overall_health"] = "degraded" if len(
-                health_status["issues"]) < 3 else "unhealthy"
+            health_status["overall_health"] = (
+                "degraded" if len(health_status["issues"]) < 3 else "unhealthy"
+            )
 
         return health_status
 
@@ -416,34 +423,36 @@ class AIMetricsCollector:
             # Request count
             lines.append(
                 f'ai_requests_total{{provider="{provider}", task_type="{task_type}"}} '
-                f'{metrics.request_count}')
+                f"{metrics.request_count}"
+            )
 
             # Success count
             lines.append(
                 f'ai_successes_total{{provider="{provider}", task_type="{task_type}"}} '
-                f'{metrics.success_count}'
+                f"{metrics.success_count}"
             )
 
             # Failure count
             lines.append(
                 f'ai_failures_total{{provider="{provider}", task_type="{task_type}"}} '
-                f'{metrics.failure_count}')
+                f"{metrics.failure_count}"
+            )
 
             # Duration metrics
             lines.append(
                 f'ai_duration_seconds{{provider="{provider}", '
                 f'task_type="{task_type}", quantile="0.5"}} '
-                f'{metrics.p50_duration_ms / 1000}'
+                f"{metrics.p50_duration_ms / 1000}"
             )
             lines.append(
                 f'ai_duration_seconds{{provider="{provider}", '
                 f'task_type="{task_type}", quantile="0.95"}} '
-                f'{metrics.p95_duration_ms / 1000}'
+                f"{metrics.p95_duration_ms / 1000}"
             )
             lines.append(
                 f'ai_duration_seconds{{provider="{provider}", '
                 f'task_type="{task_type}", quantile="0.99"}} '
-                f'{metrics.p99_duration_ms / 1000}'
+                f"{metrics.p99_duration_ms / 1000}"
             )
 
             # Cost metrics
@@ -451,7 +460,7 @@ class AIMetricsCollector:
                 lines.append(
                     f'ai_cost_total{{provider="{provider}", '
                     f'task_type="{task_type}", cost_type="{cost_key}"}} '
-                    f'{cost}'
+                    f"{cost}"
                 )
 
         return "\n".join(lines)

@@ -108,7 +108,8 @@ class AIOrchestratorE3Extensions:
                 )
 
                 logger.info(
-                    f"Hybrid search completed successfully. Found {len(search_results)} results.")
+                    f"Hybrid search completed successfully. Found {len(search_results)} results."
+                )
                 return search_results
 
             except Exception as e:
@@ -216,7 +217,8 @@ class AIOrchestratorE3Extensions:
                 rec_count = len(rec_results)
                 logger.info(
                     f"Smart recommendations completed successfully. "
-                    f"Generated {rec_count} recommendations.")
+                    f"Generated {rec_count} recommendations."
+                )
                 return rec_results
 
             except Exception as e:
@@ -244,10 +246,7 @@ class AIOrchestratorE3Extensions:
             return {"success": False, "error": "AI Gateway disabled", "query": query}
 
         with TraceContext(
-            self.orchestrator.tracer,
-            "natural_language_query",
-            user_id=user_id,
-            query=query[:50]
+            self.orchestrator.tracer, "natural_language_query", user_id=user_id, query=query[:50]
         ):
             start_time = time.time()
 

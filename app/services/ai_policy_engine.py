@@ -71,7 +71,8 @@ class AIPolicyEngine:
                 capabilities = provider.get_capabilities()
                 logger.debug(
                     f"Provider '{name}' not eligible for '{task_type.value}' "
-                    f"(available: {available}, capabilities: {capabilities})")
+                    f"(available: {available}, capabilities: {capabilities})"
+                )
 
         if not eligible_providers:
             logger.warning(f"No eligible providers found for task type '{task_type.value}'.")
@@ -86,21 +87,23 @@ class AIPolicyEngine:
             else:
                 logger.warning(
                     f"Preferred provider '{provider_preference}' not eligible "
-                    f"for task '{task_type.value}'.")
+                    f"for task '{task_type.value}'."
+                )
 
         # Apply policies to rank providers
-        ranked_providers = self._apply_policies(
-            eligible_providers, task_type, context, user_id)
+        ranked_providers = self._apply_policies(eligible_providers, task_type, context, user_id)
 
         if ranked_providers:
             selected = ranked_providers[0]
             logger.info(
                 f"Selected provider '{selected.name}' for task '{task_type.value}' "
-                f"based on policies.")
+                f"based on policies."
+            )
             return selected
         else:
             logger.warning(
-                f"No provider selected after applying policies for task '{task_type.value}'.")
+                f"No provider selected after applying policies for task '{task_type.value}'."
+            )
             return None
 
     def _apply_policies(
@@ -157,9 +160,8 @@ class AIPolicyEngine:
         return providers
 
     def _apply_capability_policy(
-            self,
-            providers: List[AIProvider],
-            task_type: TaskType) -> List[AIProvider]:
+        self, providers: List[AIProvider], task_type: TaskType
+    ) -> List[AIProvider]:
         """Filter providers by explicit task capability.
 
         Already done in select_provider, but can refine.
@@ -179,9 +181,10 @@ class AIPolicyEngine:
         # Separate healthy from degraded/unhealthy
         healthy_providers = [p for p in providers if p.get_status() == ProviderStatus.HEALTHY]
         degraded_unhealthy_providers = [
-            p for p in providers if p.get_status() in [
-                ProviderStatus.DEGRADED,
-                ProviderStatus.UNHEALTHY]]
+            p
+            for p in providers
+            if p.get_status() in [ProviderStatus.DEGRADED, ProviderStatus.UNHEALTHY]
+        ]
 
         # Prioritize healthy providers
         if healthy_providers:

@@ -116,7 +116,8 @@ class AIOrchestrator:
             try:
                 # Optimize query for better performance
                 query_optimization = self.performance_monitor.optimize_query(
-                    query, TaskType.SEMANTIC_SEARCH)
+                    query, TaskType.SEMANTIC_SEARCH
+                )
                 optimized_query = query_optimization.get("optimized_query", query)
 
                 if query_optimization.get("optimizations_applied"):
@@ -149,7 +150,8 @@ class AIOrchestrator:
                 # Normalize response
                 if response and response.content is not None:
                     response = self.normalizer.normalize_response(
-                        response, TaskType.SEMANTIC_SEARCH)
+                        response, TaskType.SEMANTIC_SEARCH
+                    )
 
                     # Record performance metrics
                     duration_ms = (time.time() - start_time) * 1000
@@ -179,7 +181,8 @@ class AIOrchestrator:
 
                     result_count = len(response.content)
                     logger.info(
-                        f"Semantic search completed successfully. Found {result_count} results.")
+                        f"Semantic search completed successfully. Found {result_count} results."
+                    )
                     return response.content
                 else:
                     # Record failure metrics
@@ -200,8 +203,9 @@ class AIOrchestrator:
                     )
 
                     error_msg = (
-                        response.metadata.get('error', 'Unknown error')
-                        if response else 'No response'
+                        response.metadata.get("error", "Unknown error")
+                        if response
+                        else "No response"
                     )
                     logger.warning(f"Semantic search failed: {error_msg}")
                     return []
@@ -271,7 +275,8 @@ class AIOrchestrator:
             }
 
             response = await self.client.execute_task(
-                TaskType.INTELLIGENT_SEARCH, context, limit=limit)
+                TaskType.INTELLIGENT_SEARCH, context, limit=limit
+            )
 
             if response.content is not None:
                 result = response.content
@@ -279,7 +284,8 @@ class AIOrchestrator:
                 return result
             else:
                 logger.warning(
-                    f"Intelligent search failed: {response.metadata.get('error', 'Unknown error')}")
+                    f"Intelligent search failed: {response.metadata.get('error', 'Unknown error')}"
+                )
                 return {
                     "success": False,
                     "parts": [],
@@ -334,7 +340,8 @@ class AIOrchestrator:
             }
 
             response = await self.client.execute_task(
-                TaskType.PART_RECOMMENDATIONS, context, limit=limit)
+                TaskType.PART_RECOMMENDATIONS, context, limit=limit
+            )
 
             if response.content is not None:
                 rec_count = len(response.content)
@@ -346,18 +353,17 @@ class AIOrchestrator:
             else:
                 logger.warning(
                     f"Part recommendations failed: "
-                    f"{response.metadata.get('error', 'Unknown error')}")
+                    f"{response.metadata.get('error', 'Unknown error')}"
+                )
                 return []
 
         except Exception as e:
             logger.error(f"Error in part recommendations: {e}")
             return []
 
-    async def analyze_query(self,
-                            query: str,
-                            user_id: Optional[str] = None,
-                            **kwargs) -> Dict[str,
-                                              Any]:
+    async def analyze_query(
+        self, query: str, user_id: Optional[str] = None, **kwargs
+    ) -> Dict[str, Any]:
         """
         Analyze user query to extract intent and entities.
 
@@ -387,7 +393,8 @@ class AIOrchestrator:
                 return response.content
             else:
                 logger.warning(
-                    f"Query analysis failed: {response.metadata.get('error', 'Unknown error')}")
+                    f"Query analysis failed: {response.metadata.get('error', 'Unknown error')}"
+                )
                 return {"intent": "search", "entities": [], "language": "unknown"}
 
         except Exception as e:
@@ -442,7 +449,8 @@ class AIOrchestrator:
             else:
                 logger.warning(
                     f"Suggestion generation failed: "
-                    f"{response.metadata.get('error', 'Unknown error')}")
+                    f"{response.metadata.get('error', 'Unknown error')}"
+                )
                 return []
 
         except Exception as e:
@@ -473,9 +481,8 @@ class AIOrchestrator:
                 "statistics": self.tracer.get_trace_statistics(),
             },
             "metrics": {
-                "collection_period_hours": (
-                    time.time() - self.metrics.start_time.timestamp()
-                ) / 3600,
+                "collection_period_hours": (time.time() - self.metrics.start_time.timestamp())
+                / 3600,
                 "total_requests": sum(m.request_count for m in self.metrics.metrics.values()),
                 "health_status": self.metrics.get_health_status(),
             },
@@ -516,7 +523,8 @@ class AIOrchestrator:
             # Reset performance metrics if they're too old
             if hasattr(self.performance_monitor.global_metrics, "start_time"):
                 uptime_hours = (
-                    time.time() - self.performance_monitor.global_metrics.start_time) / 3600
+                    time.time() - self.performance_monitor.global_metrics.start_time
+                ) / 3600
                 if uptime_hours > 24:  # Reset metrics daily
                     self.performance_monitor.reset_metrics()
                     optimizations.append("Reset performance metrics")

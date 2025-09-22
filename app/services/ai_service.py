@@ -49,7 +49,8 @@ class AIService:
 
         try:
             response = self.client.embeddings.create(
-                model=settings.openai_embedding_model, input=texts)
+                model=settings.openai_embedding_model, input=texts
+            )
             return [embedding.embedding for embedding in response.data]
         except Exception as e:
             logger.error(f"Error creating embeddings: {e}")
@@ -285,17 +286,20 @@ Respond with just 3 queries, one per line, no explanations."""
         return expanded_queries[:4]  # Limit to 4 total queries
 
     def _generate_suggestions(
-            self, query: str, analysis: Dict[str, Any], results: List[Dict[str, Any]]) -> List[str]:
+        self, query: str, analysis: Dict[str, Any], results: List[Dict[str, Any]]
+    ) -> List[str]:
         """Generate smart suggestions based on search results."""
         if not self.is_available() or not results:
             return []
 
         try:
             # Extract categories from results
-            categories = list(set([result.get("category", "")
-                              for result in results if result.get("category")]))
-            brands = list(set([result.get("brand_oem", "")
-                          for result in results if result.get("brand_oem")]))
+            categories = list(
+                set([result.get("category", "") for result in results if result.get("category")])
+            )
+            brands = list(
+                set([result.get("brand_oem", "") for result in results if result.get("brand_oem")])
+            )
 
             # Based on this car parts search query and results, generate 3 helpful suggestions:
             intro = (
@@ -343,14 +347,16 @@ Respond with just 3 suggestions, one per line, in the same language as the query
             part_description = (
                 f"{part.part_name} {part.brand_oem} "
                 f"{part.vehicle_make} {part.vehicle_model} "
-                f"{part.category}")
+                f"{part.category}"
+            )
 
             # Find similar parts using semantic search
             similar_parts = self.semantic_search(part_description, limit * 2)
 
             # Filter out the original part and get top recommendations
-            recommendations = [
-                result for result in similar_parts if result["id"] != part_id][:limit]
+            recommendations = [result for result in similar_parts if result["id"] != part_id][
+                :limit
+            ]
 
             return recommendations
 
@@ -416,7 +422,8 @@ Respond with just 3 suggestions, one per line, in the same language as the query
         return bool(persian_pattern.search(text))
 
     def bulk_intelligent_search(
-            self, queries: List[str], limit_per_query: int = 5) -> List[Dict[str, Any]]:
+        self, queries: List[str], limit_per_query: int = 5
+    ) -> List[Dict[str, Any]]:
         """Perform intelligent search for multiple queries."""
         results = []
 

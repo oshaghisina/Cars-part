@@ -106,7 +106,8 @@ class ResourcePool:
 
             self.total_destroyed += 1
             logger.debug(
-                f"Destroyed {self.resource_type} resource: {resource.get('id', 'unknown')}")
+                f"Destroyed {self.resource_type} resource: {resource.get('id', 'unknown')}"
+            )
 
         except Exception as e:
             logger.error(f"Failed to destroy {self.resource_type} resource: {e}")
@@ -144,7 +145,8 @@ class ResourcePool:
                     self.total_requests += 1
 
                     logger.debug(
-                        f"Acquired {self.resource_type} resource: {resource.get('id', 'unknown')}")
+                        f"Acquired {self.resource_type} resource: {resource.get('id', 'unknown')}"
+                    )
                     return resource
 
                 # Try to create a new resource if under max size
@@ -157,9 +159,10 @@ class ResourcePool:
                         self.usage_count[resource] += 1
                         self.total_requests += 1
 
-                        resource_id = resource.get('id', 'unknown')
+                        resource_id = resource.get("id", "unknown")
                         logger.debug(
-                            f"Created and acquired {self.resource_type} resource: {resource_id}")
+                            f"Created and acquired {self.resource_type} resource: {resource_id}"
+                        )
                         return resource
                     except Exception as e:
                         logger.error(f"Failed to create new resource: {e}")
@@ -185,16 +188,19 @@ class ResourcePool:
 
                 if mark_unhealthy:
                     self.unhealthy.add(resource)
-                    resource_id = resource.get('id', 'unknown')
+                    resource_id = resource.get("id", "unknown")
                     logger.warning(
-                        f"Marked {self.resource_type} resource as unhealthy: {resource_id}")
+                        f"Marked {self.resource_type} resource as unhealthy: {resource_id}"
+                    )
                 else:
                     self.available.add(resource)
                     logger.debug(
-                        f"Released {self.resource_type} resource: {resource.get('id', 'unknown')}")
+                        f"Released {self.resource_type} resource: {resource.get('id', 'unknown')}"
+                    )
             else:
                 logger.warning(
-                    f"Attempted to release resource not in use: {resource.get('id', 'unknown')}")
+                    f"Attempted to release resource not in use: {resource.get('id', 'unknown')}"
+                )
 
     async def _health_check_loop(self):
         """Background task for health checking resources."""
@@ -215,8 +221,7 @@ class ResourcePool:
                         self.unhealthy.add(resource)
                         self.available.discard(resource)
                         self.in_use.discard(resource)
-                    logger.warning(
-                        f"Resource failed health check: {resource.get('id', 'unknown')}")
+                    logger.warning(f"Resource failed health check: {resource.get('id', 'unknown')}")
                 except Exception as e:
                     logger.error(f"Health check failed for resource: {e}")
                     self.unhealthy.add(resource)
@@ -254,8 +259,8 @@ class ResourcePool:
                 if (
                     len(self.pool) > self.min_size
                     and resource in self.last_used
-                    and current_time - self.last_used[resource] >
-                    timedelta(seconds=self.idle_timeout)
+                    and current_time - self.last_used[resource]
+                    > timedelta(seconds=self.idle_timeout)
                 ):
                     await self._destroy_resource(resource)
 
@@ -350,10 +355,8 @@ class ConnectionManager:
         return await self.pools[service_name].acquire(timeout)
 
     async def release_connection(
-            self,
-            service_name: str,
-            connection: Any,
-            mark_unhealthy: bool = False):
+        self, service_name: str, connection: Any, mark_unhealthy: bool = False
+    ):
         """Release a connection back to the service pool."""
         if service_name not in self.pools:
             logger.warning(f"Attempted to release connection for unknown service: {service_name}")
@@ -411,8 +414,9 @@ class ResourceLimiter:
             self._cleanup_task = asyncio.create_task(self._cleanup_loop())
             self._initialized = True
 
-    async def check_limits(self, request_tokens: int = 0,
-                           estimated_cost: float = 0.0) -> Tuple[bool, Optional[str]]:
+    async def check_limits(
+        self, request_tokens: int = 0, estimated_cost: float = 0.0
+    ) -> Tuple[bool, Optional[str]]:
         """
         Check if a request can be processed within resource limits.
 
@@ -497,8 +501,9 @@ class ResourceLimiter:
             self.request_times = [t for t in self.request_times if t > hour_ago]
 
             # Clean up old token usage
-            self.token_usage_times = [(t, tokens)
-                                      for t, tokens in self.token_usage_times if t > hour_ago]
+            self.token_usage_times = [
+                (t, tokens) for t, tokens in self.token_usage_times if t > hour_ago
+            ]
 
             # Clean up old cost usage
             self.cost_usage_times = [(t, cost) for t, cost in self.cost_usage_times if t > hour_ago]
@@ -523,21 +528,14 @@ class ResourceLimiter:
             },
             "utilization": {
                 "concurrent_requests": (
-                    self.current_usage["concurrent_requests"] /
-                    self.limits["max_concurrent_requests"]) *
-                100,
-                "requests_per_minute": (
-                    recent_requests /
-                    self.limits["max_requests_per_minute"]) *
-                100,
-                "tokens_per_minute": (
-                    recent_tokens /
-                    self.limits["max_tokens_per_minute"]) *
-                100,
-                "cost_per_hour": (
-                    recent_cost /
-                    self.limits["max_cost_per_hour"]) *
-                100,
+                    self.current_usage["concurrent_requests"]
+                    / self.limits["max_concurrent_requests"]
+                )
+                * 100,
+                "requests_per_minute": (recent_requests / self.limits["max_requests_per_minute"])
+                * 100,
+                "tokens_per_minute": (recent_tokens / self.limits["max_tokens_per_minute"]) * 100,
+                "cost_per_hour": (recent_cost / self.limits["max_cost_per_hour"]) * 100,
             },
         }
 
