@@ -48,8 +48,8 @@ def validate_image_file(file: UploadFile) -> None:
     if file_ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File type {file_ext} not allowed. Allowed types: {
-                ', '.join(ALLOWED_EXTENSIONS)}")
+            detail=f"File type {file_ext} not allowed. Allowed types: "
+                   f"{', '.join(ALLOWED_EXTENSIONS)}")
 
 
 def generate_filename(original_filename: str, part_id: int, image_type: str = "main") -> str:
