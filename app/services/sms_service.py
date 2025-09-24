@@ -326,17 +326,14 @@ class SMSService:
                         processed_count += 1
 
                         logger.info(
-                            f"Stock alert sent to {
-                                alert.phone_number} for part {part_id}")
+                            f"Stock alert sent to {alert.phone_number} for part {part_id}")
                     else:
                         logger.error(
-                            f"Failed to send stock alert: {
-                                response.message}")
+                            f"Failed to send stock alert: {response.message}")
 
                 except Exception as e:
                     logger.error(
-                        f"Error processing stock alert {
-                            alert.id}: {e}")
+                        f"Error processing stock alert {alert.id}: {e}")
 
             self.db.commit()
             return processed_count
