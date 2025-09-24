@@ -60,6 +60,7 @@ class Part(Base):
         "PartSpecification", back_populates="part", cascade="all, delete-orphan"
     )
     images = relationship("PartImage", back_populates="part", cascade="all, delete-orphan")
+    # stock_alerts = relationship("StockAlert", back_populates="part", cascade="all, delete-orphan")
 
 
 class Price(Base):
@@ -198,6 +199,12 @@ class User(Base):
     language = Column(String(10), default="en", nullable=False)
     preferences = Column(JSON, nullable=True)  # User preferences as JSON
 
+    # SMS Preferences
+    sms_notifications = Column(Boolean, default=True, nullable=False)
+    sms_marketing = Column(Boolean, default=False, nullable=False)
+    sms_delivery = Column(Boolean, default=True, nullable=False)
+    phone_verified = Column(Boolean, default=False, nullable=False)
+
     def set_password(self, password: str) -> None:
         """Set password with salt and hash."""
         self.salt = secrets.token_hex(16)
@@ -282,6 +289,9 @@ class User(Base):
         """Reset login attempts and unlock account."""
         self.login_attempts = 0
         self.locked_until = None
+
+    # Relationships
+    # stock_alerts = relationship("StockAlert", back_populates="user", cascade="all, delete-orphan")
 
 
 class WizardSession(Base):

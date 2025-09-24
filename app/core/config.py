@@ -90,6 +90,16 @@ class Settings(BaseSettings):
     # Redis settings (for caching)
     redis_url: str = "redis://localhost:6379/0"
 
+    # SMS Service Configuration (Melipayamak)
+    sms_enabled: bool = True
+    melipayamak_username: str = "CHANGEME"
+    melipayamak_password: str = "CHANGEME"
+    sms_sender_number: str = "5000..."
+    sms_default_language: str = "fa"  # fa for Persian, en for English
+    sms_rate_limit_per_hour: int = 100
+    sms_max_retries: int = 3
+    sms_retry_delay: int = 60  # seconds
+
     @property
     def admin_telegram_ids_list(self) -> List[int]:
         """Parse admin telegram IDs from comma-separated string."""

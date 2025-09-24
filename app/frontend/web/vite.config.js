@@ -24,5 +24,6 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true
-  }
+  },
+  assetsInclude: ['**/*.woff', '**/*.woff2', '**/*.ttf', '**/*.otf']
 })

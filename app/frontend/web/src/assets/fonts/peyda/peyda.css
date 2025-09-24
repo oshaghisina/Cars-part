@@ -3,8 +3,8 @@
 /* Variable Font (Recommended) */
 @font-face {
     font-family: 'Peyda';
-    src: url('./PeydaWebVF.woff2') format('woff2-variations'),
-         url('./PeydaWebVF.woff') format('woff-variations');
+    src: url('/src/assets/fonts/peyda/PeydaWebVF.woff2') format('woff2-variations'),
+         url('/src/assets/fonts/peyda/PeydaWebVF.woff') format('woff-variations');
     font-weight: 100 950;
     font-style: normal;
     font-display: swap;
@@ -13,8 +13,8 @@
 /* Static Fonts (Fallback) */
 @font-face {
     font-family: 'Peyda';
-    src: url('./PeydaWeb-Thin.woff2') format('woff2'),
-         url('./PeydaWeb-Thin.woff') format('woff');
+    src: url('/src/assets/fonts/peyda/PeydaWeb-Thin.woff2') format('woff2'),
+         url('/src/assets/fonts/peyda/PeydaWeb-Thin.woff') format('woff');
     font-weight: 100;
     font-style: normal;
     font-display: swap;

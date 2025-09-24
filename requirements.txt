@@ -62,3 +62,6 @@ mypy==1.6.1
 bandit==1.7.5
 Pillow==11.3.0
 PyJWT==2.8.0
+# SMS Service Dependencies
+melipayamak==1.0.0
+zeep>=4.3.1

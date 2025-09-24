@@ -17,6 +17,7 @@ from app.api.routers import (
     orders,
     pdp,
     search,
+    sms,
     users,
     vehicles_enhanced,
 )
@@ -70,6 +71,7 @@ app.include_router(categories_module.router, prefix="/api/v1/categories", tags=[
 app.include_router(vehicles_enhanced.router, prefix="/api/v1", tags=["vehicles-enhanced"])
 app.include_router(pdp.router, prefix="/api/v1", tags=["pdp"])
 app.include_router(images.router, prefix="/api/v1", tags=["images"])
+app.include_router(sms.router, prefix="/api/v1/sms", tags=["sms"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 

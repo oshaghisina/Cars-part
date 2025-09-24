@@ -1,9 +1,5 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-50" dir="rtl">
-    <!-- Debug: App is rendering -->
-    <div class="bg-green-100 text-green-800 p-2 text-center text-sm">
-      ✅ Vue App is rendering successfully!
-    </div>
     <!-- Navigation Header -->
     <nav class="bg-white shadow-sm border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,6 +93,6 @@ export default {
     return {
       showContactForm: false
     }
-  }
+  },
 }
 </script>
