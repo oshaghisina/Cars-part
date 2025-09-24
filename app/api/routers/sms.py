@@ -61,8 +61,7 @@ async def send_sms(
         logger.error(f"SMS sending error: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"SMS sending failed: {
-                str(e)}")
+            detail=f"SMS sending failed: {str(e)}")
 
 
 @router.post("/send-bulk", response_model=BulkSMSResponse)
@@ -102,8 +101,7 @@ async def send_bulk_sms(
         logger.error(f"Bulk SMS sending error: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Bulk SMS sending failed: {
-                str(e)}")
+            detail=f"Bulk SMS sending failed: {str(e)}")
 
 
 @router.post("/send-template", response_model=SMSResponse)
@@ -136,8 +134,7 @@ async def send_template_sms(
         logger.error(f"Template SMS sending error: {e}")
         raise HTTPException(
             status_code=500,
-            detail=f"Template SMS sending failed: {
-                str(e)}")
+            detail=f"Template SMS sending failed: {str(e)}")
 
 
 @router.get("/templates", response_model=List[SMSTemplateResponse])
