@@ -3,10 +3,10 @@ Enhanced Vehicle API Router
 Provides comprehensive vehicle data for fitment checking, VIN decoding, and vehicle selection.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func, desc
+from sqlalchemy import and_, or_, func
 
 from app.db.database import get_db
 from app.db.models import VehicleBrand, VehicleModel, VehicleTrim
@@ -18,6 +18,7 @@ from app.schemas.vehicle_schemas import (
 
 router = APIRouter(prefix="/vehicles-enhanced", tags=["Enhanced Vehicles"])
 
+
 @router.get("/brands", response_model=List[VehicleBrandResponse])
 async def get_vehicle_brands(
     country: Optional[str] = Query(None, description="Filter by country"),
@@ -26,17 +27,17 @@ async def get_vehicle_brands(
     db: Session = Depends(get_db)
 ):
     """Get all vehicle brands with filtering options."""
-    
+
     query = db.query(VehicleBrand).options(
         joinedload(VehicleBrand.models)
     )
-    
+
     if active_only:
-        query = query.filter(VehicleBrand.is_active == True)
-    
+        query = query.filter(VehicleBrand.is_active)
+
     if country:
         query = query.filter(VehicleBrand.country.ilike(f"%{country}%"))
-    
+
     if search:
         query = query.filter(
             or_(
@@ -45,9 +46,9 @@ async def get_vehicle_brands(
                 VehicleBrand.name_cn.ilike(f"%{search}%")
             )
         )
-    
+
     brands = query.order_by(VehicleBrand.sort_order, VehicleBrand.name).all()
-    
+
     result = []
     for brand in brands:
         brand_data = {
@@ -64,8 +65,9 @@ async def get_vehicle_brands(
             "created_at": brand.created_at
         }
         result.append(brand_data)
-    
+
     return result
+
 
 @router.get("/brands/{brand_id}/models", response_model=List[VehicleModelResponse])
 async def get_brand_models(
@@ -76,22 +78,22 @@ async def get_brand_models(
     db: Session = Depends(get_db)
 ):
     """Get all models for a specific brand."""
-    
+
     # Check if brand exists
     brand = db.query(VehicleBrand).filter(VehicleBrand.id == brand_id).first()
     if not brand:
         raise HTTPException(status_code=404, detail="Brand not found")
-    
+
     query = db.query(VehicleModel).filter(
         VehicleModel.brand_id == brand_id
     ).options(
         joinedload(VehicleModel.brand),
         joinedload(VehicleModel.trims)
     )
-    
+
     if active_only:
-        query = query.filter(VehicleModel.is_active == True)
-    
+        query = query.filter(VehicleModel.is_active)
+
     if search:
         query = query.filter(
             or_(
@@ -100,12 +102,12 @@ async def get_brand_models(
                 VehicleModel.name_cn.ilike(f"%{search}%")
             )
         )
-    
+
     if body_type:
         query = query.filter(VehicleModel.body_type.ilike(f"%{body_type}%"))
-    
+
     models = query.order_by(VehicleModel.sort_order, VehicleModel.name).all()
-    
+
     result = []
     for model in models:
         model_data = {
@@ -122,16 +124,20 @@ async def get_brand_models(
             "is_active": model.is_active,
             "trim_count": len(model.trims),
             "year_range": {
-                "from": min([t.year_from for t in model.trims if t.year_from]) if model.trims else None,
-                "to": max([t.year_to for t in model.trims if t.year_to]) if model.trims else None
+                "from": (min([t.year_from for t in model.trims if t.year_from])
+                         if model.trims else None),
+                "to": (max([t.year_to for t in model.trims if t.year_to])
+                       if model.trims else None)
             },
             "available_engines": list(set([t.engine_type for t in model.trims if t.engine_type])),
-            "available_transmissions": list(set([t.transmission for t in model.trims if t.transmission])),
+            "available_transmissions": list(set([t.transmission
+                                                 for t in model.trims if t.transmission])),
             "created_at": model.created_at
         }
         result.append(model_data)
-    
+
     return result
+
 
 @router.get("/models/{model_id}/trims", response_model=List[VehicleTrimResponse])
 async def get_model_trims(
@@ -144,21 +150,21 @@ async def get_model_trims(
     db: Session = Depends(get_db)
 ):
     """Get all trims for a specific model."""
-    
+
     # Check if model exists
     model = db.query(VehicleModel).filter(VehicleModel.id == model_id).first()
     if not model:
         raise HTTPException(status_code=404, detail="Model not found")
-    
+
     query = db.query(VehicleTrim).filter(
         VehicleTrim.model_id == model_id
     ).options(
         joinedload(VehicleTrim.model).joinedload(VehicleModel.brand)
     )
-    
+
     if active_only:
-        query = query.filter(VehicleTrim.is_active == True)
-    
+        query = query.filter(VehicleTrim.is_active)
+
     if year:
         query = query.filter(
             and_(
@@ -166,18 +172,18 @@ async def get_model_trims(
                 or_(VehicleTrim.year_to.is_(None), VehicleTrim.year_to >= year)
             )
         )
-    
+
     if engine_type:
         query = query.filter(VehicleTrim.engine_type.ilike(f"%{engine_type}%"))
-    
+
     if fuel_type:
         query = query.filter(VehicleTrim.fuel_type.ilike(f"%{fuel_type}%"))
-    
+
     if transmission:
         query = query.filter(VehicleTrim.transmission.ilike(f"%{transmission}%"))
-    
+
     trims = query.order_by(VehicleTrim.sort_order, VehicleTrim.name).all()
-    
+
     result = []
     for trim in trims:
         trim_data = {
@@ -201,8 +207,9 @@ async def get_model_trims(
             "created_at": trim.created_at
         }
         result.append(trim_data)
-    
+
     return result
+
 
 @router.post("/search", response_model=VehicleSearchResponse)
 async def search_vehicles(
@@ -210,12 +217,12 @@ async def search_vehicles(
     db: Session = Depends(get_db)
 ):
     """Advanced vehicle search with multiple criteria."""
-    
+
     # Start with base query
     query = db.query(VehicleTrim).options(
         joinedload(VehicleTrim.model).joinedload(VehicleModel.brand)
-    ).filter(VehicleTrim.is_active == True)
-    
+    ).filter(VehicleTrim.is_active)
+
     # Apply filters
     if search_request.make:
         query = query.filter(
@@ -229,7 +236,7 @@ async def search_vehicles(
                 )
             )
         )
-    
+
     if search_request.model:
         query = query.filter(
             VehicleTrim.model.has(
@@ -240,7 +247,7 @@ async def search_vehicles(
                 )
             )
         )
-    
+
     if search_request.year:
         query = query.filter(
             and_(
@@ -248,21 +255,21 @@ async def search_vehicles(
                 or_(VehicleTrim.year_to.is_(None), VehicleTrim.year_to >= search_request.year)
             )
         )
-    
+
     if search_request.engine_code:
         query = query.filter(VehicleTrim.engine_code.ilike(f"%{search_request.engine_code}%"))
-    
+
     if search_request.body_type:
         query = query.filter(
             VehicleTrim.model.has(VehicleModel.body_type.ilike(f"%{search_request.body_type}%"))
         )
-    
+
     if search_request.fuel_type:
         query = query.filter(VehicleTrim.fuel_type.ilike(f"%{search_request.fuel_type}%"))
-    
+
     # Execute query
     vehicles = query.limit(search_request.limit or 50).all()
-    
+
     # Format results
     results = []
     for vehicle in vehicles:
@@ -286,12 +293,13 @@ async def search_vehicles(
             "compatibility_score": 100  # Base score, can be enhanced with ML
         }
         results.append(result)
-    
+
     return {
         "results": results,
         "total_found": len(results),
         "search_criteria": search_request.dict()
     }
+
 
 @router.post("/decode-vin", response_model=VINDecodeResponse)
 async def decode_vin(
@@ -299,26 +307,26 @@ async def decode_vin(
     db: Session = Depends(get_db)
 ):
     """Decode VIN to extract vehicle information."""
-    
+
     vin = vin_request.vin.upper().strip()
-    
+
     # Basic VIN validation
     if len(vin) != 17:
         raise HTTPException(status_code=400, detail="VIN must be exactly 17 characters")
-    
+
     # VIN character validation
     invalid_chars = set(vin) & {'I', 'O', 'Q'}
     if invalid_chars:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail=f"VIN contains invalid characters: {', '.join(invalid_chars)}"
         )
-    
+
     # Extract basic information from VIN
     wmi = vin[:3]  # World Manufacturer Identifier
     vds = vin[3:9]  # Vehicle Descriptor Section
     vis = vin[9:]  # Vehicle Identifier Section
-    
+
     # Model year from 10th character
     year_codes = {
         'A': 2010, 'B': 2011, 'C': 2012, 'D': 2013, 'E': 2014, 'F': 2015,
@@ -328,9 +336,9 @@ async def decode_vin(
         '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005,
         '6': 2006, '7': 2007, '8': 2008, '9': 2009
     }
-    
+
     model_year = year_codes.get(vin[9])
-    
+
     # Chinese manufacturer mapping
     chinese_wmi = {
         'LFV': 'FAW-Volkswagen',
@@ -348,9 +356,9 @@ async def decode_vin(
         'LVG': 'Great Wall',
         'LYV': 'BYD'
     }
-    
+
     manufacturer = chinese_wmi.get(wmi, f"Unknown ({wmi})")
-    
+
     # Try to find matching vehicles in database
     matching_vehicles = []
     if model_year:
@@ -362,10 +370,10 @@ async def decode_vin(
                 or_(VehicleTrim.year_to.is_(None), VehicleTrim.year_to >= model_year)
             )
         ).limit(10).all()
-        
+
         for vehicle in vehicles:
             if (manufacturer.lower() in vehicle.model.brand.name.lower() or
-                wmi in vehicle.model.brand.name.upper()):
+                    wmi in vehicle.model.brand.name.upper()):
                 matching_vehicles.append({
                     "trim_id": vehicle.id,
                     "make": vehicle.model.brand.name,
@@ -375,7 +383,7 @@ async def decode_vin(
                     "engine_code": vehicle.engine_code,
                     "confidence": 0.8  # High confidence for exact matches
                 })
-    
+
     return {
         "vin": vin,
         "is_valid": True,
@@ -389,32 +397,33 @@ async def decode_vin(
         "decoded_at": func.now()
     }
 
+
 @router.post("/check-compatibility", response_model=VehicleCompatibilityResponse)
 async def check_vehicle_compatibility(
     compatibility_request: VehicleCompatibilityRequest,
     db: Session = Depends(get_db)
 ):
     """Check compatibility between vehicle and parts."""
-    
+
     from app.db.models import Part
-    
+
     # Get vehicle information
     vehicle = None
     if compatibility_request.trim_id:
         vehicle = db.query(VehicleTrim).options(
             joinedload(VehicleTrim.model).joinedload(VehicleModel.brand)
         ).filter(VehicleTrim.id == compatibility_request.trim_id).first()
-        
+
         if not vehicle:
             raise HTTPException(status_code=404, detail="Vehicle trim not found")
-    
+
     # Find compatible parts
     compatible_parts = []
-    
+
     if vehicle:
         # Query parts that match vehicle criteria
         parts_query = db.query(Part).filter(Part.status == "active")
-        
+
         # Exact matches
         exact_matches = parts_query.filter(
             and_(
@@ -430,7 +439,7 @@ async def check_vehicle_compatibility(
                 )
             )
         ).limit(20).all()
-        
+
         for part in exact_matches:
             compatible_parts.append({
                 "part_id": part.id,
@@ -440,7 +449,7 @@ async def check_vehicle_compatibility(
                 "compatibility_level": "exact",
                 "confidence_score": 95
             })
-        
+
         # Close matches (same make/model, different trim)
         if len(compatible_parts) < 10:
             close_matches = parts_query.filter(
@@ -450,7 +459,7 @@ async def check_vehicle_compatibility(
                     Part.id.notin_([p["part_id"] for p in compatible_parts])
                 )
             ).limit(10 - len(compatible_parts)).all()
-            
+
             for part in close_matches:
                 compatible_parts.append({
                     "part_id": part.id,
@@ -460,7 +469,7 @@ async def check_vehicle_compatibility(
                     "compatibility_level": "likely",
                     "confidence_score": 75
                 })
-    
+
     return {
         "vehicle": {
             "trim_id": vehicle.id if vehicle else None,
@@ -475,19 +484,20 @@ async def check_vehicle_compatibility(
         "checked_at": func.now()
     }
 
+
 @router.get("/stats")
 async def get_vehicle_stats(db: Session = Depends(get_db)):
     """Get vehicle database statistics."""
-    
+
     stats = {
         "total_brands": db.query(VehicleBrand).count(),
-        "active_brands": db.query(VehicleBrand).filter(VehicleBrand.is_active == True).count(),
+        "active_brands": db.query(VehicleBrand).filter(VehicleBrand.is_active).count(),
         "total_models": db.query(VehicleModel).count(),
-        "active_models": db.query(VehicleModel).filter(VehicleModel.is_active == True).count(),
+        "active_models": db.query(VehicleModel).filter(VehicleModel.is_active).count(),
         "total_trims": db.query(VehicleTrim).count(),
-        "active_trims": db.query(VehicleTrim).filter(VehicleTrim.is_active == True).count()
+        "active_trims": db.query(VehicleTrim).filter(VehicleTrim.is_active).count()
     }
-    
+
     # Top brands by model count
     top_brands = db.query(
         VehicleBrand.name,
@@ -495,12 +505,12 @@ async def get_vehicle_stats(db: Session = Depends(get_db)):
     ).join(VehicleModel).group_by(VehicleBrand.id).order_by(
         func.count(VehicleModel.id).desc()
     ).limit(5).all()
-    
+
     stats["top_brands"] = [
         {"brand": brand, "model_count": count}
         for brand, count in top_brands
     ]
-    
+
     # Year distribution
     year_distribution = db.query(
         VehicleTrim.year_from,
@@ -508,10 +518,10 @@ async def get_vehicle_stats(db: Session = Depends(get_db)):
     ).filter(
         VehicleTrim.year_from.isnot(None)
     ).group_by(VehicleTrim.year_from).order_by(VehicleTrim.year_from).all()
-    
+
     stats["year_distribution"] = [
         {"year": year, "trim_count": count}
         for year, count in year_distribution if year
     ]
-    
+
     return stats

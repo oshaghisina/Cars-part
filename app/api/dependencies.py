@@ -7,7 +7,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 import jwt
-from datetime import datetime
 
 from app.db.database import get_db
 from app.db.models import User
@@ -15,6 +14,7 @@ from app.core.config import settings
 
 # Security scheme
 security = HTTPBearer(auto_error=False)
+
 
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
@@ -26,7 +26,7 @@ def get_current_user(
     """
     if not credentials:
         return None
-    
+
     try:
         # Decode JWT token
         payload = jwt.decode(
@@ -34,32 +34,33 @@ def get_current_user(
             settings.secret_key,
             algorithms=[settings.algorithm]
         )
-        
+
         user_id = payload.get("sub")
         if user_id is None:
             return None
-        
+
         # Get user from database
         user = db.query(User).filter(User.id == int(user_id)).first()
         if user is None:
             return None
-        
+
         # Check if user is active
         if not user.is_active:
             return None
-        
+
         # Check if account is locked
         if user.is_locked():
             return None
-        
+
         return user
-        
+
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:
         return None
     except Exception:
         return None
+
 
 def get_current_active_user(
     current_user: Optional[User] = Depends(get_current_user)
@@ -76,6 +77,7 @@ def get_current_active_user(
         )
     return current_user
 
+
 def require_role(required_role: str):
     """
     Dependency factory to require specific user role.
@@ -89,6 +91,7 @@ def require_role(required_role: str):
         return current_user
     return role_checker
 
+
 def require_permission(required_permission: str):
     """
     Dependency factory to require specific permission.
@@ -101,6 +104,7 @@ def require_permission(required_permission: str):
             )
         return current_user
     return permission_checker
+
 
 # Common role dependencies
 require_admin = require_role("admin")
