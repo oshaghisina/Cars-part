@@ -7,7 +7,7 @@
           <h1 class="text-4xl md:text-6xl font-bold mb-6 font-persian-bold text-rtl">
             قطعات خودرو با کیفیت
           </h1>
-          <p class="text-xl md:text-2xl mb-8 text-blue-100 font-persian text-rtl font-persian text-rtl">
+          <p class="text-xl md:text-2xl mb-8 text-blue-100 font-persian text-rtl">
             قطعات مناسب خودرو خود را با قیمت‌های رقابتی و ارسال سریع پیدا کنید
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -18,7 +18,7 @@
               جستجوی قطعات
             </router-link>
             <button 
-              @click="$emit('show-contact')"
+              @click="showContactForm = true"
               class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors font-persian"
             >
               دریافت پیشنهاد
@@ -26,18 +26,6 @@
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- Category Management Section -->
-    <section class="py-16 bg-gray-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <CategoryManagement />
-      </div>
-    </section>
-
-    <!-- Iran Delivery Map Section -->
-    <section class="py-16">
-      <IranDeliveryMap />
     </section>
 
     <!-- Features Section -->
@@ -75,22 +63,37 @@
         </div>
       </div>
     </section>
+
+    <!-- Test PDP Section -->
+    <section class="py-16 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl font-bold text-gray-900 mb-4 font-persian-bold text-rtl">تست PDP</h2>
+          <p class="text-lg text-gray-600 font-persian text-rtl">برای تست صفحه جزئیات محصول، روی لینک زیر کلیک کنید</p>
+        </div>
+        
+        <div class="text-center">
+          <router-link 
+            to="/part/14" 
+            class="inline-flex items-center bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-4 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-300 transform hover:scale-105 font-persian"
+          >
+            <span>تست PDP - لنت ترمز جلو</span>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </router-link>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
-import CategoryManagement from '../components/CategoryManagement.vue'
-import IranDeliveryMap from '../components/IranDeliveryMap.vue'
-
 export default {
   name: 'خانه',
-  components: {
-    CategoryManagement,
-    IranDeliveryMap
-  },
   data() {
     return {
-      // Component data if needed
+      showContactForm: false
     }
   }
 }

@@ -12,10 +12,13 @@ from app.api.routers import (
     admin,
     analytics,
     bulk_operations,
+    images,
     leads,
     orders,
+    pdp,
     search,
     users,
+    vehicles_enhanced,
 )
 from app.core.config import settings
 
@@ -64,6 +67,9 @@ app.include_router(leads.router, prefix="/api/v1/leads", tags=["leads"])
 app.include_router(parts_module.router, prefix="/api/v1/parts", tags=["parts"])
 app.include_router(vehicles_module.router, prefix="/api/v1/vehicles", tags=["vehicles"])
 app.include_router(categories_module.router, prefix="/api/v1/categories", tags=["categories"])
+app.include_router(vehicles_enhanced.router, prefix="/api/v1", tags=["vehicles-enhanced"])
+app.include_router(pdp.router, prefix="/api/v1", tags=["pdp"])
+app.include_router(images.router, prefix="/api/v1", tags=["images"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 
