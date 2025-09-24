@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persian Font Test</title>
+    <style>
+        body {
+            font-family: 'Peyda', Arial, sans-serif;
+            font-size: 18px;
+            line-height: 1.6;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .font-test {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .info { background: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h1>🔍 Persian Font Test</h1>
+        <p>This page tests if the Peyda Persian font is loading correctly.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Font Loading Status</h2>
+        <div id="font-status" class="status info">Checking font loading...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Persian Text Samples</h2>
+        <div class="font-test">لنت ترمز جلو - سرامیک</div>
+        <div class="font-test">قطعات خودرو چینی</div>
+        <div class="font-test">سیستم ترمز</div>
+        <div class="font-test">برند: OEM Premium</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Font Family Test</h2>
+        <p>Current font family: <span id="current-font"></span></p>
+        <p>If you see 'Peyda' above, the font is loaded correctly.</p>
+    </div>
+
+    <script>
+        // Check if Peyda font is loaded
+        function checkFontLoading() {
+            const testElement = document.createElement('div');
+            testElement.style.fontFamily = 'Peyda, monospace';
+            testElement.style.fontSize = '72px';
+            testElement.style.position = 'absolute';
+            testElement.style.left = '-9999px';
+            testElement.textContent = 'mmmmmmmmmmlli';
+            document.body.appendChild(testElement);
+
+            const monospaceWidth = testElement.offsetWidth;
+            testElement.style.fontFamily = 'Peyda, sans-serif';
+            const peydaWidth = testElement.offsetWidth;
+
+            document.body.removeChild(testElement);
+
+            const statusDiv = document.getElementById('font-status');
+            const currentFontDiv = document.getElementById('current-font');
+
+            if (peydaWidth !== monospaceWidth) {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = '✅ Peyda font is loaded and working correctly!';
+                currentFontDiv.textContent = 'Peyda';
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = '❌ Peyda font is not loaded. Using fallback font.';
+                currentFontDiv.textContent = 'Fallback font (not Peyda)';
+            }
+        }
+
+        // Run the test when page loads
+        window.addEventListener('load', () => {
+            setTimeout(checkFontLoading, 1000); // Wait 1 second for fonts to load
+        });
+
+        // Also check after a longer delay
+        setTimeout(checkFontLoading, 3000);
+    </script>
+</body>
+</html>
