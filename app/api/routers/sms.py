@@ -515,9 +515,7 @@ async def verify_phone_number(
     if response.success:
         # In production, store verification_code and phone_number in secure
         # session
-        verification_id = f"verify_{
-            request.phone_number}_{
-            datetime.utcnow().timestamp()}"
+        verification_id = f"verify_{request.phone_number}_{datetime.utcnow().timestamp()}"
 
         return PhoneVerificationResponse(
             success=True,
