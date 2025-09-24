@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 class VehicleBrandResponse(BaseModel):
     """Vehicle brand response model."""
+
     id: int
     name: str = Field(..., description="Brand name")
     name_fa: Optional[str] = Field(None, description="Persian name")
@@ -30,6 +31,7 @@ class VehicleBrandResponse(BaseModel):
 
 class VehicleModelResponse(BaseModel):
     """Vehicle model response model."""
+
     id: int
     brand_id: int
     brand_name: str = Field(..., description="Brand name")
@@ -45,7 +47,8 @@ class VehicleModelResponse(BaseModel):
     year_range: Dict[str, Optional[int]] = Field(default_factory=dict, description="Year range")
     available_engines: List[str] = Field(default_factory=list, description="Available engine types")
     available_transmissions: List[str] = Field(
-        default_factory=list, description="Available transmissions")
+        default_factory=list, description="Available transmissions"
+    )
     created_at: datetime = Field(..., description="Creation timestamp")
 
     class Config:
@@ -54,6 +57,7 @@ class VehicleModelResponse(BaseModel):
 
 class VehicleTrimResponse(BaseModel):
     """Vehicle trim response model."""
+
     id: int
     model_id: int
     brand_name: str = Field(..., description="Brand name")
@@ -76,11 +80,13 @@ class VehicleTrimResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # Request Models
 
 
 class VehicleSearchRequest(BaseModel):
     """Vehicle search request model."""
+
     make: Optional[str] = Field(None, description="Vehicle make/brand")
     model: Optional[str] = Field(None, description="Vehicle model")
     year: Optional[int] = Field(None, ge=1980, le=2030, description="Model year")
@@ -90,16 +96,17 @@ class VehicleSearchRequest(BaseModel):
     transmission: Optional[str] = Field(None, description="Transmission type")
     limit: Optional[int] = Field(50, ge=1, le=100, description="Maximum results")
 
-    @field_validator('year')
+    @field_validator("year")
     @classmethod
     def validate_year(cls, v):
         if v is not None and (v < 1980 or v > 2030):
-            raise ValueError('Year must be between 1980 and 2030')
+            raise ValueError("Year must be between 1980 and 2030")
         return v
 
 
 class VehicleSearchResult(BaseModel):
     """Individual vehicle search result."""
+
     trim_id: int
     make: str = Field(..., description="Vehicle make")
     make_fa: Optional[str] = Field(None, description="Persian make")
@@ -121,6 +128,7 @@ class VehicleSearchResult(BaseModel):
 
 class VehicleSearchResponse(BaseModel):
     """Vehicle search response model."""
+
     results: List[VehicleSearchResult] = Field(..., description="Search results")
     total_found: int = Field(..., description="Total results found")
     search_criteria: Dict[str, Any] = Field(..., description="Search criteria used")
@@ -131,17 +139,18 @@ class VehicleSearchResponse(BaseModel):
 
 class VINDecodeRequest(BaseModel):
     """VIN decode request model."""
+
     vin: str = Field(..., min_length=17, max_length=17, description="17-character VIN")
 
-    @field_validator('vin')
+    @field_validator("vin")
     @classmethod
     def validate_vin(cls, v):
         v = v.upper().strip()
         if len(v) != 17:
-            raise ValueError('VIN must be exactly 17 characters')
+            raise ValueError("VIN must be exactly 17 characters")
 
         # Check for invalid characters
-        invalid_chars = set(v) & {'I', 'O', 'Q'}
+        invalid_chars = set(v) & {"I", "O", "Q"}
         if invalid_chars:
             raise ValueError(f'VIN contains invalid characters: {", ".join(invalid_chars)}')
 
@@ -150,6 +159,7 @@ class VINDecodeRequest(BaseModel):
 
 class VehicleMatchFromVIN(BaseModel):
     """Vehicle match from VIN decoding."""
+
     trim_id: int
     make: str = Field(..., description="Vehicle make")
     model: str = Field(..., description="Vehicle model")
@@ -161,6 +171,7 @@ class VehicleMatchFromVIN(BaseModel):
 
 class VINDecodeResponse(BaseModel):
     """VIN decode response model."""
+
     vin: str = Field(..., description="Input VIN")
     is_valid: bool = Field(..., description="Whether VIN is valid")
     manufacturer: Optional[str] = Field(None, description="Manufacturer name")
@@ -170,7 +181,8 @@ class VINDecodeResponse(BaseModel):
     vis: str = Field(..., description="Vehicle Identifier Section")
     country_of_origin: Optional[str] = Field(None, description="Country of origin")
     matching_vehicles: List[VehicleMatchFromVIN] = Field(
-        default_factory=list, description="Matching vehicles")
+        default_factory=list, description="Matching vehicles"
+    )
     decoded_at: datetime = Field(..., description="Decode timestamp")
 
     class Config:
@@ -179,6 +191,7 @@ class VINDecodeResponse(BaseModel):
 
 class VehicleCompatibilityRequest(BaseModel):
     """Vehicle compatibility check request."""
+
     trim_id: Optional[int] = Field(None, description="Specific trim ID")
     make: Optional[str] = Field(None, description="Vehicle make")
     model: Optional[str] = Field(None, description="Vehicle model")
@@ -186,41 +199,47 @@ class VehicleCompatibilityRequest(BaseModel):
     year: Optional[int] = Field(None, description="Model year")
     engine_code: Optional[str] = Field(None, description="Engine code")
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def validate_vehicle_identification(self):
         """Ensure either trim_id or make is provided."""
         if not self.trim_id and not self.make:
-            raise ValueError('Either trim_id or make must be provided')
+            raise ValueError("Either trim_id or make must be provided")
         return self
 
 
 class CompatiblePart(BaseModel):
     """Compatible part information."""
+
     part_id: int
     part_name: str = Field(..., description="Part name")
     category: str = Field(..., description="Part category")
     oem_code: Optional[str] = Field(None, description="OEM part number")
-    compatibility_level: str = Field(...,
-                                     description="Compatibility level: exact, likely, possible")
+    compatibility_level: str = Field(
+        ..., description="Compatibility level: exact, likely, possible"
+    )
     confidence_score: int = Field(..., ge=0, le=100, description="Confidence score")
 
 
 class VehicleCompatibilityResponse(BaseModel):
     """Vehicle compatibility response model."""
+
     vehicle: Dict[str, Any] = Field(..., description="Vehicle information")
     compatible_parts: List[CompatiblePart] = Field(
-        default_factory=list, description="Compatible parts")
+        default_factory=list, description="Compatible parts"
+    )
     total_found: int = Field(..., description="Total compatible parts found")
     checked_at: datetime = Field(..., description="Check timestamp")
 
     class Config:
         from_attributes = True
 
+
 # Additional utility models
 
 
 class VehicleOption(BaseModel):
     """Simple vehicle option for dropdowns."""
+
     id: int
     name: str = Field(..., description="Display name")
     value: str = Field(..., description="Value")
@@ -229,6 +248,7 @@ class VehicleOption(BaseModel):
 
 class VehicleHierarchy(BaseModel):
     """Vehicle hierarchy for cascading selects."""
+
     brands: List[VehicleOption] = Field(default_factory=list)
     models: Dict[int, List[VehicleOption]] = Field(default_factory=dict)
     trims: Dict[int, List[VehicleOption]] = Field(default_factory=dict)
@@ -236,6 +256,7 @@ class VehicleHierarchy(BaseModel):
 
 class VehicleStats(BaseModel):
     """Vehicle database statistics."""
+
     total_brands: int = Field(..., description="Total number of brands")
     active_brands: int = Field(..., description="Active brands count")
     total_models: int = Field(..., description="Total number of models")
@@ -243,26 +264,32 @@ class VehicleStats(BaseModel):
     total_trims: int = Field(..., description="Total number of trims")
     active_trims: int = Field(..., description="Active trims count")
     top_brands: List[Dict[str, Any]] = Field(
-        default_factory=list, description="Top brands by model count")
+        default_factory=list, description="Top brands by model count"
+    )
     year_distribution: List[Dict[str, Any]] = Field(
-        default_factory=list, description="Year distribution")
+        default_factory=list, description="Year distribution"
+    )
+
 
 # License plate recognition models
 
 
 class LicensePlateRequest(BaseModel):
     """License plate recognition request."""
+
     plate_number: str = Field(..., description="License plate number")
     country: str = Field("IR", description="Country code")
 
 
 class LicensePlateResponse(BaseModel):
     """License plate recognition response."""
+
     plate_number: str = Field(..., description="Input plate number")
     country: str = Field(..., description="Country code")
     is_valid: bool = Field(..., description="Whether plate format is valid")
     region: Optional[str] = Field(None, description="Vehicle registration region")
     vehicle_type: Optional[str] = Field(None, description="Vehicle type if determinable")
     matching_vehicles: List[VehicleSearchResult] = Field(
-        default_factory=list, description="Potential matches")
+        default_factory=list, description="Potential matches"
+    )
     confidence: float = Field(0, ge=0, le=1, description="Recognition confidence")

@@ -18,7 +18,7 @@ security = HTTPBearer(auto_error=False)
 
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ) -> Optional[User]:
     """
     Get current user from JWT token.
@@ -30,9 +30,7 @@ def get_current_user(
     try:
         # Decode JWT token
         payload = jwt.decode(
-            credentials.credentials,
-            settings.secret_key,
-            algorithms=[settings.algorithm]
+            credentials.credentials, settings.secret_key, algorithms=[settings.algorithm]
         )
 
         user_id = payload.get("sub")
@@ -62,9 +60,7 @@ def get_current_user(
         return None
 
 
-def get_current_active_user(
-    current_user: Optional[User] = Depends(get_current_user)
-) -> User:
+def get_current_active_user(current_user: Optional[User] = Depends(get_current_user)) -> User:
     """
     Get current user and require authentication.
     Raises HTTPException if user is not authenticated.
@@ -82,13 +78,15 @@ def require_role(required_role: str):
     """
     Dependency factory to require specific user role.
     """
+
     def role_checker(current_user: User = Depends(get_current_active_user)) -> User:
         if not current_user.has_role(required_role):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Operation requires {required_role} role"
+                detail=f"Operation requires {required_role} role",
             )
         return current_user
+
     return role_checker
 
 
@@ -96,13 +94,15 @@ def require_permission(required_permission: str):
     """
     Dependency factory to require specific permission.
     """
+
     def permission_checker(current_user: User = Depends(get_current_active_user)) -> User:
         if not current_user.has_permission(required_permission):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Operation requires {required_permission} permission"
+                detail=f"Operation requires {required_permission} permission",
             )
         return current_user
+
     return permission_checker
 
 

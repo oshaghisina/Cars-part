@@ -29,7 +29,7 @@ IMAGE_SIZES = {
     "small": (300, 300),
     "medium": (600, 600),
     "large": (1200, 1200),
-    "xlarge": (1600, 1600)
+    "xlarge": (1600, 1600),
 }
 
 # Ensure upload directory exists
@@ -39,17 +39,15 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 def validate_image_file(file: UploadFile) -> None:
     """Validate uploaded image file."""
     if not file.filename:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No filename provided"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No filename provided")
 
     file_ext = Path(file.filename).suffix.lower()
     if file_ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File type {file_ext} not allowed. Allowed types: "
-                   f"{', '.join(ALLOWED_EXTENSIONS)}")
+            f"{', '.join(ALLOWED_EXTENSIONS)}",
+        )
 
 
 def generate_filename(original_filename: str, part_id: int, image_type: str = "main") -> str:
@@ -65,11 +63,11 @@ def optimize_image(image_path: Path, max_size: tuple = (1200, 1200), quality: in
     try:
         with Image.open(image_path) as img:
             # Convert to RGB if necessary
-            if img.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                if img.mode == 'P':
-                    img = img.convert('RGBA')
-                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            if img.mode in ("RGBA", "LA", "P"):
+                background = Image.new("RGB", img.size, (255, 255, 255))
+                if img.mode == "P":
+                    img = img.convert("RGBA")
+                background.paste(img, mask=img.split()[-1] if img.mode == "RGBA" else None)
                 img = background
 
             # Auto-orient based on EXIF data
@@ -79,13 +77,7 @@ def optimize_image(image_path: Path, max_size: tuple = (1200, 1200), quality: in
             img.thumbnail(max_size, Image.Resampling.LANCZOS)
 
             # Save optimized image
-            img.save(
-                image_path,
-                format='JPEG',
-                quality=quality,
-                optimize=True,
-                progressive=True
-            )
+            img.save(image_path, format="JPEG", quality=quality, optimize=True, progressive=True)
     except Exception as e:
         print(f"Error optimizing image {image_path}: {e}")
 
@@ -97,11 +89,11 @@ def create_thumbnails(original_path: Path, part_id: int, image_type: str) -> Dic
     try:
         with Image.open(original_path) as img:
             # Convert to RGB if necessary
-            if img.mode in ('RGBA', 'LA', 'P'):
-                background = Image.new('RGB', img.size, (255, 255, 255))
-                if img.mode == 'P':
-                    img = img.convert('RGBA')
-                background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            if img.mode in ("RGBA", "LA", "P"):
+                background = Image.new("RGB", img.size, (255, 255, 255))
+                if img.mode == "P":
+                    img = img.convert("RGBA")
+                background.paste(img, mask=img.split()[-1] if img.mode == "RGBA" else None)
                 img = background
 
             # Auto-orient based on EXIF data
@@ -113,17 +105,13 @@ def create_thumbnails(original_path: Path, part_id: int, image_type: str) -> Dic
                 thumb.thumbnail(dimensions, Image.Resampling.LANCZOS)
 
                 # Generate filename
-                thumb_filename = (f"part_{part_id}_{image_type}_{size_name}_"
-                                  f"{uuid.uuid4().hex[:8]}.jpg")
+                thumb_filename = (
+                    f"part_{part_id}_{image_type}_{size_name}_" f"{uuid.uuid4().hex[:8]}.jpg"
+                )
                 thumb_path = UPLOAD_DIR / thumb_filename
 
                 # Save thumbnail
-                thumb.save(
-                    thumb_path,
-                    format='JPEG',
-                    quality=85,
-                    optimize=True
-                )
+                thumb.save(thumb_path, format="JPEG", quality=85, optimize=True)
 
                 thumbnails[size_name] = thumb_filename
 
@@ -141,7 +129,7 @@ async def upload_part_image(
     alt_text: Optional[str] = Form(None, description="Alt text for accessibility"),
     sort_order: int = Form(0, description="Display order"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_permission("parts.update"))
+    current_user: User = Depends(require_permission("parts.update")),
 ):
     """Upload and process product image."""
 
@@ -151,17 +139,14 @@ async def upload_part_image(
     # Check if part exists
     part = db.query(Part).filter(Part.id == part_id).first()
     if not part:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Part not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Part not found")
 
     # Check file size
     file_content = await file.read()
     if len(file_content) > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024 * 1024)}MB"
+            detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024 * 1024)}MB",
         )
 
     try:
@@ -170,7 +155,7 @@ async def upload_part_image(
         file_path = UPLOAD_DIR / filename
 
         # Save uploaded file
-        async with aiofiles.open(file_path, 'wb') as f:
+        async with aiofiles.open(file_path, "wb") as f:
             await f.write(file_content)
 
         # Optimize original image
@@ -186,7 +171,7 @@ async def upload_part_image(
             image_type=image_type,
             alt_text=alt_text or f"{part.part_name} - {image_type}",
             sort_order=sort_order,
-            is_active=True
+            is_active=True,
         )
 
         db.add(part_image)
@@ -207,7 +192,7 @@ async def upload_part_image(
             "alt_text": part_image.alt_text,
             "sort_order": sort_order,
             "created_at": part_image.created_at,
-            "message": "Image uploaded and processed successfully"
+            "message": "Image uploaded and processed successfully",
         }
 
     except Exception as e:
@@ -221,7 +206,7 @@ async def upload_part_image(
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing image: {str(e)}"
+            detail=f"Error processing image: {str(e)}",
         )
 
 
@@ -231,10 +216,7 @@ async def serve_image(filename: str):
     file_path = UPLOAD_DIR / filename
 
     if not file_path.exists():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Image not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
 
     # Determine content type
     file_ext = file_path.suffix.lower()
@@ -243,7 +225,7 @@ async def serve_image(filename: str):
         ".jpeg": "image/jpeg",
         ".png": "image/png",
         ".webp": "image/webp",
-        ".gif": "image/gif"
+        ".gif": "image/gif",
     }
     content_type = content_types.get(file_ext, "application/octet-stream")
 
@@ -253,7 +235,7 @@ async def serve_image(filename: str):
         headers={
             "Cache-Control": "public, max-age=31536000",  # 1 year
             "ETag": f'"{filename}"',
-        }
+        },
     )
 
 
@@ -262,14 +244,11 @@ async def get_part_images(
     part_id: int,
     image_type: Optional[str] = Query(None, description="Filter by image type"),
     include_thumbnails: bool = Query(True, description="Include thumbnail URLs"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get all images for a specific part."""
 
-    query = db.query(PartImage).filter(
-        PartImage.part_id == part_id,
-        PartImage.is_active
-    )
+    query = db.query(PartImage).filter(PartImage.part_id == part_id, PartImage.is_active)
 
     if image_type:
         query = query.filter(PartImage.image_type == image_type)
@@ -284,7 +263,7 @@ async def get_part_images(
             "type": img.image_type,
             "alt_text": img.alt_text,
             "sort_order": img.sort_order,
-            "created_at": img.created_at
+            "created_at": img.created_at,
         }
 
         if include_thumbnails:
@@ -312,16 +291,13 @@ async def update_part_image(
     sort_order: Optional[int] = Form(None),
     is_active: Optional[bool] = Form(None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_permission("parts.update"))
+    current_user: User = Depends(require_permission("parts.update")),
 ):
     """Update part image metadata."""
 
     image = db.query(PartImage).filter(PartImage.id == image_id).first()
     if not image:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Image not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
 
     # Update fields
     if image_type is not None:
@@ -343,7 +319,7 @@ async def update_part_image(
         "alt_text": image.alt_text,
         "sort_order": image.sort_order,
         "is_active": image.is_active,
-        "message": "Image updated successfully"
+        "message": "Image updated successfully",
     }
 
 
@@ -351,16 +327,13 @@ async def update_part_image(
 async def delete_part_image(
     image_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_permission("parts.delete"))
+    current_user: User = Depends(require_permission("parts.delete")),
 ):
     """Delete part image and associated files."""
 
     image = db.query(PartImage).filter(PartImage.id == image_id).first()
     if not image:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Image not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Image not found")
 
     try:
         # Delete physical files
@@ -386,7 +359,7 @@ async def delete_part_image(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error deleting image: {str(e)}"
+            detail=f"Error deleting image: {str(e)}",
         )
 
 
@@ -396,22 +369,18 @@ async def bulk_upload_images(
     files: List[UploadFile] = File(...),
     image_type: str = Form("main"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_permission("parts.update"))
+    current_user: User = Depends(require_permission("parts.update")),
 ):
     """Upload multiple images for a part."""
 
     # Check if part exists
     part = db.query(Part).filter(Part.id == part_id).first()
     if not part:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Part not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Part not found")
 
     if len(files) > 20:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Maximum 20 files allowed per upload"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Maximum 20 files allowed per upload"
         )
 
     uploaded_images = []
@@ -425,17 +394,20 @@ async def bulk_upload_images(
             # Check file size
             file_content = await file.read()
             if len(file_content) > MAX_FILE_SIZE:
-                failed_uploads.append({
-                    "filename": file.filename,
-                    "error": f"File too large. Maximum size: {MAX_FILE_SIZE // (1024 * 1024)}MB"
-                })
+                failed_uploads.append(
+                    {
+                        "filename": file.filename,
+                        "error": f"File too large. Maximum size: "
+                        f"{MAX_FILE_SIZE // (1024 * 1024)}MB",
+                    }
+                )
                 continue
 
             # Generate filename and save
             filename = generate_filename(file.filename, part_id, f"{image_type}_{index}")
             file_path = UPLOAD_DIR / filename
 
-            async with aiofiles.open(file_path, 'wb') as f:
+            async with aiofiles.open(file_path, "wb") as f:
                 await f.write(file_content)
 
             # Optimize and create thumbnails
@@ -449,7 +421,7 @@ async def bulk_upload_images(
                 image_type=image_type,
                 alt_text=f"{part.part_name} - {image_type} {index + 1}",
                 sort_order=index,
-                is_active=True
+                is_active=True,
             )
 
             db.add(part_image)
@@ -460,18 +432,17 @@ async def bulk_upload_images(
                 for size, thumb_filename in thumbnails.items()
             }
 
-            uploaded_images.append({
-                "id": part_image.id,
-                "url": part_image.image_url,
-                "thumbnails": thumbnail_urls,
-                "filename": file.filename
-            })
+            uploaded_images.append(
+                {
+                    "id": part_image.id,
+                    "url": part_image.image_url,
+                    "thumbnails": thumbnail_urls,
+                    "filename": file.filename,
+                }
+            )
 
         except Exception as e:
-            failed_uploads.append({
-                "filename": file.filename,
-                "error": str(e)
-            })
+            failed_uploads.append({"filename": file.filename, "error": str(e)})
 
     # Commit all successful uploads
     if uploaded_images:
@@ -481,14 +452,13 @@ async def bulk_upload_images(
         "uploaded": len(uploaded_images),
         "failed": len(failed_uploads),
         "images": uploaded_images,
-        "errors": failed_uploads
+        "errors": failed_uploads,
     }
 
 
 @router.get("/stats")
 async def get_image_stats(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_permission("parts.read"))
+    db: Session = Depends(get_db), current_user: User = Depends(require_permission("parts.read"))
 ):
     """Get image storage statistics."""
 
@@ -506,10 +476,12 @@ async def get_image_stats(
                 file_count += 1
 
     # Image type distribution
-    type_stats = db.query(
-        PartImage.image_type,
-        db.func.count(PartImage.id).label('count')
-    ).filter(PartImage.is_active).group_by(PartImage.image_type).all()
+    type_stats = (
+        db.query(PartImage.image_type, db.func.count(PartImage.id).label("count"))
+        .filter(PartImage.is_active)
+        .group_by(PartImage.image_type)
+        .all()
+    )
 
     return {
         "total_images": total_images,
@@ -518,5 +490,5 @@ async def get_image_stats(
         "total_storage_mb": round(total_size / (1024 * 1024), 2),
         "total_files": file_count,
         "image_types": {stat.image_type: stat.count for stat in type_stats},
-        "upload_directory": str(UPLOAD_DIR)
+        "upload_directory": str(UPLOAD_DIR),
     }

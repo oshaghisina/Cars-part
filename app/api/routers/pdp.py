@@ -12,14 +12,17 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, func
 
 from app.db.database import get_db
-from app.db.models import (
-    Part, Price, PartSpecification, PartImage, User
-)
+from app.db.models import Part, Price, PartSpecification, PartImage, User
 from app.schemas.pdp_schemas import (
-    PartDetailResponse, PartSpecificationResponse,
-    PartImageResponse, PartAlternativeResponse, PartCompatibilityRequest,
-    PartCompatibilityResponse, PartPriceResponse,
-    PartCrossReferenceResponse, PaginatedResponse
+    PartDetailResponse,
+    PartSpecificationResponse,
+    PartImageResponse,
+    PartAlternativeResponse,
+    PartCompatibilityRequest,
+    PartCompatibilityResponse,
+    PartPriceResponse,
+    PartCrossReferenceResponse,
+    PaginatedResponse,
 )
 from app.api.dependencies import get_current_user
 
@@ -35,7 +38,7 @@ async def get_part_detail(
     include_alternatives: bool = Query(False, description="Include alternative parts"),
     include_cross_references: bool = Query(False, description="Include cross-references"),
     db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user),
 ):
     """
     Get comprehensive part details for PDP.
@@ -43,17 +46,13 @@ async def get_part_detail(
     """
     # Build query with eager loading for performance
     query = db.query(Part).options(
-        joinedload(
-            Part.category_obj),
-        joinedload(
-            Part.specifications) if include_specifications else joinedload(
-                Part.specifications).load_only('id'),
-        joinedload(
-                    Part.images) if include_images else joinedload(
-                        Part.images).load_only('id'),
-        joinedload(
-                            Part.prices) if include_prices else joinedload(
-                                Part.prices).load_only('id'))
+        joinedload(Part.category_obj),
+        joinedload(Part.specifications)
+        if include_specifications
+        else joinedload(Part.specifications).load_only("id"),
+        joinedload(Part.images) if include_images else joinedload(Part.images).load_only("id"),
+        joinedload(Part.prices) if include_prices else joinedload(Part.prices).load_only("id"),
+    )
 
     part = query.filter(Part.id == part_id, Part.status == "active").first()
 
@@ -68,7 +67,7 @@ async def get_part_detail(
         "category": part.category,
         "subcategory": part.subcategory,
         "oem_code": part.oem_code,
-        "alt_codes": part.alt_codes.split(',') if part.alt_codes else [],
+        "alt_codes": part.alt_codes.split(",") if part.alt_codes else [],
         "unit": part.unit,
         "pack_size": part.pack_size,
         "status": part.status,
@@ -81,7 +80,7 @@ async def get_part_detail(
         "position": part.position,
         "compatibility_notes": part.compatibility_notes,
         "created_at": part.created_at,
-        "updated_at": part.updated_at
+        "updated_at": part.updated_at,
     }
 
     # Add category details
@@ -92,7 +91,7 @@ async def get_part_detail(
             "name_fa": part.category_obj.name_fa,
             "icon": part.category_obj.icon,
             "color": part.category_obj.color,
-            "path": part.category_obj.path
+            "path": part.category_obj.path,
         }
 
     # Add specifications
@@ -105,7 +104,7 @@ async def get_part_detail(
                 "unit": spec.spec_unit,
                 "type": spec.spec_type,
                 "is_required": spec.is_required,
-                "sort_order": spec.sort_order
+                "sort_order": spec.sort_order,
             }
             for spec in sorted(part.specifications, key=lambda x: x.sort_order)
         ]
@@ -119,7 +118,7 @@ async def get_part_detail(
                 "type": img.image_type,
                 "alt_text": img.alt_text,
                 "sort_order": img.sort_order,
-                "is_active": img.is_active
+                "is_active": img.is_active,
             }
             for img in sorted(part.images, key=lambda x: x.sort_order)
             if img.is_active
@@ -147,7 +146,7 @@ async def get_part_detail(
                 "warranty": price.warranty,
                 "valid_from": price.valid_from,
                 "valid_to": price.valid_to,
-                "note": price.note
+                "note": price.note,
             }
 
             # Apply user-specific pricing logic
@@ -182,21 +181,18 @@ async def get_part_detail(
 @router.get("/parts/{part_id}/alternatives", response_model=List[PartAlternativeResponse])
 async def get_part_alternatives(
     part_id: int = Path(..., description="Part ID"),
-    limit: int = Query(20, ge=1, le=100,
-                       description="Maximum number of alternatives"),
-    sort_by: str = Query("compatibility",
-                         description="Sort by: compatibility, price, availability"),
-    db: Session = Depends(get_db)
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of alternatives"),
+    sort_by: str = Query(
+        "compatibility", description="Sort by: compatibility, price, availability"
+    ),
+    db: Session = Depends(get_db),
 ):
     """Get alternative parts for a given part."""
     return await get_part_alternatives_internal(db, part_id, limit, sort_by)
 
 
 async def get_part_alternatives_internal(
-    db: Session,
-    part_id: int,
-    limit: int = 20,
-    sort_by: str = "compatibility"
+    db: Session, part_id: int, limit: int = 20, sort_by: str = "compatibility"
 ) -> List[Dict[str, Any]]:
     """Internal function to get part alternatives."""
 
@@ -210,32 +206,30 @@ async def get_part_alternatives_internal(
     # 2. Same OEM code
     # 3. Same category and similar specifications
 
-    alternatives_query = db.query(Part).filter(
-        Part.id != part_id,
-        Part.status == "active",
-        or_(
-            # Same vehicle, different brand
-            and_(
-                Part.vehicle_make == source_part.vehicle_make,
-                Part.vehicle_model == source_part.vehicle_model,
-                Part.category == source_part.category,
-                Part.brand_oem != source_part.brand_oem
+    alternatives_query = (
+        db.query(Part)
+        .filter(
+            Part.id != part_id,
+            Part.status == "active",
+            or_(
+                # Same vehicle, different brand
+                and_(
+                    Part.vehicle_make == source_part.vehicle_make,
+                    Part.vehicle_model == source_part.vehicle_model,
+                    Part.category == source_part.category,
+                    Part.brand_oem != source_part.brand_oem,
+                ),
+                # Same OEM code
+                and_(Part.oem_code.isnot(None), Part.oem_code == source_part.oem_code),
+                # Similar alt codes
+                and_(
+                    Part.alt_codes.isnot(None),
+                    source_part.oem_code.isnot(None),
+                    Part.alt_codes.contains(source_part.oem_code),
+                ),
             ),
-            # Same OEM code
-            and_(
-                Part.oem_code.isnot(None),
-                Part.oem_code == source_part.oem_code
-            ),
-            # Similar alt codes
-            and_(
-                Part.alt_codes.isnot(None),
-                source_part.oem_code.isnot(None),
-                Part.alt_codes.contains(source_part.oem_code)
-            )
         )
-    ).options(
-        joinedload(Part.prices),
-        joinedload(Part.images)
+        .options(joinedload(Part.prices), joinedload(Part.images))
     )
 
     # Apply sorting
@@ -248,15 +242,9 @@ async def get_part_alternatives_internal(
     else:  # compatibility
         alternatives_query = alternatives_query.order_by(
             # Prioritize same vehicle make/model
-            func.case(
-                (Part.vehicle_make == source_part.vehicle_make, 1),
-                else_=2
-            ),
+            func.case((Part.vehicle_make == source_part.vehicle_make, 1), else_=2),
             # Then by same OEM code
-            func.case(
-                (Part.oem_code == source_part.oem_code, 1),
-                else_=2
-            )
+            func.case((Part.oem_code == source_part.oem_code, 1), else_=2),
         )
 
     alternatives = alternatives_query.limit(limit).all()
@@ -276,9 +264,10 @@ async def get_part_alternatives_internal(
         best_price = None
         if alt.prices:
             valid_prices = [
-                p for p in alt.prices
-                if (not p.valid_from or p.valid_from <= datetime.now().date()) and
-                   (not p.valid_to or p.valid_to >= datetime.now().date())
+                p
+                for p in alt.prices
+                if (not p.valid_from or p.valid_from <= datetime.now().date())
+                and (not p.valid_to or p.valid_to >= datetime.now().date())
             ]
             if valid_prices:
                 best_price = min(valid_prices, key=lambda x: x.price)
@@ -290,36 +279,41 @@ async def get_part_alternatives_internal(
             if main_images:
                 main_image = sorted(main_images, key=lambda x: x.sort_order)[0]
 
-        result.append({
-            "id": alt.id,
-            "name": alt.part_name,
-            "brand": alt.brand_oem,
-            "oem_code": alt.oem_code,
-            "compatibility_score": compatibility_score,
-            "compatibility_notes": alt.compatibility_notes,
-            "vehicle_make": alt.vehicle_make,
-            "vehicle_model": alt.vehicle_model,
-            "price": {
-                "amount": float(best_price.price) if best_price else None,
-                "currency": best_price.currency if best_price else "IRR",
-                "seller": best_price.seller_name if best_price else None,
-                "min_order_qty": best_price.min_order_qty if best_price else 1
-            } if best_price else None,
-            "image": {
-                "url": main_image.image_url,
-                "alt_text": main_image.alt_text
-            } if main_image else None,
-            "availability": ("in_stock" if best_price and best_price.available_qty
-                             and best_price.available_qty > 0 else "out_of_stock")
-        })
+        result.append(
+            {
+                "id": alt.id,
+                "name": alt.part_name,
+                "brand": alt.brand_oem,
+                "oem_code": alt.oem_code,
+                "compatibility_score": compatibility_score,
+                "compatibility_notes": alt.compatibility_notes,
+                "vehicle_make": alt.vehicle_make,
+                "vehicle_model": alt.vehicle_model,
+                "price": {
+                    "amount": float(best_price.price) if best_price else None,
+                    "currency": best_price.currency if best_price else "IRR",
+                    "seller": best_price.seller_name if best_price else None,
+                    "min_order_qty": best_price.min_order_qty if best_price else 1,
+                }
+                if best_price
+                else None,
+                "image": {"url": main_image.image_url, "alt_text": main_image.alt_text}
+                if main_image
+                else None,
+                "availability": (
+                    "in_stock"
+                    if best_price and best_price.available_qty and best_price.available_qty > 0
+                    else "out_of_stock"
+                ),
+            }
+        )
 
     return result
 
 
 @router.get("/parts/{part_id}/cross-references", response_model=PartCrossReferenceResponse)
 async def get_part_cross_references(
-    part_id: int = Path(..., description="Part ID"),
-    db: Session = Depends(get_db)
+    part_id: int = Path(..., description="Part ID"), db: Session = Depends(get_db)
 ):
     """Get cross-reference information for a part."""
     return await get_part_cross_references_internal(db, part_id)
@@ -335,102 +329,129 @@ async def get_part_cross_references_internal(db: Session, part_id: int) -> Dict[
     # OEM References - parts with same OEM code from different brands
     oem_references = []
     if part.oem_code:
-        oem_refs = db.query(Part).filter(
-            Part.oem_code == part.oem_code,
-            Part.id != part_id,
-            Part.status == "active"
-        ).options(joinedload(Part.prices)).limit(20).all()
+        oem_refs = (
+            db.query(Part)
+            .filter(Part.oem_code == part.oem_code, Part.id != part_id, Part.status == "active")
+            .options(joinedload(Part.prices))
+            .limit(20)
+            .all()
+        )
 
         for ref in oem_refs:
             best_price = None
             if ref.prices:
                 valid_prices = [
-                    p for p in ref.prices
-                    if (not p.valid_from or p.valid_from <= datetime.now().date()) and
-                       (not p.valid_to or p.valid_to >= datetime.now().date())
+                    p
+                    for p in ref.prices
+                    if (not p.valid_from or p.valid_from <= datetime.now().date())
+                    and (not p.valid_to or p.valid_to >= datetime.now().date())
                 ]
                 if valid_prices:
                     best_price = min(valid_prices, key=lambda x: x.price)
 
-            oem_references.append({
-                "id": ref.id,
-                "name": ref.part_name,
-                "brand": ref.brand_oem,
-                "oem_code": ref.oem_code,
-                "vehicle_make": ref.vehicle_make,
-                "vehicle_model": ref.vehicle_model,
-                "price": float(best_price.price) if best_price else None,
-                "currency": best_price.currency if best_price else "IRR",
-                "availability": ("in_stock" if best_price and best_price.available_qty
-                                 and best_price.available_qty > 0 else "unknown")
-            })
+            oem_references.append(
+                {
+                    "id": ref.id,
+                    "name": ref.part_name,
+                    "brand": ref.brand_oem,
+                    "oem_code": ref.oem_code,
+                    "vehicle_make": ref.vehicle_make,
+                    "vehicle_model": ref.vehicle_model,
+                    "price": float(best_price.price) if best_price else None,
+                    "currency": best_price.currency if best_price else "IRR",
+                    "availability": (
+                        "in_stock"
+                        if best_price and best_price.available_qty and best_price.available_qty > 0
+                        else "unknown"
+                    ),
+                }
+            )
 
     # Supersessions - newer versions of this part
     supersessions = []
     if part.alt_codes:
-        alt_codes = [code.strip() for code in part.alt_codes.split(',')]
-        supersession_parts = db.query(Part).filter(
-            or_(*[Part.oem_code.in_(alt_codes) for _ in alt_codes]),
-            Part.id != part_id,
-            Part.status == "active",
-            # Only consider newer parts
-            Part.created_at > part.created_at
-        ).options(joinedload(Part.prices)).limit(10).all()
+        alt_codes = [code.strip() for code in part.alt_codes.split(",")]
+        supersession_parts = (
+            db.query(Part)
+            .filter(
+                or_(*[Part.oem_code.in_(alt_codes) for _ in alt_codes]),
+                Part.id != part_id,
+                Part.status == "active",
+                # Only consider newer parts
+                Part.created_at > part.created_at,
+            )
+            .options(joinedload(Part.prices))
+            .limit(10)
+            .all()
+        )
 
         for sup in supersession_parts:
             best_price = None
             if sup.prices:
                 valid_prices = [
-                    p for p in sup.prices
-                    if (not p.valid_from or p.valid_from <= datetime.now().date()) and
-                       (not p.valid_to or p.valid_to >= datetime.now().date())
+                    p
+                    for p in sup.prices
+                    if (not p.valid_from or p.valid_from <= datetime.now().date())
+                    and (not p.valid_to or p.valid_to >= datetime.now().date())
                 ]
                 if valid_prices:
                     best_price = min(valid_prices, key=lambda x: x.price)
 
-            supersessions.append({
-                "id": sup.id,
-                "name": sup.part_name,
-                "brand": sup.brand_oem,
-                "oem_code": sup.oem_code,
-                "superseded_codes": [part.oem_code] if part.oem_code else [],
-                "improvements": "Updated version with enhanced specifications",
-                "price": float(best_price.price) if best_price else None,
-                "currency": best_price.currency if best_price else "IRR",
-                "availability": ("in_stock" if best_price and best_price.available_qty
-                                 and best_price.available_qty > 0 else "unknown")
-            })
+            supersessions.append(
+                {
+                    "id": sup.id,
+                    "name": sup.part_name,
+                    "brand": sup.brand_oem,
+                    "oem_code": sup.oem_code,
+                    "superseded_codes": [part.oem_code] if part.oem_code else [],
+                    "improvements": "Updated version with enhanced specifications",
+                    "price": float(best_price.price) if best_price else None,
+                    "currency": best_price.currency if best_price else "IRR",
+                    "availability": (
+                        "in_stock"
+                        if best_price and best_price.available_qty and best_price.available_qty > 0
+                        else "unknown"
+                    ),
+                }
+            )
 
     # Compatibility Matrix - parts for different vehicle variations
     compatibility_matrix = []
-    related_parts = db.query(Part).filter(
-        Part.category == part.category,
-        Part.vehicle_make == part.vehicle_make,
-        Part.part_name.contains(part.part_name.split()[0] if part.part_name else ""),
-        Part.id != part_id,
-        Part.status == "active"
-    ).limit(15).all()
+    related_parts = (
+        db.query(Part)
+        .filter(
+            Part.category == part.category,
+            Part.vehicle_make == part.vehicle_make,
+            Part.part_name.contains(part.part_name.split()[0] if part.part_name else ""),
+            Part.id != part_id,
+            Part.status == "active",
+        )
+        .limit(15)
+        .all()
+    )
 
     for rel in related_parts:
-        compatibility_matrix.append({
-            "vehicle_make": rel.vehicle_make,
-            "vehicle_model": rel.vehicle_model,
-            "vehicle_trim": rel.vehicle_trim,
-            "year_from": rel.model_year_from,
-            "year_to": rel.model_year_to,
-            "engine_code": rel.engine_code,
-            "part_id": rel.id,
-            "part_name": rel.part_name,
-            "oem_code": rel.oem_code,
-            "compatibility": "direct" if rel.oem_code == part.oem_code else "alternative"
-        })
+        compatibility_matrix.append(
+            {
+                "vehicle_make": rel.vehicle_make,
+                "vehicle_model": rel.vehicle_model,
+                "vehicle_trim": rel.vehicle_trim,
+                "year_from": rel.model_year_from,
+                "year_to": rel.model_year_to,
+                "engine_code": rel.engine_code,
+                "part_id": rel.id,
+                "part_name": rel.part_name,
+                "oem_code": rel.oem_code,
+                "compatibility": "direct" if rel.oem_code == part.oem_code else "alternative",
+            }
+        )
 
     return {
         "part_id": part_id,
         "oem_references": oem_references,
         "alternatives": await get_part_alternatives_internal(db, part_id, limit=10),
         "supersessions": supersessions,
-        "compatibility_matrix": compatibility_matrix
+        "compatibility_matrix": compatibility_matrix,
     }
 
 
@@ -438,7 +459,7 @@ async def get_part_cross_references_internal(db: Session, part_id: int) -> Dict[
 async def check_part_compatibility(
     vehicle_info: PartCompatibilityRequest,
     part_id: int = Path(..., description="Part ID"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Check if a part is compatible with a specific vehicle."""
 
@@ -453,7 +474,7 @@ async def check_part_compatibility(
         "compatibility_level": "unknown",
         "confidence_score": 0,
         "compatibility_notes": [],
-        "alternative_suggestions": []
+        "alternative_suggestions": [],
     }
 
     score = 0
@@ -467,7 +488,8 @@ async def check_part_compatibility(
         else:
             notes.append(
                 f"Different vehicle make: part is for {part.vehicle_make}, "
-                f"vehicle is {vehicle_info.make}")
+                f"vehicle is {vehicle_info.make}"
+            )
 
     # Check vehicle model compatibility
     if vehicle_info.model and part.vehicle_model:
@@ -477,7 +499,8 @@ async def check_part_compatibility(
         else:
             notes.append(
                 f"Different vehicle model: part is for {part.vehicle_model}, "
-                f"vehicle is {vehicle_info.model}")
+                f"vehicle is {vehicle_info.model}"
+            )
 
     # Check year compatibility
     if vehicle_info.year:
@@ -486,16 +509,19 @@ async def check_part_compatibility(
                 score += 20
                 notes.append(
                     f"Year {vehicle_info.year} is within compatibility range "
-                    f"{part.model_year_from}-{part.model_year_to}")
+                    f"{part.model_year_from}-{part.model_year_to}"
+                )
             else:
                 notes.append(
                     f"Year {vehicle_info.year} is outside compatibility range "
-                    f"{part.model_year_from}-{part.model_year_to}")
+                    f"{part.model_year_from}-{part.model_year_to}"
+                )
         elif part.model_year_from and vehicle_info.year >= part.model_year_from:
             score += 15
             notes.append(
                 f"Year {vehicle_info.year} is after part introduction year "
-                f"{part.model_year_from}")
+                f"{part.model_year_from}"
+            )
 
     # Check engine code compatibility
     if vehicle_info.engine_code and part.engine_code:
@@ -505,7 +531,8 @@ async def check_part_compatibility(
         else:
             notes.append(
                 f"Different engine code: part is for {part.engine_code}, "
-                f"vehicle has {vehicle_info.engine_code}")
+                f"vehicle has {vehicle_info.engine_code}"
+            )
 
     # Check trim compatibility
     if vehicle_info.trim and part.vehicle_trim:
@@ -515,7 +542,8 @@ async def check_part_compatibility(
         else:
             notes.append(
                 f"Different trim: part is for {part.vehicle_trim}, "
-                f"vehicle is {vehicle_info.trim}")
+                f"vehicle is {vehicle_info.trim}"
+            )
 
     # Determine compatibility level
     if score >= 70:
@@ -540,21 +568,24 @@ async def check_part_compatibility(
 
     if part.compatibility_notes:
         compatibility_result["compatibility_notes"].append(
-            f"Manufacturer notes: {part.compatibility_notes}")
+            f"Manufacturer notes: {part.compatibility_notes}"
+        )
 
     return compatibility_result
 
 
 @router.get("/parts/{part_id}/specifications", response_model=List[PartSpecificationResponse])
 async def get_part_specifications(
-    part_id: int = Path(..., description="Part ID"),
-    db: Session = Depends(get_db)
+    part_id: int = Path(..., description="Part ID"), db: Session = Depends(get_db)
 ):
     """Get detailed specifications for a part."""
 
-    specifications = db.query(PartSpecification).filter(
-        PartSpecification.part_id == part_id
-    ).order_by(PartSpecification.sort_order).all()
+    specifications = (
+        db.query(PartSpecification)
+        .filter(PartSpecification.part_id == part_id)
+        .order_by(PartSpecification.sort_order)
+        .all()
+    )
 
     return [
         {
@@ -564,7 +595,7 @@ async def get_part_specifications(
             "unit": spec.spec_unit,
             "type": spec.spec_type,
             "is_required": spec.is_required,
-            "sort_order": spec.sort_order
+            "sort_order": spec.sort_order,
         }
         for spec in specifications
     ]
@@ -574,14 +605,11 @@ async def get_part_specifications(
 async def get_part_images(
     part_id: int = Path(..., description="Part ID"),
     image_type: Optional[str] = Query(None, description="Filter by image type"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get images for a part."""
 
-    query = db.query(PartImage).filter(
-        PartImage.part_id == part_id,
-        PartImage.is_active
-    )
+    query = db.query(PartImage).filter(PartImage.part_id == part_id, PartImage.is_active)
 
     if image_type:
         query = query.filter(PartImage.image_type == image_type)
@@ -594,7 +622,7 @@ async def get_part_images(
             "url": img.image_url,
             "type": img.image_type,
             "alt_text": img.alt_text,
-            "sort_order": img.sort_order
+            "sort_order": img.sort_order,
         }
         for img in images
     ]
@@ -604,17 +632,22 @@ async def get_part_images(
 async def get_part_pricing(
     part_id: int = Path(..., description="Part ID"),
     current_user: Optional[User] = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get pricing information for a part."""
 
     # Get valid prices
     today = datetime.now().date()
-    prices = db.query(Price).filter(
-        Price.part_id == part_id,
-        or_(Price.valid_from.is_(None), Price.valid_from <= today),
-        or_(Price.valid_to.is_(None), Price.valid_to >= today)
-    ).order_by(Price.price).all()
+    prices = (
+        db.query(Price)
+        .filter(
+            Price.part_id == part_id,
+            or_(Price.valid_from.is_(None), Price.valid_from <= today),
+            or_(Price.valid_to.is_(None), Price.valid_to >= today),
+        )
+        .order_by(Price.price)
+        .all()
+    )
 
     result = []
     for price in prices:
@@ -629,7 +662,7 @@ async def get_part_pricing(
             "available_qty": price.available_qty,
             "warranty": price.warranty,
             "note": price.note,
-            "price_tier": "retail"
+            "price_tier": "retail",
         }
 
         # Apply user-specific pricing
@@ -654,9 +687,10 @@ async def search_parts(
     max_price: Optional[float] = Query(None, description="Maximum price filter"),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    sort_by: str = Query("relevance",
-                         description="Sort by: relevance, price_asc, price_desc, name"),
-    db: Session = Depends(get_db)
+    sort_by: str = Query(
+        "relevance", description="Sort by: relevance, price_asc, price_desc, name"
+    ),
+    db: Session = Depends(get_db),
 ):
     """Search parts with comprehensive filtering and sorting."""
 
@@ -669,7 +703,7 @@ async def search_parts(
             Part.part_name.contains(query),
             Part.oem_code.contains(query),
             Part.alt_codes.contains(query),
-            Part.brand_oem.contains(query)
+            Part.brand_oem.contains(query),
         )
         query_obj = query_obj.filter(search_filter)
 
@@ -701,19 +735,17 @@ async def search_parts(
         query_obj = query_obj.order_by(Part.part_name.asc())
     else:  # relevance
         # Sort by text relevance and recency
-        query_obj = query_obj.order_by(
-            Part.updated_at.desc(),
-            Part.part_name
-        )
+        query_obj = query_obj.order_by(Part.updated_at.desc(), Part.part_name)
 
     # Pagination
     total = query_obj.count()
     offset = (page - 1) * page_size
-    parts = query_obj.offset(offset).limit(page_size).options(
-        joinedload(Part.prices),
-        joinedload(Part.images),
-        joinedload(Part.category_obj)
-    ).all()
+    parts = (
+        query_obj.offset(offset)
+        .limit(page_size)
+        .options(joinedload(Part.prices), joinedload(Part.images), joinedload(Part.category_obj))
+        .all()
+    )
 
     # Format results
     items = []
@@ -723,9 +755,10 @@ async def search_parts(
         if part.prices:
             today = datetime.now().date()
             valid_prices = [
-                p for p in part.prices
-                if (not p.valid_from or p.valid_from <= today) and
-                   (not p.valid_to or p.valid_to >= today)
+                p
+                for p in part.prices
+                if (not p.valid_from or p.valid_from <= today)
+                and (not p.valid_to or p.valid_to >= today)
             ]
             if valid_prices:
                 best_price = min(valid_prices, key=lambda x: x.price)
@@ -737,31 +770,37 @@ async def search_parts(
             if main_images:
                 main_image = sorted(main_images, key=lambda x: x.sort_order)[0]
 
-        items.append({
-            "id": part.id,
-            "name": part.part_name,
-            "brand": part.brand_oem,
-            "category": part.category,
-            "oem_code": part.oem_code,
-            "vehicle_make": part.vehicle_make,
-            "vehicle_model": part.vehicle_model,
-            "price": {
-                "amount": float(best_price.price) if best_price else None,
-                "currency": best_price.currency if best_price else "IRR",
-                "seller": best_price.seller_name if best_price else None
-            } if best_price else None,
-            "image": {
-                "url": main_image.image_url,
-                "alt_text": main_image.alt_text
-            } if main_image else None,
-            "availability": ("in_stock" if best_price and best_price.available_qty
-                             and best_price.available_qty > 0 else "out_of_stock")
-        })
+        items.append(
+            {
+                "id": part.id,
+                "name": part.part_name,
+                "brand": part.brand_oem,
+                "category": part.category,
+                "oem_code": part.oem_code,
+                "vehicle_make": part.vehicle_make,
+                "vehicle_model": part.vehicle_model,
+                "price": {
+                    "amount": float(best_price.price) if best_price else None,
+                    "currency": best_price.currency if best_price else "IRR",
+                    "seller": best_price.seller_name if best_price else None,
+                }
+                if best_price
+                else None,
+                "image": {"url": main_image.image_url, "alt_text": main_image.alt_text}
+                if main_image
+                else None,
+                "availability": (
+                    "in_stock"
+                    if best_price and best_price.available_qty and best_price.available_qty > 0
+                    else "out_of_stock"
+                ),
+            }
+        )
 
     return {
         "items": items,
         "total": total,
         "page": page,
         "page_size": page_size,
-        "total_pages": (total + page_size - 1) // page_size
+        "total_pages": (total + page_size - 1) // page_size,
     }
