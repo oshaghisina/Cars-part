@@ -4,27 +4,27 @@ Provides comprehensive endpoints for product data, compatibility, alternatives,
 and related features.
 """
 
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func
 
+from app.api.dependencies import get_current_user
 from app.db.database import get_db
-from app.db.models import Part, Price, PartSpecification, PartImage, User
+from app.db.models import Part, PartImage, PartSpecification, Price, User
 from app.schemas.pdp_schemas import (
-    PartDetailResponse,
-    PartSpecificationResponse,
-    PartImageResponse,
+    PaginatedResponse,
     PartAlternativeResponse,
     PartCompatibilityRequest,
     PartCompatibilityResponse,
-    PartPriceResponse,
     PartCrossReferenceResponse,
-    PaginatedResponse,
+    PartDetailResponse,
+    PartImageResponse,
+    PartPriceResponse,
+    PartSpecificationResponse,
 )
-from app.api.dependencies import get_current_user
 
 router = APIRouter(prefix="/pdp", tags=["Product Detail Page"])
 

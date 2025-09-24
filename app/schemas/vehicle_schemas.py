@@ -3,8 +3,9 @@ Vehicle Management Pydantic Schemas
 Defines data models for vehicle API requests and responses.
 """
 
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Base Models

@@ -4,19 +4,28 @@ Handles image upload, processing, optimization, and serving for product images.
 """
 
 import uuid
-from typing import List, Optional, Dict
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, status
-from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
-from PIL import Image, ImageOps
 import aiofiles
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
+from fastapi.responses import FileResponse
+from PIL import Image, ImageOps
+from sqlalchemy.orm import Session
 
+from app.api.dependencies import require_permission
 from app.db.database import get_db
 from app.db.models import Part, PartImage, User
-from app.api.dependencies import require_permission
 
 router = APIRouter(prefix="/images", tags=["Image Management"])
 

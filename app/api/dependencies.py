@@ -3,14 +3,15 @@ FastAPI dependencies for authentication and authorization.
 """
 
 from typing import Optional
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.orm import Session
-import jwt
 
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
 from app.db.database import get_db
 from app.db.models import User
-from app.core.config import settings
 
 # Security scheme
 security = HTTPBearer(auto_error=False)

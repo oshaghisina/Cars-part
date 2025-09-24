@@ -3,8 +3,8 @@ PDP (Product Detail Page) Pydantic Schemas
 Defines data models for PDP API requests and responses.
 """
 
-from typing import List, Optional, Dict, Any
-from datetime import datetime, date
+from datetime import date, datetime
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 

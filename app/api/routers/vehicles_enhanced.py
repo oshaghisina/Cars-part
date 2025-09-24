@@ -4,22 +4,23 @@ Provides comprehensive vehicle data for fitment checking, VIN decoding, and vehi
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Path
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import and_, or_, func
 
 from app.db.database import get_db
 from app.db.models import VehicleBrand, VehicleModel, VehicleTrim
 from app.schemas.vehicle_schemas import (
     VehicleBrandResponse,
-    VehicleModelResponse,
-    VehicleTrimResponse,
-    VehicleSearchRequest,
-    VehicleSearchResponse,
-    VINDecodeRequest,
-    VINDecodeResponse,
     VehicleCompatibilityRequest,
     VehicleCompatibilityResponse,
+    VehicleModelResponse,
+    VehicleSearchRequest,
+    VehicleSearchResponse,
+    VehicleTrimResponse,
+    VINDecodeRequest,
+    VINDecodeResponse,
 )
 
 router = APIRouter(prefix="/vehicles-enhanced", tags=["Enhanced Vehicles"])
