@@ -476,9 +476,8 @@ async def check_part_compatibility(
             notes.append("Exact vehicle model match")
         else:
             notes.append(
-                f"Different vehicle model: part is for {
-                    part.vehicle_model}, vehicle is {
-                    vehicle_info.model}")
+                f"Different vehicle model: part is for {part.vehicle_model}, "
+                f"vehicle is {vehicle_info.model}")
 
     # Check year compatibility
     if vehicle_info.year:
@@ -486,22 +485,17 @@ async def check_part_compatibility(
             if part.model_year_from <= vehicle_info.year <= part.model_year_to:
                 score += 20
                 notes.append(
-                    f"Year {
-                        vehicle_info.year} is within compatibility range {
-                        part.model_year_from}-{
-                        part.model_year_to}")
+                    f"Year {vehicle_info.year} is within compatibility range "
+                    f"{part.model_year_from}-{part.model_year_to}")
             else:
                 notes.append(
-                    f"Year {
-                        vehicle_info.year} is outside compatibility range {
-                        part.model_year_from}-{
-                        part.model_year_to}")
+                    f"Year {vehicle_info.year} is outside compatibility range "
+                    f"{part.model_year_from}-{part.model_year_to}")
         elif part.model_year_from and vehicle_info.year >= part.model_year_from:
             score += 15
             notes.append(
-                f"Year {
-                    vehicle_info.year} is after part introduction year {
-                    part.model_year_from}")
+                f"Year {vehicle_info.year} is after part introduction year "
+                f"{part.model_year_from}")
 
     # Check engine code compatibility
     if vehicle_info.engine_code and part.engine_code:
@@ -510,9 +504,8 @@ async def check_part_compatibility(
             notes.append("Exact engine code match")
         else:
             notes.append(
-                f"Different engine code: part is for {
-                    part.engine_code}, vehicle has {
-                    vehicle_info.engine_code}")
+                f"Different engine code: part is for {part.engine_code}, "
+                f"vehicle has {vehicle_info.engine_code}")
 
     # Check trim compatibility
     if vehicle_info.trim and part.vehicle_trim:
@@ -521,9 +514,8 @@ async def check_part_compatibility(
             notes.append("Exact trim match")
         else:
             notes.append(
-                f"Different trim: part is for {
-                    part.vehicle_trim}, vehicle is {
-                    vehicle_info.trim}")
+                f"Different trim: part is for {part.vehicle_trim}, "
+                f"vehicle is {vehicle_info.trim}")
 
     # Determine compatibility level
     if score >= 70:
