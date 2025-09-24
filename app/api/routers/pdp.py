@@ -419,8 +419,8 @@ async def get_part_cross_references_internal(db: Session, part_id: int) -> Dict[
 
 @router.post("/parts/{part_id}/check-compatibility", response_model=PartCompatibilityResponse)
 async def check_part_compatibility(
-    part_id: int = Path(..., description="Part ID"),
     vehicle_info: PartCompatibilityRequest,
+    part_id: int = Path(..., description="Part ID"),
     db: Session = Depends(get_db)
 ):
     """Check if a part is compatible with a specific vehicle."""
