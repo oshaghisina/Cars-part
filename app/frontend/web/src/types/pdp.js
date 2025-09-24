@@ -163,7 +163,7 @@ export interface PaginatedResponse<T> {
 // Analytics types
 export interface AnalyticsEvent {
   event_type: string
-  properties: Record<string, any>
+  properties: Object
   timestamp: string
   user_id?: number
   session_id?: string
@@ -244,7 +244,7 @@ export interface ViewAlternativesEvent extends AnalyticsEvent {
 export interface APIError {
   message: string
   code: string
-  details?: Record<string, any>
+  details?: Object
 }
 
 export interface ValidationError extends APIError {
