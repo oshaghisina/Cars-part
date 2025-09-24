@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class UserBase(BaseModel):
@@ -25,13 +25,15 @@ class UserCreate(UserBase):
 
     password: str
 
-    @validator("password")
+    @field_validator("password")
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
         return v
 
-    @validator("username")
+    @field_validator("username")
+    @classmethod
     def validate_username(cls, v):
         if len(v) < 3:
             raise ValueError("Username must be at least 3 characters long")
@@ -55,7 +57,8 @@ class UserUpdate(BaseModel):
     language: Optional[str] = None
     preferences: Optional[Dict[str, Any]] = None
 
-    @validator("username")
+    @field_validator("username")
+    @classmethod
     def validate_username(cls, v):
         if v is not None:
             if len(v) < 3:
@@ -80,7 +83,8 @@ class PasswordChange(BaseModel):
     current_password: str
     new_password: str
 
-    @validator("new_password")
+    @field_validator("new_password")
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
@@ -239,7 +243,8 @@ class SystemInit(BaseModel):
     admin_first_name: str
     admin_last_name: str
 
-    @validator("admin_password")
+    @field_validator("admin_password")
+    @classmethod
     def validate_password(cls, v):
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters long")
@@ -251,7 +256,8 @@ class BulkUserCreate(BaseModel):
 
     users: List[UserCreate]
 
-    @validator("users")
+    @field_validator("users")
+    @classmethod
     def validate_users_list(cls, v):
         if len(v) == 0:
             raise ValueError("Users list cannot be empty")
@@ -266,7 +272,8 @@ class BulkRoleAssignment(BaseModel):
     user_ids: List[int]
     role: str
 
-    @validator("user_ids")
+    @field_validator("user_ids")
+    @classmethod
     def validate_user_ids(cls, v):
         if len(v) == 0:
             raise ValueError("User IDs list cannot be empty")

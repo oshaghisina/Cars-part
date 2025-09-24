@@ -5,7 +5,7 @@ Defines data models for vehicle API requests and responses.
 
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Base Models
 class VehicleBrandResponse(BaseModel):
@@ -83,7 +83,8 @@ class VehicleSearchRequest(BaseModel):
     transmission: Optional[str] = Field(None, description="Transmission type")
     limit: Optional[int] = Field(50, ge=1, le=100, description="Maximum results")
     
-    @validator('year')
+    @field_validator('year')
+    @classmethod
     def validate_year(cls, v):
         if v is not None and (v < 1980 or v > 2030):
             raise ValueError('Year must be between 1980 and 2030')
@@ -122,7 +123,8 @@ class VINDecodeRequest(BaseModel):
     """VIN decode request model."""
     vin: str = Field(..., min_length=17, max_length=17, description="17-character VIN")
     
-    @validator('vin')
+    @field_validator('vin')
+    @classmethod
     def validate_vin(cls, v):
         v = v.upper().strip()
         if len(v) != 17:
@@ -170,12 +172,12 @@ class VehicleCompatibilityRequest(BaseModel):
     year: Optional[int] = Field(None, description="Model year")
     engine_code: Optional[str] = Field(None, description="Engine code")
     
-    @validator('trim_id', 'make')
-    def validate_vehicle_identification(cls, v, values):
+    @model_validator(mode='after')
+    def validate_vehicle_identification(self):
         """Ensure either trim_id or make is provided."""
-        if not v and not values.get('trim_id') and not values.get('make'):
+        if not self.trim_id and not self.make:
             raise ValueError('Either trim_id or make must be provided')
-        return v
+        return self
 
 class CompatiblePart(BaseModel):
     """Compatible part information."""

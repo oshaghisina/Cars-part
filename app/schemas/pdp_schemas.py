@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any, Union
 from datetime import datetime, date
 from decimal import Decimal
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # Base Models
 class VehicleInfo(BaseModel):
@@ -188,16 +188,18 @@ class PartCompatibilityRequest(BaseModel):
     vehicle: VehicleInfo = Field(..., description="Vehicle information")
     include_alternatives: bool = Field(True, description="Include alternative suggestions")
     
-    @root_validator
+    @model_validator(mode='before')
+    @classmethod
     def validate_vehicle_info(cls, values):
         """Validate that at least some vehicle information is provided."""
-        vehicle = values.get('vehicle')
-        if not vehicle:
-            raise ValueError("Vehicle information is required")
-        
-        # At least make or VIN should be provided
-        if not any([vehicle.make, vehicle.vin]):
-            raise ValueError("At least vehicle make or VIN must be provided")
+        if isinstance(values, dict):
+            vehicle = values.get('vehicle')
+            if not vehicle:
+                raise ValueError("Vehicle information is required")
+            
+            # At least make or VIN should be provided
+            if not any([vehicle.make, vehicle.vin]):
+                raise ValueError("At least vehicle make or VIN must be provided")
         
         return values
 
@@ -225,12 +227,14 @@ class PartSearchFilters(BaseModel):
     in_stock_only: bool = Field(False, description="Show only in-stock items")
     brands: Optional[List[str]] = Field(None, description="Brand filters")
     
-    @validator('max_price')
-    def validate_price_range(cls, v, values):
+    @field_validator('max_price')
+    @classmethod
+    def validate_price_range(cls, v, info):
         """Validate that max_price is greater than min_price."""
-        min_price = values.get('min_price')
-        if min_price is not None and v is not None and v < min_price:
-            raise ValueError('max_price must be greater than min_price')
+        if hasattr(info, 'data') and 'min_price' in info.data:
+            min_price = info.data['min_price']
+            if min_price is not None and v is not None and v < min_price:
+                raise ValueError('max_price must be greater than min_price')
         return v
 
 class PaginatedResponse(BaseModel):
