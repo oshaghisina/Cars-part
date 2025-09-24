@@ -466,9 +466,8 @@ async def check_part_compatibility(
             notes.append("Exact vehicle make match")
         else:
             notes.append(
-                f"Different vehicle make: part is for {
-                    part.vehicle_make}, vehicle is {
-                    vehicle_info.make}")
+                f"Different vehicle make: part is for {part.vehicle_make}, "
+                f"vehicle is {vehicle_info.make}")
 
     # Check vehicle model compatibility
     if vehicle_info.model and part.vehicle_model:
