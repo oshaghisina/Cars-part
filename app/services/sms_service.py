@@ -2,14 +2,14 @@
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.models.sms_models import SMSLog, SMSTemplate, StockAlert
-from app.schemas.sms_schemas import SMSMessage, SMSResponse, SMSTemplateData
+from app.schemas.sms_schemas import SMSResponse
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class SMSService:
         try:
             if settings.sms_enabled and settings.melipayamak_username != "CHANGEME":
                 from melipayamak import Api
-                
+
                 self.api = Api(
                     username=settings.melipayamak_username,
                     password=settings.melipayamak_password
@@ -49,13 +49,13 @@ class SMSService:
     ) -> SMSResponse:
         """
         Send SMS message using Melipayamak API.
-        
+
         Args:
             phone_number: Recipient phone number
             message: SMS message content
             template_id: Optional template ID for tracking
             language: Message language (fa/en)
-            
+
         Returns:
             SMSResponse with status and details
         """
@@ -97,9 +97,9 @@ class SMSService:
                 sms_log.sent_at = datetime.utcnow()
                 sms_log.external_id = response.get("Value", "")
                 sms_log.cost = self._calculate_sms_cost(message)
-                
+
                 self.db.commit()
-                
+
                 return SMSResponse(
                     success=True,
                     message="SMS sent successfully",
@@ -107,11 +107,12 @@ class SMSService:
                     cost=sms_log.cost
                 )
             else:
-                error_msg = response.get("StrRetStatus", "Unknown error") if response else "No response"
+                error_msg = response.get(
+                    "StrRetStatus", "Unknown error") if response else "No response"
                 sms_log.status = "failed"
                 sms_log.error_message = error_msg
                 self.db.commit()
-                
+
                 return SMSResponse(
                     success=False,
                     message=f"SMS sending failed: {error_msg}",
@@ -124,7 +125,7 @@ class SMSService:
             sms_log.status = "failed"
             sms_log.error_message = str(e)
             self.db.commit()
-            
+
             return SMSResponse(
                 success=False,
                 message=f"SMS sending error: {str(e)}",
@@ -141,20 +142,20 @@ class SMSService:
     ) -> SMSResponse:
         """
         Send SMS using a predefined template.
-        
+
         Args:
             phone_number: Recipient phone number
             template_name: Template name to use
             variables: Variables to replace in template
             language: Message language (fa/en)
-            
+
         Returns:
             SMSResponse with status and details
         """
         # Get template
         template = self.db.query(SMSTemplate).filter(
             SMSTemplate.name == template_name,
-            SMSTemplate.is_active == True
+            SMSTemplate.is_active
         ).first()
 
         if not template:
@@ -172,8 +173,7 @@ class SMSService:
                 success=False,
                 message=f"Template content not available for language '{language}'",
                 message_id=None,
-                cost=0.0
-            )
+                cost=0.0)
 
         # Replace variables in template
         message = self._replace_template_variables(content, variables)
@@ -194,35 +194,35 @@ class SMSService:
     ) -> List[SMSResponse]:
         """
         Send SMS to multiple recipients.
-        
+
         Args:
             phone_numbers: List of recipient phone numbers
             message: SMS message content
             template_id: Optional template ID for tracking
-            
+
         Returns:
             List of SMSResponse objects
         """
         results = []
-        
+
         # Rate limiting: send in batches to avoid overwhelming the API
         batch_size = 10
         for i in range(0, len(phone_numbers), batch_size):
             batch = phone_numbers[i:i + batch_size]
-            
+
             # Send batch concurrently
             tasks = [
                 self.send_sms(phone, message, template_id)
                 for phone in batch
             ]
-            
+
             batch_results = await asyncio.gather(*tasks, return_exceptions=True)
             results.extend(batch_results)
-            
+
             # Add delay between batches to respect rate limits
             if i + batch_size < len(phone_numbers):
                 await asyncio.sleep(1)
-        
+
         return results
 
     async def create_stock_alert(
@@ -234,13 +234,13 @@ class SMSService:
     ) -> bool:
         """
         Create a stock alert for a user.
-        
+
         Args:
             user_id: User ID (optional)
             part_id: Part ID to monitor
             phone_number: Phone number for notifications
             email: Email for notifications (optional)
-            
+
         Returns:
             True if alert created successfully
         """
@@ -249,7 +249,7 @@ class SMSService:
             existing_alert = self.db.query(StockAlert).filter(
                 StockAlert.part_id == part_id,
                 StockAlert.phone_number == phone_number,
-                StockAlert.is_active == True
+                StockAlert.is_active
             ).first()
 
             if existing_alert:
@@ -262,11 +262,12 @@ class SMSService:
                 phone_number=phone_number,
                 email=email
             )
-            
+
             self.db.add(stock_alert)
             self.db.commit()
-            
-            logger.info(f"Stock alert created for part {part_id}, phone {phone_number}")
+
+            logger.info(
+                f"Stock alert created for part {part_id}, phone {phone_number}")
             return True
 
         except Exception as e:
@@ -277,10 +278,10 @@ class SMSService:
     async def process_stock_alerts(self, part_id: int) -> int:
         """
         Process stock alerts for a part that's back in stock.
-        
+
         Args:
             part_id: Part ID that's back in stock
-            
+
         Returns:
             Number of alerts processed
         """
@@ -288,8 +289,8 @@ class SMSService:
             # Get active stock alerts for this part
             alerts = self.db.query(StockAlert).filter(
                 StockAlert.part_id == part_id,
-                StockAlert.is_active == True,
-                StockAlert.is_notified == False
+                StockAlert.is_active,
+                StockAlert.is_notified is False
             ).all()
 
             if not alerts:
@@ -302,7 +303,7 @@ class SMSService:
                 return 0
 
             processed_count = 0
-            
+
             for alert in alerts:
                 try:
                     # Send stock alert SMS
@@ -311,25 +312,31 @@ class SMSService:
                         "brand": part.brand_oem,
                         "part_id": str(part.id)
                     }
-                    
+
                     response = await self.send_template_sms(
                         phone_number=alert.phone_number,
                         template_name="stock_alert",
                         variables=variables,
                         language="fa"
                     )
-                    
+
                     if response.success:
                         alert.is_notified = True
                         alert.notified_at = datetime.utcnow()
                         processed_count += 1
-                        
-                        logger.info(f"Stock alert sent to {alert.phone_number} for part {part_id}")
+
+                        logger.info(
+                            f"Stock alert sent to {
+                                alert.phone_number} for part {part_id}")
                     else:
-                        logger.error(f"Failed to send stock alert: {response.message}")
-                        
+                        logger.error(
+                            f"Failed to send stock alert: {
+                                response.message}")
+
                 except Exception as e:
-                    logger.error(f"Error processing stock alert {alert.id}: {e}")
+                    logger.error(
+                        f"Error processing stock alert {
+                            alert.id}: {e}")
 
             self.db.commit()
             return processed_count
@@ -346,38 +353,42 @@ class SMSService:
     ) -> Dict:
         """
         Get SMS analytics for the given date range.
-        
+
         Args:
             start_date: Start date for analytics
             end_date: End date for analytics
-            
+
         Returns:
             Dictionary with SMS analytics
         """
         try:
             query = self.db.query(SMSLog)
-            
+
             if start_date:
                 query = query.filter(SMSLog.created_at >= start_date)
             if end_date:
                 query = query.filter(SMSLog.created_at <= end_date)
-            
+
             logs = query.all()
-            
+
             total_sent = len(logs)
             successful = len([log for log in logs if log.status == "sent"])
             failed = len([log for log in logs if log.status == "failed"])
             total_cost = sum(log.cost or 0 for log in logs)
-            
+
             return {
                 "total_sent": total_sent,
                 "successful": successful,
                 "failed": failed,
-                "success_rate": (successful / total_sent * 100) if total_sent > 0 else 0,
+                "success_rate": (
+                    successful /
+                    total_sent *
+                    100) if total_sent > 0 else 0,
                 "total_cost": float(total_cost),
-                "average_cost": float(total_cost / total_sent) if total_sent > 0 else 0
-            }
-            
+                "average_cost": float(
+                    total_cost /
+                    total_sent) if total_sent > 0 else 0}
+
         except Exception as e:
             logger.error(f"Failed to get SMS analytics: {e}")
             return {
@@ -393,18 +404,19 @@ class SMSService:
         """Validate Iranian phone number format."""
         # Remove any non-digit characters
         cleaned = ''.join(filter(str.isdigit, phone_number))
-        
+
         # Iranian mobile numbers: 09xxxxxxxxx (11 digits)
         if len(cleaned) == 11 and cleaned.startswith('09'):
             return True
-        
+
         # International format: +989xxxxxxxxx
         if len(cleaned) == 12 and cleaned.startswith('989'):
             return True
-            
+
         return False
 
-    def _replace_template_variables(self, template: str, variables: Dict[str, str]) -> str:
+    def _replace_template_variables(
+            self, template: str, variables: Dict[str, str]) -> str:
         """Replace variables in template string."""
         message = template
         for key, value in variables.items():
@@ -419,5 +431,6 @@ class SMSService:
             return 0.1  # 1 SMS
         else:
             # Calculate number of SMS parts
-            sms_parts = (message_length - 1) // 153 + 1  # 153 chars per part after first
+            sms_parts = (message_length - 1) // 153 + \
+                1  # 153 chars per part after first
             return sms_parts * 0.1
