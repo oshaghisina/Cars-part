@@ -75,7 +75,7 @@
         
         <!-- Image Format Indicator (Dev Mode) -->
         <div 
-          v-if="import.meta.env.DEV && currentImage && mainImageLoaded"
+          v-if="isDev && currentImage && mainImageLoaded"
           class="absolute bottom-4 left-4 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded"
         >
           {{ getImageFormat(currentImage) }}
@@ -328,6 +328,9 @@ export default {
     const isAutoRotating = ref(false)
     const lastMouseX = ref(0)
     const autoRotationInterval = ref(null)
+    
+    // Development mode flag
+    const isDev = ref(import.meta.env.DEV)
 
     // Images from API data or fallback to placeholders
     const images = ref([])
@@ -820,6 +823,8 @@ export default {
       videos,
       has360View,
       currentImage,
+      // Development mode
+      isDev,
       // Image loading states
       mainImageLoaded,
       thumbnailsLoaded,
