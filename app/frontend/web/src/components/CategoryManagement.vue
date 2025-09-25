@@ -108,7 +108,7 @@ export default {
           id: 1,
           name: 'موتور و قطعات موتور',
           description: 'قطعات اصلی موتور و سیستم احتراق',
-          image: img10101,
+          image: img10102, // Engine assembly image
           icon: '🔧',
           productCount: 45,
           popularItems: 'لنت ترمز، فیلتر روغن، شمع احتراق',
@@ -118,7 +118,7 @@ export default {
           id: 2,
           name: 'سیستم ترمز',
           description: 'لنت ترمز، دیسک ترمز و سیستم ترمز',
-          image: img10102,
+          image: img10106, // Brake disc and caliper image
           icon: '🛑',
           productCount: 28,
           popularItems: 'لنت ترمز جلو، دیسک ترمز، کالیپر',
@@ -128,7 +128,7 @@ export default {
           id: 3,
           name: 'سیستم خنک‌کننده',
           description: 'رادیاتور، پمپ آب و ترموستات',
-          image: img10104,
+          image: img10104, // Exhaust system (mufflers) - keeping as is for now
           icon: '🌡️',
           productCount: 32,
           popularItems: 'رادیاتور، پمپ آب، ترموستات',
@@ -138,7 +138,7 @@ export default {
           id: 4,
           name: 'سیستم سوخت',
           description: 'پمپ بنزین، فیلتر سوخت و انژکتور',
-          image: img10105,
+          image: img10105, // Fuel and air filters - correct match
           icon: '⛽',
           productCount: 18,
           popularItems: 'پمپ بنزین، فیلتر سوخت، انژکتور',
@@ -148,7 +148,7 @@ export default {
           id: 5,
           name: 'سیستم برق',
           description: 'باتری، آلترناتور و سیستم برق',
-          image: img10106,
+          image: img10110, // Battery, alternator, starter image
           icon: '⚡',
           productCount: 52,
           popularItems: 'باتری، آلترناتور، استارت',
@@ -158,7 +158,7 @@ export default {
           id: 6,
           name: 'سیستم تعلیق',
           description: 'فنر، کمک‌فنر و سیستم تعلیق',
-          image: img10110,
+          image: img10111, // Shock absorbers and springs image
           icon: '🚗',
           productCount: 38,
           popularItems: 'فنر، کمک‌فنر، بوش',
@@ -168,7 +168,7 @@ export default {
           id: 7,
           name: 'سیستم اگزوز',
           description: 'منیفولد، کاتالیست و سیستم اگزوز',
-          image: img10111,
+          image: img10104, // Mufflers and exhaust pipes image
           icon: '💨',
           productCount: 24,
           popularItems: 'منیفولد، کاتالیست، لوله اگزوز',
@@ -178,7 +178,7 @@ export default {
           id: 8,
           name: 'قطعات داخلی',
           description: 'دکمه‌ها، دستگیره‌ها و قطعات داخلی',
-          image: img10113,
+          image: img10113, // Suspension/steering components - keeping as is
           icon: '🚪',
           productCount: 67,
           popularItems: 'دکمه‌ها، دستگیره‌ها، آینه',

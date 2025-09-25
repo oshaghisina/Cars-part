@@ -64,8 +64,15 @@
       </div>
     </section>
 
-    <!-- Test PDP Section -->
+    <!-- Categories Section -->
     <section class="py-16 bg-gray-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <CategoryManagement />
+      </div>
+    </section>
+
+    <!-- Test PDP Section -->
+    <section class="py-16 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
           <h2 class="text-3xl font-bold text-gray-900 mb-4 font-persian-bold text-rtl">تست PDP</h2>
@@ -89,8 +96,13 @@
 </template>
 
 <script>
+import CategoryManagement from '@/components/CategoryManagement.vue'
+
 export default {
   name: 'خانه',
+  components: {
+    CategoryManagement
+  },
   data() {
     return {
       showContactForm: false
