@@ -73,7 +73,13 @@ class SMSService:
 
         try:
             if not self.api:
-                raise Exception("SMS service not initialized")
+                logger.error("SMS service not initialized - check configuration")
+                sms_log.status = "failed"
+                sms_log.error_message = "SMS service not initialized"
+                self.db.commit()
+                return SMSResponse(
+                    success=False, message="SMS service not available", message_id=None, cost=0.0
+                )
 
             # Send SMS via Melipayamak
             sms_client = self.api.sms()

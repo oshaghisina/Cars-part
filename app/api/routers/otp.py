@@ -23,10 +23,34 @@ from app.schemas.otp_schemas import (
 )
 from app.services.jwt_service import jwt_service
 from app.services.otp_service import OTPService
+from app.services.sms_service import SMSService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+@router.get("/health")
+async def otp_health_check(db: Session = Depends(get_db)):
+    """Check OTP service health and SMS configuration."""
+    try:
+        sms_service = SMSService(db)
+        return {
+            "status": "healthy",
+            "sms_configured": sms_service.api is not None,
+            "sms_enabled": True,  # This would come from settings
+            "message": "SMS service is configured"
+            if sms_service.api
+            else "SMS service not configured",
+        }
+    except Exception as e:
+        logger.error(f"OTP health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "sms_configured": False,
+            "sms_enabled": False,
+            "message": f"Health check failed: {str(e)}",
+        }
 
 
 @router.post("/request", response_model=OTPResponse)
@@ -195,9 +219,10 @@ async def request_phone_login(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error requesting phone login OTP: {e}")
+        logger.error(f"Error requesting phone login OTP: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process OTP request: {str(e)}",
         )
 
 

@@ -224,9 +224,13 @@ class OTPService:
                 }
 
         except Exception as e:
-            logger.error(f"Error requesting OTP for {phone_number}: {e}")
+            logger.error(f"Error requesting OTP for {phone_number}: {e}", exc_info=True)
             self.db.rollback()
-            return {"success": False, "message": "Internal server error", "code": "INTERNAL_ERROR"}
+            return {
+                "success": False,
+                "message": f"Failed to send OTP: {str(e)}",
+                "code": "INTERNAL_ERROR",
+            }
 
     async def verify_otp(self, phone_number: str, code: str, code_type: str = "login") -> Dict:
         """
