@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Login Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+        button { padding: 10px 15px; margin: 5px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Phone Login Debug Tool</h1>
+    
+    <div class="test-section">
+        <h2>1. Backend Health Check</h2>
+        <button onclick="testBackendHealth()">Test Backend</button>
+        <div id="backend-result" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. CORS Test</h2>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="cors-result" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. OTP Request Test</h2>
+        <input type="text" id="phone-input" placeholder="+989123456789" value="+989123456789">
+        <button onclick="testOTPRequest()">Request OTP</button>
+        <div id="otp-request-result" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. OTP Verify Test</h2>
+        <input type="text" id="otp-input" placeholder="123456" value="123456">
+        <button onclick="testOTPVerify()">Verify OTP</button>
+        <div id="otp-verify-result" class="log"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Frontend Component Test</h2>
+        <button onclick="testFrontendComponent()">Test Component Loading</button>
+        <div id="frontend-result" class="log"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8001';
+        const WEB_BASE = 'http://localhost:5174';
+        
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+        
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        async function testBackendHealth() {
+            clearLog('backend-result');
+            log('backend-result', 'Testing backend health...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('backend-result', `✅ Backend is healthy: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log('backend-result', `❌ Backend error: ${response.status} - ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                log('backend-result', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testCORS() {
+            clearLog('cors-result');
+            log('cors-result', 'Testing CORS configuration...');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/otp/phone/login/request`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': WEB_BASE,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('access-control-allow-origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('access-control-allow-methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('access-control-allow-headers')
+                };
+                
+                log('cors-result', `✅ CORS preflight successful`, 'success');
+                log('cors-result', `Allow Origin: ${corsHeaders['Access-Control-Allow-Origin']}`);
+                log('cors-result', `Allow Methods: ${corsHeaders['Access-Control-Allow-Methods']}`);
+                log('cors-result', `Allow Headers: ${corsHeaders['Access-Control-Allow-Headers']}`);
+            } catch (error) {
+                log('cors-result', `❌ CORS error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testOTPRequest() {
+            clearLog('otp-request-result');
+            const phoneNumber = document.getElementById('phone-input').value;
+            log('otp-request-result', `Testing OTP request for: ${phoneNumber}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/otp/phone/login/request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone_number: phoneNumber
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('otp-request-result', `✅ OTP request successful: ${data.message}`, 'success');
+                    log('otp-request-result', `Expires in: ${data.expires_in} seconds`);
+                    log('otp-request-result', `Resend allowed: ${data.resend}`);
+                } else {
+                    log('otp-request-result', `❌ OTP request failed: ${response.status} - ${data.detail}`, 'error');
+                    
+                    if (response.status === 429) {
+                        log('otp-request-result', '💡 This is rate limiting - wait 30 minutes or use a different IP', 'info');
+                    }
+                }
+            } catch (error) {
+                log('otp-request-result', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testOTPVerify() {
+            clearLog('otp-verify-result');
+            const phoneNumber = document.getElementById('phone-input').value;
+            const otpCode = document.getElementById('otp-input').value;
+            log('otp-verify-result', `Testing OTP verification for: ${phoneNumber} with code: ${otpCode}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/otp/phone/login/verify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone_number: phoneNumber,
+                        otp_code: otpCode
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('otp-verify-result', `✅ OTP verification successful: ${data.message}`, 'success');
+                    if (data.access_token) {
+                        log('otp-verify-result', `Access token received: ${data.access_token.substring(0, 20)}...`);
+                    }
+                } else {
+                    log('otp-verify-result', `❌ OTP verification failed: ${response.status} - ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                log('otp-verify-result', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testFrontendComponent() {
+            clearLog('frontend-result');
+            log('frontend-result', 'Testing frontend component loading...');
+            
+            try {
+                // Test if the web portal is accessible
+                const response = await fetch(`${WEB_BASE}/`);
+                
+                if (response.ok) {
+                    log('frontend-result', `✅ Web portal is accessible`, 'success');
+                    
+                    // Test if the PhoneLoginButton component exists
+                    const componentResponse = await fetch(`${WEB_BASE}/src/components/auth/PhoneLoginButton.vue`);
+                    if (componentResponse.ok) {
+                        log('frontend-result', `✅ PhoneLoginButton component is accessible`, 'success');
+                    } else {
+                        log('frontend-result', `❌ PhoneLoginButton component not found: ${componentResponse.status}`, 'error');
+                    }
+                } else {
+                    log('frontend-result', `❌ Web portal not accessible: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log('frontend-result', `❌ Frontend error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run backend health check on page load
+        window.onload = function() {
+            testBackendHealth();
+        };
+    </script>
+</body>
+</html>

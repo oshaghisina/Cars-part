@@ -80,6 +80,24 @@
         </div>
       </div>
 
+      <!-- Phone Login -->
+      <PhoneLoginButton 
+        @login-success="handlePhoneSuccess"
+        @error="handlePhoneError"
+      />
+
+      <!-- Divider -->
+      <div class="mt-6 mb-6">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300" />
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500 font-persian text-rtl">یا</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Telegram Login -->
       <TelegramLoginButton 
         @login-success="handleTelegramSuccess"
@@ -105,11 +123,13 @@
 import { ref, reactive, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import TelegramLoginButton from './TelegramLoginButton.vue'
+import PhoneLoginButton from './PhoneLoginButton.vue'
 
 export default {
   name: 'LoginModal',
   components: {
-    TelegramLoginButton
+    TelegramLoginButton,
+    PhoneLoginButton
   },
   props: {
     isOpen: {
@@ -192,6 +212,17 @@ export default {
       authStore.error = errorMessage
     }
 
+    const handlePhoneSuccess = (data) => {
+      // Show success message and close modal
+      emit('login-success', data)
+      closeModal()
+    }
+
+    const handlePhoneError = (errorMessage) => {
+      // Set error message to be displayed
+      authStore.error = errorMessage
+    }
+
     return {
       form,
       errors,
@@ -201,7 +232,9 @@ export default {
       closeModal,
       showRegister,
       handleTelegramSuccess,
-      handleTelegramError
+      handleTelegramError,
+      handlePhoneSuccess,
+      handlePhoneError
     }
   }
 }
