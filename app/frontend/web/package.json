@@ -12,7 +12,9 @@
     "test": "vitest",
     "test:unit": "vitest run",
     "test:watch": "vitest --watch",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.16",
@@ -23,16 +25,21 @@
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
+    "@storybook/addon-docs": "9.1.8",
+    "@storybook/addon-onboarding": "9.1.8",
+    "@storybook/vue3-vite": "9.1.8",
     "@vitejs/plugin-vue": "^4.5.2",
     "@vitest/coverage-v8": "^1.0.4",
     "@vue/eslint-config-prettier": "^8.0.0",
     "@vue/test-utils": "^2.4.3",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.55.0",
+    "eslint-plugin-storybook": "9.1.8",
     "eslint-plugin-vue": "^9.19.2",
     "jsdom": "^23.0.1",
     "postcss": "^8.4.32",
     "prettier": "^3.1.1",
+    "storybook": "9.1.8",
     "tailwindcss": "^3.3.6",
     "vite": "^5.0.8",
     "vitest": "^1.0.4",
@@ -49,5 +56,10 @@
     "chinese-cars"
   ],
   "author": "Chinese Auto Parts Bot Team",
-  "license": "Private"
+  "license": "Private",
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
+  }
 }

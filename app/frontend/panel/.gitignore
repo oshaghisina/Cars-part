@@ -58,3 +58,6 @@ Thumbs.db
 .cache/
 .parcel-cache/
 .vite/
+
+*storybook.log
+storybook-static

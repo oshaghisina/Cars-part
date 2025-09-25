@@ -5,7 +5,11 @@ module.exports = {
     browser: true,
     es2022: true,
   },
-  extends: ["eslint:recommended", "@vue/eslint-config-prettier"],
+  extends: [
+    "eslint:recommended",
+    "@vue/eslint-config-prettier",
+    "plugin:storybook/recommended"
+  ],
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
