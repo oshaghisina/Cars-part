@@ -261,7 +261,8 @@ class JWTService:
             )
             exp_timestamp = payload.get("exp")
             if exp_timestamp:
-                return datetime.fromtimestamp(exp_timestamp)
+                # Convert timestamp to UTC datetime (JWT timestamps are always UTC)
+                return datetime.utcfromtimestamp(exp_timestamp)
         except Exception as e:
             logger.warning(f"Failed to get token expiration: {e}")
         return None
