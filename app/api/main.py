@@ -25,7 +25,8 @@ from app.api.routers import (
     vehicles_enhanced,
 )
 from app.core.config import settings
-from app.db.models import User  # Ensure User model is loaded for foreign key relationships
+from app.db.database import Base, engine
+from app.db.models import User  # Ensure User model is loaded for foreign key relationships  # noqa: F401, E501
 
 # Conditionally import AI modules only if AI Gateway is enabled
 if getattr(settings, "ai_gateway_enabled", False):
@@ -56,6 +57,46 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def ensure_critical_tables():
+    """Ensure critical OTP tables exist on startup."""
+    try:
+        import logging
+
+        from sqlalchemy import inspect
+
+        logger = logging.getLogger(__name__)
+
+        # Check if critical tables exist
+        inspector = inspect(engine)
+        existing_tables = inspector.get_table_names()
+
+        critical_tables = ["otp_codes", "rate_limits", "phone_verifications"]
+        missing_tables = [table for table in critical_tables if table not in existing_tables]
+
+        if missing_tables:
+            logger.warning(f"Missing critical tables: {missing_tables}. Creating them...")
+
+            # Import models to ensure they're registered
+            from app.models.otp_models import OTPCode, PhoneVerification, RateLimit  # noqa: F401
+            from app.models.sms_models import SMSLog, SMSTemplate, StockAlert  # noqa: F401
+            from app.models.telegram_models import (  # noqa: F401
+                TelegramBotSession,
+                TelegramDeepLink,
+                TelegramLinkToken,
+                TelegramUser,
+            )
+
+            # Create missing tables
+            Base.metadata.create_all(bind=engine)
+            logger.info("Critical tables created successfully")
+        else:
+            logger.info("All critical tables exist")
+
+    except Exception as e:
+        logger.error(f"Failed to ensure critical tables: {e}")
 
 
 @app.get("/health")
