@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user
+from app.core.config import settings
 from app.db.database import get_db
 from app.db.models import User
 from app.schemas.otp_schemas import (
@@ -22,7 +23,6 @@ from app.schemas.otp_schemas import (
     PhoneLoginVerifyRequest,
 )
 from app.services.jwt_service import jwt_service
-from app.core.config import settings
 from app.services.otp_service import OTPService
 from app.services.sms_service import SMSService
 
