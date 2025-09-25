@@ -336,10 +336,7 @@ class OTPService:
                     f"Valid for 5 minutes. Do not share this code."
                 )
             else:
-                message = (
-                    f"Your code is: {code}. "
-                    f"Valid for 5 minutes. Do not share this code."
-                )
+                message = f"Your code is: {code}. " f"Valid for 5 minutes. Do not share this code."
 
             # Create SMS service instance
             sms_service = SMSService(self.db)

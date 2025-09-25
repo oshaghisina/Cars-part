@@ -580,8 +580,11 @@ For support, visit our website or contact customer service.
 
                 elif text == "/status":
                     if telegram_user.is_linked:
-                        linked_at = (telegram_user.linked_at.strftime('%Y-%m-%d %H:%M')
-                                     if telegram_user.linked_at else 'Unknown')
+                        linked_at = (
+                            telegram_user.linked_at.strftime("%Y-%m-%d %H:%M")
+                            if telegram_user.linked_at
+                            else "Unknown"
+                        )
                         status_text = f"""
 ✅ **Account Status:**
 Linked: Yes
