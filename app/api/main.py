@@ -26,7 +26,9 @@ from app.api.routers import (
 )
 from app.core.config import settings
 from app.db.database import Base, engine
-from app.db.models import User  # Ensure User model is loaded for foreign key relationships  # noqa: F401, E501
+from app.db.models import (  # noqa: F401
+    User,
+)  # Ensure User model is loaded for foreign key relationships
 
 # Conditionally import AI modules only if AI Gateway is enabled
 if getattr(settings, "ai_gateway_enabled", False):
