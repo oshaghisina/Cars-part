@@ -106,6 +106,8 @@ class Settings(BaseSettings):
     sms_rate_limit_per_hour: int = 100
     sms_max_retries: int = 3
     sms_retry_delay: int = 60  # seconds
+    # Allow simulating SMS sends even in production (temporary fallback)
+    sms_fallback_in_production: bool = False
 
     # Web Application URLs
     web_app_url: str = "http://localhost:5174"

@@ -73,16 +73,27 @@ class SMSService:
 
         try:
             if not self.api:
-                if settings.app_env == "development":
-                    logger.warning("SMS service not initialized - development mode fallback")
+                if settings.app_env == "development" or settings.sms_fallback_in_production:
+                    logger.warning(
+                        "SMS service not initialized - "
+                        "using fallback (dev or allowed in production)"
+                    )
                     sms_log.status = "sent"
                     sms_log.sent_at = datetime.utcnow()
-                    sms_log.provider = "development"
+                    sms_log.provider = (
+                        "development"
+                        if settings.app_env == "development"
+                        else "fallback"
+                    )
                     sms_log.cost = 0.0
                     self.db.commit()
                     return SMSResponse(
                         success=True,
-                        message="SMS simulated in development mode",
+                        message=(
+                            "SMS simulated in development mode"
+                            if settings.app_env == "development"
+                            else "SMS simulated (production fallback enabled)"
+                        ),
                         message_id=sms_log.id,
                         cost=0.0,
                     )
