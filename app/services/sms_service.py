@@ -30,8 +30,7 @@ class SMSService:
                 from melipayamak import Api
 
                 self.api = Api(
-                    username=settings.melipayamak_username,
-                    password=settings.melipayamak_password
+                    username=settings.melipayamak_username, password=settings.melipayamak_password
                 )
                 logger.info("SMS service initialized successfully")
             else:
@@ -45,7 +44,7 @@ class SMSService:
         phone_number: str,
         message: str,
         template_id: Optional[int] = None,
-        language: str = "fa"
+        language: str = "fa",
     ) -> SMSResponse:
         """
         Send SMS message using Melipayamak API.
@@ -62,18 +61,12 @@ class SMSService:
         # Validate phone number
         if not self._validate_phone_number(phone_number):
             return SMSResponse(
-                success=False,
-                message="Invalid phone number format",
-                message_id=None,
-                cost=0.0
+                success=False, message="Invalid phone number format", message_id=None, cost=0.0
             )
 
         # Create SMS log entry
         sms_log = SMSLog(
-            recipient_phone=phone_number,
-            content=message,
-            template_id=template_id,
-            status="pending"
+            recipient_phone=phone_number, content=message, template_id=template_id, status="pending"
         )
         self.db.add(sms_log)
         self.db.commit()
@@ -85,9 +78,7 @@ class SMSService:
             # Send SMS via Melipayamak
             sms_client = self.api.sms()
             response = sms_client.send(
-                to=phone_number,
-                _from=settings.sms_sender_number,
-                text=message
+                to=phone_number, _from=settings.sms_sender_number, text=message
             )
 
             # Update SMS log with response
@@ -104,11 +95,12 @@ class SMSService:
                     success=True,
                     message="SMS sent successfully",
                     message_id=sms_log.id,
-                    cost=sms_log.cost
+                    cost=sms_log.cost,
                 )
             else:
-                error_msg = response.get(
-                    "StrRetStatus", "Unknown error") if response else "No response"
+                error_msg = (
+                    response.get("StrRetStatus", "Unknown error") if response else "No response"
+                )
                 sms_log.status = "failed"
                 sms_log.error_message = error_msg
                 self.db.commit()
@@ -117,7 +109,7 @@ class SMSService:
                     success=False,
                     message=f"SMS sending failed: {error_msg}",
                     message_id=sms_log.id,
-                    cost=0.0
+                    cost=0.0,
                 )
 
         except Exception as e:
@@ -130,15 +122,11 @@ class SMSService:
                 success=False,
                 message=f"SMS sending error: {str(e)}",
                 message_id=sms_log.id,
-                cost=0.0
+                cost=0.0,
             )
 
     async def send_template_sms(
-        self,
-        phone_number: str,
-        template_name: str,
-        variables: Dict[str, str],
-        language: str = "fa"
+        self, phone_number: str, template_name: str, variables: Dict[str, str], language: str = "fa"
     ) -> SMSResponse:
         """
         Send SMS using a predefined template.
@@ -153,17 +141,18 @@ class SMSService:
             SMSResponse with status and details
         """
         # Get template
-        template = self.db.query(SMSTemplate).filter(
-            SMSTemplate.name == template_name,
-            SMSTemplate.is_active
-        ).first()
+        template = (
+            self.db.query(SMSTemplate)
+            .filter(SMSTemplate.name == template_name, SMSTemplate.is_active)
+            .first()
+        )
 
         if not template:
             return SMSResponse(
                 success=False,
                 message=f"Template '{template_name}' not found",
                 message_id=None,
-                cost=0.0
+                cost=0.0,
             )
 
         # Get template content based on language
@@ -173,24 +162,19 @@ class SMSService:
                 success=False,
                 message=f"Template content not available for language '{language}'",
                 message_id=None,
-                cost=0.0)
+                cost=0.0,
+            )
 
         # Replace variables in template
         message = self._replace_template_variables(content, variables)
 
         # Send SMS
         return await self.send_sms(
-            phone_number=phone_number,
-            message=message,
-            template_id=template.id,
-            language=language
+            phone_number=phone_number, message=message, template_id=template.id, language=language
         )
 
     async def send_bulk_sms(
-        self,
-        phone_numbers: List[str],
-        message: str,
-        template_id: Optional[int] = None
+        self, phone_numbers: List[str], message: str, template_id: Optional[int] = None
     ) -> List[SMSResponse]:
         """
         Send SMS to multiple recipients.
@@ -211,10 +195,7 @@ class SMSService:
             batch = phone_numbers[i:i + batch_size]
 
             # Send batch concurrently
-            tasks = [
-                self.send_sms(phone, message, template_id)
-                for phone in batch
-            ]
+            tasks = [self.send_sms(phone, message, template_id) for phone in batch]
 
             batch_results = await asyncio.gather(*tasks, return_exceptions=True)
             results.extend(batch_results)
@@ -226,11 +207,7 @@ class SMSService:
         return results
 
     async def create_stock_alert(
-        self,
-        user_id: Optional[int],
-        part_id: int,
-        phone_number: str,
-        email: Optional[str] = None
+        self, user_id: Optional[int], part_id: int, phone_number: str, email: Optional[str] = None
     ) -> bool:
         """
         Create a stock alert for a user.
@@ -246,28 +223,28 @@ class SMSService:
         """
         try:
             # Check if alert already exists
-            existing_alert = self.db.query(StockAlert).filter(
-                StockAlert.part_id == part_id,
-                StockAlert.phone_number == phone_number,
-                StockAlert.is_active
-            ).first()
+            existing_alert = (
+                self.db.query(StockAlert)
+                .filter(
+                    StockAlert.part_id == part_id,
+                    StockAlert.phone_number == phone_number,
+                    StockAlert.is_active,
+                )
+                .first()
+            )
 
             if existing_alert:
                 return True  # Alert already exists
 
             # Create new stock alert
             stock_alert = StockAlert(
-                user_id=user_id,
-                part_id=part_id,
-                phone_number=phone_number,
-                email=email
+                user_id=user_id, part_id=part_id, phone_number=phone_number, email=email
             )
 
             self.db.add(stock_alert)
             self.db.commit()
 
-            logger.info(
-                f"Stock alert created for part {part_id}, phone {phone_number}")
+            logger.info(f"Stock alert created for part {part_id}, phone {phone_number}")
             return True
 
         except Exception as e:
@@ -287,17 +264,22 @@ class SMSService:
         """
         try:
             # Get active stock alerts for this part
-            alerts = self.db.query(StockAlert).filter(
-                StockAlert.part_id == part_id,
-                StockAlert.is_active,
-                StockAlert.is_notified is False
-            ).all()
+            alerts = (
+                self.db.query(StockAlert)
+                .filter(
+                    StockAlert.part_id == part_id,
+                    StockAlert.is_active,
+                    StockAlert.is_notified is False,
+                )
+                .all()
+            )
 
             if not alerts:
                 return 0
 
             # Get part information
             from app.db.models import Part
+
             part = self.db.query(Part).filter(Part.id == part_id).first()
             if not part:
                 return 0
@@ -310,14 +292,14 @@ class SMSService:
                     variables = {
                         "part_name": part.part_name,
                         "brand": part.brand_oem,
-                        "part_id": str(part.id)
+                        "part_id": str(part.id),
                     }
 
                     response = await self.send_template_sms(
                         phone_number=alert.phone_number,
                         template_name="stock_alert",
                         variables=variables,
-                        language="fa"
+                        language="fa",
                     )
 
                     if response.success:
@@ -325,15 +307,12 @@ class SMSService:
                         alert.notified_at = datetime.utcnow()
                         processed_count += 1
 
-                        logger.info(
-                            f"Stock alert sent to {alert.phone_number} for part {part_id}")
+                        logger.info(f"Stock alert sent to {alert.phone_number} for part {part_id}")
                     else:
-                        logger.error(
-                            f"Failed to send stock alert: {response.message}")
+                        logger.error(f"Failed to send stock alert: {response.message}")
 
                 except Exception as e:
-                    logger.error(
-                        f"Error processing stock alert {alert.id}: {e}")
+                    logger.error(f"Error processing stock alert {alert.id}: {e}")
 
             self.db.commit()
             return processed_count
@@ -344,9 +323,7 @@ class SMSService:
             return 0
 
     def get_sms_analytics(
-        self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        self, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None
     ) -> Dict:
         """
         Get SMS analytics for the given date range.
@@ -377,14 +354,10 @@ class SMSService:
                 "total_sent": total_sent,
                 "successful": successful,
                 "failed": failed,
-                "success_rate": (
-                    successful /
-                    total_sent *
-                    100) if total_sent > 0 else 0,
+                "success_rate": (successful / total_sent * 100) if total_sent > 0 else 0,
                 "total_cost": float(total_cost),
-                "average_cost": float(
-                    total_cost /
-                    total_sent) if total_sent > 0 else 0}
+                "average_cost": float(total_cost / total_sent) if total_sent > 0 else 0,
+            }
 
         except Exception as e:
             logger.error(f"Failed to get SMS analytics: {e}")
@@ -394,26 +367,25 @@ class SMSService:
                 "failed": 0,
                 "success_rate": 0,
                 "total_cost": 0.0,
-                "average_cost": 0.0
+                "average_cost": 0.0,
             }
 
     def _validate_phone_number(self, phone_number: str) -> bool:
         """Validate Iranian phone number format."""
         # Remove any non-digit characters
-        cleaned = ''.join(filter(str.isdigit, phone_number))
+        cleaned = "".join(filter(str.isdigit, phone_number))
 
         # Iranian mobile numbers: 09xxxxxxxxx (11 digits)
-        if len(cleaned) == 11 and cleaned.startswith('09'):
+        if len(cleaned) == 11 and cleaned.startswith("09"):
             return True
 
         # International format: +989xxxxxxxxx
-        if len(cleaned) == 12 and cleaned.startswith('989'):
+        if len(cleaned) == 12 and cleaned.startswith("989"):
             return True
 
         return False
 
-    def _replace_template_variables(
-            self, template: str, variables: Dict[str, str]) -> str:
+    def _replace_template_variables(self, template: str, variables: Dict[str, str]) -> str:
         """Replace variables in template string."""
         message = template
         for key, value in variables.items():
@@ -428,6 +400,5 @@ class SMSService:
             return 0.1  # 1 SMS
         else:
             # Calculate number of SMS parts
-            sms_parts = (message_length - 1) // 153 + \
-                1  # 153 chars per part after first
+            sms_parts = (message_length - 1) // 153 + 1  # 153 chars per part after first
             return sms_parts * 0.1

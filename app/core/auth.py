@@ -1,7 +1,7 @@
 """Authentication and authorization core module."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any, Dict, Optional
 
 from fastapi import Depends, HTTPException, status
@@ -12,8 +12,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.database import get_db
 from app.schemas.user_schemas import TokenData
-from app.services.user_service import UserService
 from app.services.jwt_service import jwt_service
+from app.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ def verify_token(token: str) -> Optional[TokenData]:
     payload = jwt_service.verify_token(token)
     if not payload:
         return None
-    
+
     username = jwt_service.get_username_from_token(token)
     user_id = jwt_service.get_user_id_from_token(token)
     role = jwt_service.get_role_from_token(token)

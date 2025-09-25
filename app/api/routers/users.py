@@ -74,6 +74,7 @@ async def login(login_data: UserLogin, request: Request, db: Session = Depends(g
 
     # Get TTL from configuration (convert minutes to seconds)
     from app.core.config import settings
+
     expires_in_seconds = settings.jwt_access_token_expire_minutes * 60
 
     return LoginResponse(
@@ -436,36 +437,36 @@ async def generate_random_password(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
-    
+
     # Define character sets
     lowercase = string.ascii_lowercase
     uppercase = string.ascii_uppercase
     digits = string.digits
     symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?" if include_symbols else ""
-    
+
     # Ensure at least one character from each required set
     password_chars = [
         secrets.choice(lowercase),
         secrets.choice(uppercase),
         secrets.choice(digits),
     ]
-    
+
     if include_symbols:
         password_chars.append(secrets.choice(symbols))
-    
+
     # Fill the rest with random characters
     all_chars = lowercase + uppercase + digits + symbols
     for _ in range(length - len(password_chars)):
         password_chars.append(secrets.choice(all_chars))
-    
+
     # Shuffle the password characters
     secrets.SystemRandom().shuffle(password_chars)
-    
-    password = ''.join(password_chars)
-    
+
+    password = "".join(password_chars)
+
     return {
         "password": password,
         "length": len(password),
         "includes_symbols": include_symbols,
-        "strength": "strong" if length >= 12 and include_symbols else "medium"
+        "strength": "strong" if length >= 12 and include_symbols else "medium",
     }

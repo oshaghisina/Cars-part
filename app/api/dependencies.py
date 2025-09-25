@@ -35,11 +35,11 @@ def get_current_user(
 
         # Extract user ID from token (supports both canonical and legacy formats)
         user_id = jwt_service.get_user_id_from_token(credentials.credentials)
-        
+
         # If no user_id found, try legacy token handling
         if user_id is None:
             user_id = jwt_service.get_user_id_from_legacy_token(credentials.credentials, db)
-        
+
         if user_id is None:
             return None
 
@@ -61,6 +61,7 @@ def get_current_user(
     except Exception as e:
         # Log error for debugging but don't expose details
         import logging
+
         logger = logging.getLogger(__name__)
         logger.warning(f"Error getting current user: {e}")
         return None

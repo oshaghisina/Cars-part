@@ -2,7 +2,17 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, DECIMAL, JSON
+from sqlalchemy import (
+    DECIMAL,
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 
 from app.db.database import Base
 
@@ -15,20 +25,14 @@ class SMSTemplate(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, unique=True, index=True)
     # order_confirmation, stock_alert, etc.
-    template_type = Column(
-        String(50), nullable=False, index=True
-    )
+    template_type = Column(String(50), nullable=False, index=True)
     content_en = Column(Text, nullable=True)  # English content
     content_fa = Column(Text, nullable=True)  # Persian content
     # Template variables like {order_id}, {customer_name}
     variables = Column(JSON, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships (commented out to avoid circular import issues)
     # sms_logs = relationship("SMSLog", back_populates="template")
@@ -40,19 +44,12 @@ class SMSLog(Base):
     __tablename__ = "sms_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    recipient_phone = Column(
-        String(20), nullable=False, index=True
-    )
+    recipient_phone = Column(String(20), nullable=False, index=True)
     content = Column(Text, nullable=False)
-    template_id = Column(
-        Integer,
-        ForeignKey("sms_templates.id"),
-        nullable=True)
+    template_id = Column(Integer, ForeignKey("sms_templates.id"), nullable=True)
     status = Column(
-        String(20),
-        default="pending",
-        nullable=False,
-        index=True)  # pending, sent, delivered, failed
+        String(20), default="pending", nullable=False, index=True
+    )  # pending, sent, delivered, failed
     sent_at = Column(DateTime, nullable=True)
     delivered_at = Column(DateTime, nullable=True)
     error_message = Column(Text, nullable=True)
@@ -92,10 +89,7 @@ class SMSCampaign(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
-    template_id = Column(
-        Integer,
-        ForeignKey("sms_templates.id"),
-        nullable=False)
+    template_id = Column(Integer, ForeignKey("sms_templates.id"), nullable=False)
     # all, registered, pro, etc.
     target_audience = Column(String(50), nullable=False)
     # draft, scheduled, running, completed, cancelled
@@ -109,11 +103,7 @@ class SMSCampaign(Base):
     failed_count = Column(Integer, default=0, nullable=False)
     total_cost = Column(DECIMAL(10, 4), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships (commented out to avoid circular import issues)
     # template = relationship("SMSTemplate")
@@ -126,24 +116,14 @@ class SMSDeliveryReport(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     sms_log_id = Column(Integer, ForeignKey("sms_logs.id"), nullable=False)
-    external_id = Column(
-        String(100),
-        nullable=True,
-        index=True)  # Melipayamak message ID
-    status = Column(
-        String(20),
-        nullable=False,
-        index=True)  # delivered, failed, pending
+    external_id = Column(String(100), nullable=True, index=True)  # Melipayamak message ID
+    status = Column(String(20), nullable=False, index=True)  # delivered, failed, pending
     status_code = Column(String(10), nullable=True)
     status_message = Column(Text, nullable=True)
     delivery_time = Column(DateTime, nullable=True)
     cost = Column(DECIMAL(10, 4), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships (commented out to avoid circular import issues)
     # sms_log = relationship("SMSLog")

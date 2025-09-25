@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     telegram_bot_username: str = "CHANGEME"
     telegram_webhook_url: Optional[str] = None
     admin_telegram_ids: str = "176007160"
-    
+
     # Telegram SSO
     telegram_sso_enabled: bool = True
     telegram_link_token_expiry_hours: int = 1
@@ -106,7 +106,7 @@ class Settings(BaseSettings):
     sms_rate_limit_per_hour: int = 100
     sms_max_retries: int = 3
     sms_retry_delay: int = 60  # seconds
-    
+
     # Web Application URLs
     web_app_url: str = "http://localhost:5174"
     admin_panel_url: str = "http://localhost:5173"
