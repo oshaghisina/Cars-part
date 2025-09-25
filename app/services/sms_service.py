@@ -226,7 +226,7 @@ class SMSService:
         # Rate limiting: send in batches to avoid overwhelming the API
         batch_size = 10
         for i in range(0, len(phone_numbers), batch_size):
-            batch = phone_numbers[i : i + batch_size]
+            batch = phone_numbers[i:i + batch_size]
 
             # Send batch concurrently
             tasks = [self.send_sms(phone, message, template_id) for phone in batch]
