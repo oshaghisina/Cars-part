@@ -22,6 +22,7 @@ from app.schemas.otp_schemas import (
     PhoneLoginVerifyRequest,
 )
 from app.services.jwt_service import jwt_service
+from app.core.config import settings
 from app.services.otp_service import OTPService
 from app.services.sms_service import SMSService
 
@@ -38,17 +39,20 @@ async def otp_health_check(db: Session = Depends(get_db)):
         return {
             "status": "healthy",
             "sms_configured": sms_service.api is not None,
-            "sms_enabled": True,  # This would come from settings
-            "message": "SMS service is configured"
-            if sms_service.api
-            else "SMS service not configured",
+            "sms_enabled": settings.sms_enabled,
+            "app_env": settings.app_env,
+            "message": (
+                "SMS service is configured"
+                if sms_service.api
+                else "SMS service not configured (set MELIPAYAMAK_USERNAME/PASSWORD and SMS_SENDER_NUMBER)"
+            ),
         }
     except Exception as e:
         logger.error(f"OTP health check failed: {e}")
         return {
             "status": "unhealthy",
             "sms_configured": False,
-            "sms_enabled": False,
+            "sms_enabled": settings.sms_enabled,
             "message": f"Health check failed: {str(e)}",
         }
 
