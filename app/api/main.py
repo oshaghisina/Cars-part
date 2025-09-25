@@ -25,6 +25,7 @@ from app.api.routers import (
     vehicles_enhanced,
 )
 from app.core.config import settings
+from app.db.models import User  # Ensure User model is loaded for foreign key relationships
 
 # Conditionally import AI modules only if AI Gateway is enabled
 if getattr(settings, "ai_gateway_enabled", False):
