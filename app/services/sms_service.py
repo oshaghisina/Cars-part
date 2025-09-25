@@ -81,9 +81,7 @@ class SMSService:
                     sms_log.status = "sent"
                     sms_log.sent_at = datetime.utcnow()
                     sms_log.provider = (
-                        "development"
-                        if settings.app_env == "development"
-                        else "fallback"
+                        "development" if settings.app_env == "development" else "fallback"
                     )
                     sms_log.cost = 0.0
                     self.db.commit()
@@ -226,7 +224,7 @@ class SMSService:
         # Rate limiting: send in batches to avoid overwhelming the API
         batch_size = 10
         for i in range(0, len(phone_numbers), batch_size):
-            batch = phone_numbers[i:i + batch_size]
+            batch = phone_numbers[i : i + batch_size]
 
             # Send batch concurrently
             tasks = [self.send_sms(phone, message, template_id) for phone in batch]
