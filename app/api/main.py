@@ -26,9 +26,9 @@ from app.api.routers import (
 )
 from app.core.config import settings
 from app.db.database import Base, engine
-from app.db.models import (  # noqa: F401
+from app.db.models import (  # noqa: F401; Ensure User model is loaded for foreign key relationships
     User,
-)  # Ensure User model is loaded for foreign key relationships
+)
 
 # Conditionally import AI modules only if AI Gateway is enabled
 if getattr(settings, "ai_gateway_enabled", False):
@@ -82,8 +82,16 @@ async def ensure_critical_tables():
             logger.warning(f"Missing critical tables: {missing_tables}. Creating them...")
 
             # Import models to ensure they're registered
-            from app.models.otp_models import OTPCode, PhoneVerification, RateLimit  # noqa: F401
-            from app.models.sms_models import SMSLog, SMSTemplate, StockAlert  # noqa: F401
+            from app.models.otp_models import (  # noqa: F401
+                OTPCode,
+                PhoneVerification,
+                RateLimit,
+            )
+            from app.models.sms_models import (  # noqa: F401
+                SMSLog,
+                SMSTemplate,
+                StockAlert,
+            )
             from app.models.telegram_models import (  # noqa: F401
                 TelegramBotSession,
                 TelegramDeepLink,
