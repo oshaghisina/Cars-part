@@ -4,14 +4,13 @@ FastAPI dependencies for authentication and authorization.
 
 from typing import Optional
 
-import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.db.database import get_db
 from app.db.models import User
+from app.services.jwt_service import jwt_service
 
 # Security scheme
 security = HTTPBearer(auto_error=False)
@@ -22,24 +21,30 @@ def get_current_user(
     db: Session = Depends(get_db),
 ) -> Optional[User]:
     """
-    Get current user from JWT token.
+    Get current user from JWT token using unified JWT service.
     Returns None if no token or invalid token (for optional authentication).
     """
     if not credentials:
         return None
 
     try:
-        # Decode JWT token
-        payload = jwt.decode(
-            credentials.credentials, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
-        )
+        # Use unified JWT service
+        payload = jwt_service.verify_token(credentials.credentials)
+        if not payload:
+            return None
 
-        user_id = payload.get("sub")
+        # Extract user ID from token (supports both canonical and legacy formats)
+        user_id = jwt_service.get_user_id_from_token(credentials.credentials)
+        
+        # If no user_id found, try legacy token handling
+        if user_id is None:
+            user_id = jwt_service.get_user_id_from_legacy_token(credentials.credentials, db)
+        
         if user_id is None:
             return None
 
         # Get user from database
-        user = db.query(User).filter(User.id == int(user_id)).first()
+        user = db.query(User).filter(User.id == user_id).first()
         if user is None:
             return None
 
@@ -53,11 +58,11 @@ def get_current_user(
 
         return user
 
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
-    except Exception:
+    except Exception as e:
+        # Log error for debugging but don't expose details
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Error getting current user: {e}")
         return None
 
 

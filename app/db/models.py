@@ -292,6 +292,9 @@ class User(Base):
 
     # Relationships
     # stock_alerts = relationship("StockAlert", back_populates="user", cascade="all, delete-orphan")
+    # otp_codes = relationship("app.models.otp_models.OTPCode", back_populates="user", cascade="all, delete-orphan")
+    # phone_verifications = relationship("app.models.otp_models.PhoneVerification", back_populates="user", cascade="all, delete-orphan")
+    # telegram_user = relationship("app.models.telegram_models.TelegramUser", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 
 class WizardSession(Base):

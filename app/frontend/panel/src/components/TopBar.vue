@@ -392,7 +392,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useNavigationStore } from "@/stores/navigation";
 import { useAuthStore } from "@/stores/auth";
 import { useAnalyticsStore } from "@/stores/analytics";
@@ -401,6 +401,7 @@ export default {
   name: "TopBar",
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const navigationStore = useNavigationStore();
     const authStore = useAuthStore();
     const analyticsStore = useAnalyticsStore();
@@ -534,10 +535,14 @@ export default {
       }
     };
 
-    const logout = () => {
+    const logout = async () => {
       try {
+        console.log("TopBar: Starting logout process");
         if (authStore && authStore.logout) {
-          authStore.logout();
+          await authStore.logout();
+          console.log("TopBar: Logout completed, redirecting to root");
+          // Force a page reload to ensure clean state and proper redirect
+          window.location.href = '/';
         } else {
           console.warn("AuthStore logout method not available");
         }

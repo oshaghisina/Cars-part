@@ -19,7 +19,7 @@ class PDPApiClient {
     // Request interceptor for authentication
     this.client.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('auth_token')
+        const token = localStorage.getItem('access_token')
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
         }
@@ -34,7 +34,7 @@ class PDPApiClient {
       (error) => {
         if (error.response?.status === 401) {
           // Handle unauthorized access
-          localStorage.removeItem('auth_token')
+          localStorage.removeItem('access_token')
           window.location.href = '/login'
         }
         return Promise.reject(this.handleApiError(error))
@@ -174,6 +174,49 @@ class PDPApiClient {
   // User API
   async getCurrentUser() {
     const response = await this.client.get('/users/me')
+    return response.data
+  }
+
+  // Telegram SSO API
+  async createTelegramLink(telegramId, action = 'link_account') {
+    const response = await this.client.post('/telegram/link/request', {
+      telegram_id: telegramId,
+      action: action
+    })
+    return response.data
+  }
+
+  async createTelegramDeepLink(telegramId, action = 'login', targetUrl = null) {
+    const response = await this.client.post('/telegram/deep-link/create', {
+      telegram_id: telegramId,
+      action: action,
+      target_url: targetUrl
+    })
+    return response.data
+  }
+
+  async verifyTelegramToken(token, action = 'login') {
+    const response = await this.client.post('/telegram/verify', {
+      token: token,
+      action: action
+    })
+    return response.data
+  }
+
+  async linkTelegramAccount(token) {
+    const response = await this.client.post('/telegram/link/verify', {
+      token: token
+    })
+    return response.data
+  }
+
+  async unlinkTelegramAccount() {
+    const response = await this.client.delete('/telegram/link')
+    return response.data
+  }
+
+  async getTelegramStats() {
+    const response = await this.client.get('/telegram/stats')
     return response.data
   }
 

@@ -1,5 +1,5 @@
 /* Import Peyda Persian Font */
-@import '../web/src/assets/fonts/peyda/peyda.css';
+@import './assets/fonts/peyda/peyda.css';
 
 @tailwind base;
 @tailwind components;

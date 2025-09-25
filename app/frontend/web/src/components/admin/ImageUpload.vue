@@ -292,7 +292,7 @@ export default {
         {
           headers: {
             'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
           }
         }
       )
@@ -313,7 +313,7 @@ export default {
       try {
         await axios.delete(`/api/v1/images/${image.id}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
           }
         })
         

@@ -1,6 +1,8 @@
 """User management API endpoints."""
 
 import logging
+import secrets
+import string
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -59,9 +61,9 @@ async def login(login_data: UserLogin, request: Request, db: Session = Depends(g
     # Create session (placeholder - session management not fully implemented)
     await user_service.create_session(user, ip_address, user_agent)
 
-    # Create JWT token
+    # Create JWT token with canonical claims (sub=user_id as integer)
     access_token = create_access_token(
-        data={"sub": user.username, "user_id": user.id, "role": user.role}
+        data={"sub": user.id, "user_id": user.id, "username": user.username, "role": user.role}
     )
 
     # Update last login time
@@ -70,10 +72,14 @@ async def login(login_data: UserLogin, request: Request, db: Session = Depends(g
     user.last_login = datetime.utcnow()  # type: ignore[assignment]
     db.commit()
 
+    # Get TTL from configuration (convert minutes to seconds)
+    from app.core.config import settings
+    expires_in_seconds = settings.jwt_access_token_expire_minutes * 60
+
     return LoginResponse(
         access_token=access_token,
-        expires_in=86400,
-        user=UserResponse.from_orm(user),  # 24 hours
+        expires_in=expires_in_seconds,
+        user=UserResponse.from_orm(user),
     )
 
 
@@ -416,3 +422,50 @@ async def create_users_bulk(
 
 # Bulk role assignment endpoint temporarily disabled - BulkRoleAssignment
 # schema not available
+
+
+@router.get("/utils/generate-password")
+async def generate_random_password(
+    length: int = Query(12, ge=8, le=32, description="Password length (8-32 characters)"),
+    include_symbols: bool = Query(True, description="Include special symbols"),
+    current_user: User = Depends(get_current_user),
+):
+    """Generate a random password for user creation."""
+    # Check if user has permission to create users
+    if not current_user.has_permission("users.create"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
+    
+    # Define character sets
+    lowercase = string.ascii_lowercase
+    uppercase = string.ascii_uppercase
+    digits = string.digits
+    symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?" if include_symbols else ""
+    
+    # Ensure at least one character from each required set
+    password_chars = [
+        secrets.choice(lowercase),
+        secrets.choice(uppercase),
+        secrets.choice(digits),
+    ]
+    
+    if include_symbols:
+        password_chars.append(secrets.choice(symbols))
+    
+    # Fill the rest with random characters
+    all_chars = lowercase + uppercase + digits + symbols
+    for _ in range(length - len(password_chars)):
+        password_chars.append(secrets.choice(all_chars))
+    
+    # Shuffle the password characters
+    secrets.SystemRandom().shuffle(password_chars)
+    
+    password = ''.join(password_chars)
+    
+    return {
+        "password": password,
+        "length": len(password),
+        "includes_symbols": include_symbols,
+        "strength": "strong" if length >= 12 and include_symbols else "medium"
+    }

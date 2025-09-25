@@ -747,7 +747,7 @@ export default {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           body: JSON.stringify({
             dataType: exportOptions.value.dataType,
@@ -807,7 +807,7 @@ export default {
         // Fallback: trigger re-download from server
         fetch(`/api/v1/bulk-operations/download/${exportItem.id}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         })
           .then((response) => response.blob())

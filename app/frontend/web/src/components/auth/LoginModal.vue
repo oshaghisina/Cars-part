@@ -68,6 +68,24 @@
         </button>
       </form>
 
+      <!-- Divider -->
+      <div class="mt-6 mb-6">
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300" />
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500 font-persian text-rtl">یا</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telegram Login -->
+      <TelegramLoginButton 
+        @login-success="handleTelegramSuccess"
+        @error="handleTelegramError"
+      />
+
       <div class="mt-6 text-center">
         <p class="text-sm text-gray-600 font-persian text-rtl">
           حساب کاربری ندارید؟
@@ -86,9 +104,13 @@
 <script>
 import { ref, reactive, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
+import TelegramLoginButton from './TelegramLoginButton.vue'
 
 export default {
   name: 'LoginModal',
+  components: {
+    TelegramLoginButton
+  },
   props: {
     isOpen: {
       type: Boolean,
@@ -158,6 +180,18 @@ export default {
       emit('show-register')
     }
 
+    const handleTelegramSuccess = (data) => {
+      // Show success message and redirect to callback page
+      emit('login-success', data)
+      // Redirect to callback page to handle verification
+      window.location.href = '/auth/telegram/callback'
+    }
+
+    const handleTelegramError = (errorMessage) => {
+      // Set error message to be displayed
+      authStore.error = errorMessage
+    }
+
     return {
       form,
       errors,
@@ -165,7 +199,9 @@ export default {
       error,
       handleLogin,
       closeModal,
-      showRegister
+      showRegister,
+      handleTelegramSuccess,
+      handleTelegramError
     }
   }
 }

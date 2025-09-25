@@ -1,7 +1,17 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-50">
+    <!-- Loading State -->
+    <div v-if="isInitializing" class="min-h-screen flex items-center justify-center bg-gray-50">
+      <div class="text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+        <p class="text-gray-600">Initializing...</p>
+      </div>
+    </div>
+
     <!-- Login Modal -->
-    <LoginModal :show="!authStore.isAuthenticated" @close="handleLoginClose" />
+    <transition name="fade" mode="out-in">
+      <LoginModal v-if="!authStore.isAuthenticated" :show="true" @close="handleLoginClose" />
+    </transition>
 
     <!-- Main App Content (only show when authenticated) -->
     <div v-if="authStore.isAuthenticated">
@@ -25,7 +35,7 @@
 </template>
 
 <script>
-import { onMounted } from "vue";
+import { onMounted, watch, ref } from "vue";
 import Sidebar from "./components/Sidebar.vue";
 import TopBar from "./components/TopBar.vue";
 import LoginModal from "./components/LoginModal.vue";
@@ -42,14 +52,43 @@ export default {
   setup() {
     const authStore = useAuthStore();
     const navigationStore = useNavigationStore();
+    const isInitializing = ref(true);
 
-    onMounted(() => {
+    onMounted(async () => {
       // Initialize auth state
-      authStore.initializeAuth();
+      console.log("App: Initializing auth state");
+      try {
+        await authStore.initializeAuth();
+        console.log("App: Auth state after initialization:", {
+          isAuthenticated: authStore.isAuthenticated,
+          user: authStore.user,
+          hasToken: !!authStore.token
+        });
+      } catch (error) {
+        console.error("App: Error during auth initialization:", error);
+      } finally {
+        // Add a small delay to prevent flash
+        setTimeout(() => {
+          isInitializing.value = false;
+        }, 100);
+      }
 
       // Initialize navigation state
       navigationStore.initializeNavigation();
     });
+
+    // Watch for authentication state changes
+    watch(
+      () => authStore.isAuthenticated,
+      (newValue, oldValue) => {
+        console.log("App: Authentication state changed:", {
+          from: oldValue,
+          to: newValue,
+          user: authStore.user,
+          hasToken: !!authStore.token
+        });
+      }
+    );
 
     const handleLoginClose = () => {
       // Login modal closed - no action needed as it's controlled by isAuthenticated
@@ -57,6 +96,7 @@ export default {
 
     return {
       authStore,
+      isInitializing,
       handleLoginClose,
     };
   },
@@ -123,5 +163,18 @@ main::-webkit-scrollbar-thumb:hover {
   .lg\:pl-64 {
     padding-left: 0;
   }
+}
+
+/* Transition animations */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-to, .fade-leave-from {
+  opacity: 1;
 }
 </style>

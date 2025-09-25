@@ -6,7 +6,6 @@ from typing import Any, Dict, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
@@ -14,6 +13,7 @@ from app.core.config import settings
 from app.db.database import get_db
 from app.schemas.user_schemas import TokenData
 from app.services.user_service import UserService
+from app.services.jwt_service import jwt_service
 
 logger = logging.getLogger(__name__)
 
@@ -30,34 +30,24 @@ security = HTTPBearer()
 
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    """Create JWT access token."""
-    to_encode = data.copy()
-
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-    return encoded_jwt
+    """Create JWT access token using unified JWT service."""
+    return jwt_service.create_access_token(data, expires_delta)
 
 
 def verify_token(token: str) -> Optional[TokenData]:
-    """Verify JWT token and return token data."""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        user_id: int = payload.get("user_id")
-        role: str = payload.get("role", "user")
-
-        if username is None or user_id is None:
-            return None
-
-        return TokenData(username=username, user_id=user_id, role=role)
-    except JWTError:
+    """Verify JWT token and return token data using unified JWT service."""
+    payload = jwt_service.verify_token(token)
+    if not payload:
         return None
+    
+    username = jwt_service.get_username_from_token(token)
+    user_id = jwt_service.get_user_id_from_token(token)
+    role = jwt_service.get_role_from_token(token)
+
+    if username is None or user_id is None:
+        return None
+
+    return TokenData(username=username, user_id=user_id, role=role)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -74,7 +64,7 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
 ):
-    """Get current authenticated user."""
+    """Get current authenticated user using unified JWT service."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

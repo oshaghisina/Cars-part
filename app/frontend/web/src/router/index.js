@@ -42,6 +42,11 @@ const routes = [
     path: '/contact',
     name: 'Contact',
     component: () => import('../views/Contact.vue'),
+  },
+  {
+    path: '/auth/telegram/callback',
+    name: 'TelegramCallback',
+    component: () => import('../views/TelegramCallback.vue'),
   }
 ]
 

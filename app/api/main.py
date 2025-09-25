@@ -11,13 +11,16 @@ import app.api.routers.wizard as wizard_module
 from app.api.routers import (
     admin,
     analytics,
+    auth,
     bulk_operations,
     images,
     leads,
     orders,
+    otp,
     pdp,
     search,
     sms,
+    telegram,
     users,
     vehicles_enhanced,
 )
@@ -38,8 +41,10 @@ app = FastAPI(
 
 # Add CORS middleware
 cors_origins = [
-    "http://localhost:5173",
+    "http://localhost:5173",  # Admin panel
     "http://127.0.0.1:5173",
+    "http://localhost:5174",  # Web portal
+    "http://127.0.0.1:5174",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
@@ -72,6 +77,9 @@ app.include_router(vehicles_enhanced.router, prefix="/api/v1", tags=["vehicles-e
 app.include_router(pdp.router, prefix="/api/v1", tags=["pdp"])
 app.include_router(images.router, prefix="/api/v1", tags=["images"])
 app.include_router(sms.router, prefix="/api/v1/sms", tags=["sms"])
+app.include_router(otp.router, prefix="/api/v1/otp", tags=["otp"])
+app.include_router(telegram.router, prefix="/api/v1/telegram", tags=["telegram"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 

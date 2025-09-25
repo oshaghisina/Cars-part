@@ -34,6 +34,28 @@
             >
               دریافت پیشنهاد
             </button>
+            
+            <!-- Authentication Section -->
+            <div class="flex items-center space-x-2 space-x-reverse">
+              <!-- Authenticated User Menu -->
+              <UserMenu v-if="authStore.isAuthenticated" />
+              
+              <!-- Unauthenticated Login/Register Buttons -->
+              <div v-else class="flex items-center space-x-2 space-x-reverse">
+                <button 
+                  @click="handleLoginClick"
+                  class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium font-persian text-rtl"
+                >
+                  ورود
+                </button>
+                <button 
+                  @click="showRegisterModal = true"
+                  class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 font-persian text-rtl"
+                >
+                  ثبت نام
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -78,21 +100,80 @@
 
     <!-- Contact Form Modal -->
     <ContactForm v-if="showContactForm" @close="showContactForm = false" />
+    
+    <!-- Login Modal -->
+    <LoginModal 
+      :is-open="showLoginModal"
+      @close="showLoginModal = false"
+      @login-success="handleLoginSuccess"
+    />
+    
+    <!-- Register Modal -->
+    <RegisterModal 
+      v-if="showRegisterModal" 
+      @close="showRegisterModal = false"
+      @register-success="handleRegisterSuccess"
+      @show-login="handleShowLogin"
+    />
   </div>
 </template>
 
 <script>
+import { onMounted } from 'vue'
 import ContactForm from './components/ContactForm.vue'
+import LoginModal from './components/auth/LoginModal.vue'
+import RegisterModal from './components/auth/RegisterModal.vue'
+import UserMenu from './components/auth/UserMenu.vue'
+import { useAuthStore } from './stores/auth.js'
 
 export default {
   name: 'App',
   components: {
-    ContactForm
+    ContactForm,
+    LoginModal,
+    RegisterModal,
+    UserMenu
+  },
+  setup() {
+    const authStore = useAuthStore()
+    
+    return {
+      authStore
+    }
   },
   data() {
     return {
-      showContactForm: false
+      showContactForm: false,
+      showLoginModal: false,
+      showRegisterModal: false
     }
   },
+  methods: {
+    handleLoginClick() {
+      console.log('Login button clicked!')
+      console.log('Current showLoginModal:', this.showLoginModal)
+      console.log('Auth store:', this.authStore)
+      this.showLoginModal = true
+      console.log('New showLoginModal:', this.showLoginModal)
+    },
+    handleLoginSuccess(data) {
+      this.showLoginModal = false
+      // Optionally show success message or redirect
+      console.log('Login successful:', data)
+    },
+    handleRegisterSuccess(data) {
+      this.showRegisterModal = false
+      // Optionally show success message or redirect
+      console.log('Register successful:', data)
+    },
+    handleShowLogin() {
+      this.showRegisterModal = false
+      this.showLoginModal = true
+    }
+  },
+  mounted() {
+    // Initialize authentication on app mount
+    this.authStore.initializeAuth()
+  }
 }
 </script>

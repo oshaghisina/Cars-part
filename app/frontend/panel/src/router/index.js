@@ -67,11 +67,31 @@ const routes = [
     name: "TestAdvancedNav",
     component: () => import("../views/TestAdvancedNav.vue"),
   },
+  {
+    path: "/auth-dashboard",
+    name: "AuthDashboard",
+    component: () => import("../views/AuthDashboard.vue"),
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory('/panel/'),
   routes,
+});
+
+// Navigation guard to handle authentication
+router.beforeEach((to, from, next) => {
+  // Check if user is authenticated by looking at localStorage
+  const token = localStorage.getItem('access_token');
+  const isAuthenticated = !!token;
+  
+  // If trying to access protected routes without authentication, redirect to root
+  if (!isAuthenticated && to.path !== '/') {
+    console.log('Router: User not authenticated, redirecting to root');
+    next('/');
+  } else {
+    next();
+  }
 });
 
 export default router;

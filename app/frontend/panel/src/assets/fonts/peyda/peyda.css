@@ -1,0 +1,117 @@
+/* Peyda Web Font - Main Persian Font Family */
+
+/* Variable Font (Recommended) */
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWebVF.woff2') format('woff2-variations'),
+         url('./PeydaWebVF.woff') format('woff-variations');
+    font-weight: 100 950;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Static Fonts (Fallback) */
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-Thin.woff2') format('woff2'),
+         url('./PeydaWeb-Thin.woff') format('woff');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-ExtraLight.woff2') format('woff2'),
+         url('./PeydaWeb-ExtraLight.woff') format('woff');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-Light.woff2') format('woff2'),
+         url('./PeydaWeb-Light.woff') format('woff');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-Regular.woff2') format('woff2'),
+         url('./PeydaWeb-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-Medium.woff2') format('woff2'),
+         url('./PeydaWeb-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-SemiBold.woff2') format('woff2'),
+         url('./PeydaWeb-SemiBold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-Bold.woff2') format('woff2'),
+         url('./PeydaWeb-Bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-ExtraBold.woff2') format('woff2'),
+         url('./PeydaWeb-ExtraBold.woff') format('woff');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-Black.woff2') format('woff2'),
+         url('./PeydaWeb-Black.woff') format('woff');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Peyda';
+    src: url('./PeydaWeb-ExtraBlack.woff2') format('woff2'),
+         url('./PeydaWeb-ExtraBlack.woff') format('woff');
+    font-weight: 950;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Font utility classes */
+.font-persian {
+    font-family: 'Peyda', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.text-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.text-ltr {
+    direction: ltr;
+    text-align: left;
+}

@@ -140,7 +140,7 @@ export default {
         // Load from API
         const response = await fetch("/api/v1/admin/settings", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         });
 
@@ -166,7 +166,7 @@ export default {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           body: JSON.stringify({
             AI_ENABLED: aiEnabled.value.toString(),
@@ -191,7 +191,7 @@ export default {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           body: JSON.stringify({
             BULK_LIMIT_DEFAULT: bulkLimit.value.toString(),
@@ -216,7 +216,7 @@ export default {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           body: JSON.stringify({
             ADMIN_USER_IDS: adminIds.value,
