@@ -73,13 +73,30 @@ class SMSService:
 
         try:
             if not self.api:
-                logger.error("SMS service not initialized - check configuration")
-                sms_log.status = "failed"
-                sms_log.error_message = "SMS service not initialized"
-                self.db.commit()
-                return SMSResponse(
-                    success=False, message="SMS service not available", message_id=None, cost=0.0
-                )
+                if settings.app_env == "development":
+                    logger.warning("SMS service not initialized - development mode fallback")
+                    sms_log.status = "sent"
+                    sms_log.sent_at = datetime.utcnow()
+                    sms_log.provider = "development"
+                    sms_log.cost = 0.0
+                    self.db.commit()
+                    return SMSResponse(
+                        success=True,
+                        message="SMS simulated in development mode",
+                        message_id=sms_log.id,
+                        cost=0.0,
+                    )
+                else:
+                    logger.error("SMS service not initialized - check configuration")
+                    sms_log.status = "failed"
+                    sms_log.error_message = "SMS service not initialized"
+                    self.db.commit()
+                    return SMSResponse(
+                        success=False,
+                        message="SMS service not available",
+                        message_id=None,
+                        cost=0.0,
+                    )
 
             # Send SMS via Melipayamak
             sms_client = self.api.sms()

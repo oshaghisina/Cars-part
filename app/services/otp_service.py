@@ -11,6 +11,7 @@ from typing import Dict, Optional, Tuple
 from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.models.otp_models import OTPCode, RateLimit
 from app.services.sms_service import SMSService
 
@@ -213,19 +214,40 @@ class OTPService:
                     "expires_in": self.code_expiry_minutes * 60,
                 }
             else:
-                otp_record.sms_error = sms_result.get("message")
-                self.db.commit()
+                # In development mode, if SMS fails, log the code and mark as sent
+                if settings.app_env == "development":
+                    logger.warning(
+                        f"SMS failed for {phone_number}, but in development mode - "
+                        f"logging OTP: {otp_code}"
+                    )
+                    otp_record.sms_sent = True
+                    otp_record.sms_sent_at = func.now()
+                    otp_record.sms_provider = "development"
+                    otp_record.sms_error = f"Development mode: {sms_result.get('message')}"
+                    self.db.commit()
 
-                logger.error(f"Failed to send OTP to {phone_number}: {sms_result['message']}")
-                return {
-                    "success": False,
-                    "message": f"SMS sending failed: {sms_result['message']}",
-                    "code": "SMS_FAILED",
-                }
+                    return {
+                        "success": True,
+                        "message": f"OTP code generated (dev mode): {otp_code}",
+                        "expires_in": self.code_expiry_minutes * 60,
+                    }
+                else:
+                    otp_record.sms_error = sms_result.get("message")
+                    self.db.commit()
+
+                    logger.error(f"Failed to send OTP to {phone_number}: {sms_result['message']}")
+                    return {
+                        "success": False,
+                        "message": f"SMS sending failed: {sms_result['message']}",
+                        "code": "SMS_FAILED",
+                    }
 
         except Exception as e:
             logger.error(f"Error requesting OTP for {phone_number}: {e}", exc_info=True)
-            self.db.rollback()
+            try:
+                self.db.rollback()
+            except Exception as rollback_error:
+                logger.error(f"Error during rollback: {rollback_error}")
             return {
                 "success": False,
                 "message": f"Failed to send OTP: {str(e)}",
@@ -379,6 +401,11 @@ class OTPService:
 
         except Exception as e:
             logger.error(f"Error cleaning up expired OTPs for {phone_number}: {e}")
+            # Don't let cleanup errors break the main flow
+            try:
+                self.db.rollback()
+            except Exception:
+                pass
 
     def get_otp_stats(self, phone_number: str) -> Dict:
         """Get OTP statistics for a phone number."""
