@@ -14,7 +14,6 @@ from app.schemas.sms_schemas import SMSResponse
 logger = logging.getLogger(__name__)
 
 
-
 class SMSService:
     """Core SMS service for Melipayamak integration."""
 
@@ -76,7 +75,8 @@ class SMSService:
             if not self.api:
                 if settings.app_env == "development" or settings.sms_fallback_in_production:
                     logger.warning(
-                        "SMS service not initialized - using fallback (dev or allowed in production)"
+                        "SMS service not initialized - using fallback "
+                        "(dev or allowed in production)"
                     )
                     sms_log.status = "sent"
                     sms_log.sent_at = datetime.utcnow()
