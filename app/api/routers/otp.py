@@ -44,7 +44,10 @@ async def otp_health_check(db: Session = Depends(get_db)):
             "message": (
                 "SMS service is configured"
                 if sms_service.api
-                else "SMS service not configured (set MELIPAYAMAK_USERNAME/PASSWORD and SMS_SENDER_NUMBER)"
+                else (
+                    "SMS service not configured "
+                    "(set MELIPAYAMAK_USERNAME/PASSWORD and SMS_SENDER_NUMBER)"
+                )
             ),
         }
     except Exception as e:
