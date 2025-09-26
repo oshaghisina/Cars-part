@@ -21,6 +21,13 @@ jobs:
           set -e
           
           echo "🚀 Starting blue-green deployment..."
+          echo "📊 System info:"
+          echo "  - OS: $(uname -a)"
+          echo "  - User: $(whoami)"
+          echo "  - PWD: $(pwd)"
+          echo "  - Python: $(python3 --version 2>/dev/null || echo 'Not found')"
+          echo "  - Node: $(node --version 2>/dev/null || echo 'Not found')"
+          echo "  - NPM: $(npm --version 2>/dev/null || echo 'Not found')"
           
           # Check if blue-green directories exist, if not, run setup first
           if [ ! -d "/opt/china-car-parts-blue" ] || [ ! -d "/opt/china-car-parts-green" ]; then
@@ -34,13 +41,25 @@ jobs:
             # Clone the repository to both directories
             echo "📥 Cloning repository to blue environment..."
             cd /opt/china-car-parts-blue
-            git clone https://github.com/${{ github.repository }}.git . || echo "Repository already exists, updating..."
-            git pull origin main
+            if [ ! -d ".git" ]; then
+              echo "  - Cloning fresh repository..."
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              echo "  - Repository exists, updating..."
+              git fetch origin
+              git reset --hard origin/main
+            fi
             
             echo "📥 Cloning repository to green environment..."
             cd /opt/china-car-parts-green
-            git clone https://github.com/${{ github.repository }}.git . || echo "Repository already exists, updating..."
-            git pull origin main
+            if [ ! -d ".git" ]; then
+              echo "  - Cloning fresh repository..."
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              echo "  - Repository exists, updating..."
+              git fetch origin
+              git reset --hard origin/main
+            fi
             
             # Set up virtual environments
             echo "🐍 Setting up virtual environments..."
@@ -278,5 +297,15 @@ jobs:
           EOF
           
           # Copy and execute script using password authentication
+          echo "📤 Copying deployment script to production server..."
           sshpass -p "${{ secrets.PROD_PASS }}" scp deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:/tmp/
-          sshpass -p "${{ secrets.PROD_PASS }}" ssh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "chmod +x /tmp/deploy-blue-green.sh && /tmp/deploy-blue-green.sh"
+          
+          echo "🚀 Executing deployment script on production server..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "
+            set -e
+            echo '🔧 Making script executable...'
+            chmod +x /tmp/deploy-blue-green.sh
+            echo '▶️ Running deployment script...'
+            /tmp/deploy-blue-green.sh
+            echo '✅ Deployment script completed successfully!'
+          "
