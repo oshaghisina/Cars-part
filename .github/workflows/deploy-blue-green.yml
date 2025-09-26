@@ -85,8 +85,9 @@ jobs:
             
             # Create systemd services
             echo "⚙️ Creating systemd services..."
+            mkdir -p /var/log/china-car-parts
             
-            # Create blue service
+            # Create blue API service
             printf '%s\n' \
               '[Unit]' \
               'Description=China Car Parts API (Blue)' \
@@ -104,8 +105,26 @@ jobs:
               'WantedBy=multi-user.target' \
               '' \
               > /etc/systemd/system/china-car-parts-api-blue.service
-            
-            # Create green service
+
+            # Create blue bot service
+            printf '%s\n' \
+              '[Unit]' \
+              'Description=China Car Parts Telegram Bot Service (Blue)' \
+              'After=network.target china-car-parts-api-blue.service' \
+              '' \
+              '[Service]' \
+              'User=root' \
+              'WorkingDirectory=/opt/china-car-parts-blue' \
+              'Environment=PATH=/opt/china-car-parts-blue/venv/bin' \
+              'ExecStart=/opt/china-car-parts-blue/venv/bin/python -m app.bot.bot' \
+              'Restart=always' \
+              '' \
+              '[Install]' \
+              'WantedBy=multi-user.target' \
+              '' \
+              > /etc/systemd/system/china-car-parts-bot-blue.service
+
+            # Create green API service
             printf '%s\n' \
               '[Unit]' \
               'Description=China Car Parts API (Green)' \
@@ -123,13 +142,34 @@ jobs:
               'WantedBy=multi-user.target' \
               '' \
               > /etc/systemd/system/china-car-parts-api-green.service
-            
+
+            # Create green bot service
+            printf '%s\n' \
+              '[Unit]' \
+              'Description=China Car Parts Telegram Bot Service (Green)' \
+              'After=network.target china-car-parts-api-green.service' \
+              '' \
+              '[Service]' \
+              'User=root' \
+              'WorkingDirectory=/opt/china-car-parts-green' \
+              'Environment=PATH=/opt/china-car-parts-green/venv/bin' \
+              'ExecStart=/opt/china-car-parts-green/venv/bin/python -m app.bot.bot' \
+              'Restart=always' \
+              '' \
+              '[Install]' \
+              'WantedBy=multi-user.target' \
+              '' \
+              > /etc/systemd/system/china-car-parts-bot-green.service
+
             # Reload systemd and start services
             echo "🔄 Reloading systemd and starting services..."
             systemctl daemon-reload
             systemctl enable china-car-parts-api-blue
             systemctl enable china-car-parts-api-green
+            systemctl enable china-car-parts-bot-blue
+            systemctl enable china-car-parts-bot-green
             systemctl start china-car-parts-api-blue
+            systemctl start china-car-parts-bot-blue
             
             echo "✅ Initial blue-green setup completed!"
           else
@@ -314,7 +354,7 @@ jobs:
           nginx -t
 
           # Ensure systemd service definitions exist
-          ensure_service_file() {
+          ensure_api_service() {
             local target="$1"
             local port="$2"
             local file="/etc/systemd/system/china-car-parts-api-${target}.service"
@@ -341,12 +381,40 @@ jobs:
               systemctl enable "china-car-parts-api-${target}"
             fi
           }
-          ensure_service_file blue 8001
-          ensure_service_file green 8002
+          ensure_bot_service() {
+            local target="$1"
+            local file="/etc/systemd/system/china-car-parts-bot-${target}.service"
+            if [ ! -f "$file" ]; then
+              echo "🛠️ Creating missing systemd unit $file..."
+              printf '%s\n' \
+                '[Unit]' \
+                "Description=China Car Parts Telegram Bot Service (${target^})" \
+                "After=network.target china-car-parts-api-${target}.service" \
+                '' \
+                '[Service]' \
+                'User=root' \
+                "WorkingDirectory=/opt/china-car-parts-${target}" \
+                "Environment=PATH=/opt/china-car-parts-${target}/venv/bin" \
+                "ExecStart=/opt/china-car-parts-${target}/venv/bin/python -m app.bot.bot" \
+                'Restart=always' \
+                '' \
+                '[Install]' \
+                'WantedBy=multi-user.target' \
+                '' \
+                > "$file"
+              systemctl daemon-reload
+              systemctl enable "china-car-parts-bot-${target}"
+            fi
+          }
+          ensure_api_service blue 8001
+          ensure_api_service green 8002
+          ensure_bot_service blue
+          ensure_bot_service green
 
           # Start services
           echo "🔄 Starting services..."
           systemctl restart china-car-parts-api-$TARGET
+          systemctl restart china-car-parts-bot-$TARGET
           
           # Health check with retry logic
           echo "⏳ Waiting for services to be ready..."
