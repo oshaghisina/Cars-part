@@ -279,16 +279,24 @@ jobs:
           # Go back to project root
           cd ../../..
           
-          # Copy built frontend to nginx directory
-          echo "📁 Copying frontend builds to nginx directory..."
-          mkdir -p /var/www/html/panel
-          mkdir -p /var/www/html/web
+          # Copy built frontend to shared directories used by Nginx
+          echo "📁 Copying frontend builds to shared directories..."
+          echo "🔍 Checking Admin Panel build..."
+          ls -la app/frontend/panel/dist/ || echo "❌ Admin Panel dist directory not found"
+          echo "🔍 Checking Customer Portal build..."
+          ls -la app/frontend/web/dist/ || echo "❌ Customer Portal dist directory not found"
+
+          mkdir -p /opt/china-car-parts/app/frontend/panel/dist
+          mkdir -p /opt/china-car-parts/app/frontend/web/dist
 
           echo "📋 Copying Admin Panel files..."
-          cp -r app/frontend/panel/dist/* /var/www/html/panel/
-
+          cp -r app/frontend/panel/dist/* /opt/china-car-parts/app/frontend/panel/dist/ || echo "❌ Failed to copy Admin Panel files"
           echo "📋 Copying Customer Portal files..."
-          cp -r app/frontend/web/dist/* /var/www/html/web/
+          cp -r app/frontend/web/dist/* /opt/china-car-parts/app/frontend/web/dist/ || echo "❌ Failed to copy Customer Portal files"
+
+          echo "🔍 Verifying copied files..."
+          ls -la /opt/china-car-parts/app/frontend/panel/dist/ || echo "❌ Admin Panel files not found in target"
+          ls -la /opt/china-car-parts/app/frontend/web/dist/ || echo "❌ Customer Portal files not found in target"
 
           # Ensure Nginx is installed and ready
           echo "🛠️ Ensuring Nginx is installed..."
@@ -309,45 +317,19 @@ jobs:
 
           # Set proper file permissions
           echo "🔐 Setting file permissions..."
-          chmod -R 755 /var/www/html/panel/
-          chmod -R 755 /var/www/html/web/
-          chown -R www-data:www-data /var/www/html/panel/
-          chown -R www-data:www-data /var/www/html/web/
-          
+          chmod -R 755 /opt/china-car-parts/app/frontend/panel/dist/
+          chmod -R 755 /opt/china-car-parts/app/frontend/web/dist/
+          chown -R www-data:www-data /opt/china-car-parts/app/frontend/panel/dist/ || true
+          chown -R www-data:www-data /opt/china-car-parts/app/frontend/web/dist/ || true
+
           # Update Nginx configuration
           echo "🌐 Updating Nginx configuration..."
-          printf '%s\n' \
-            'server {' \
-            '    listen 80 default_server;' \
-            '    listen [::]:80 default_server;' \
-            '' \
-            '    root /var/www/html;' \
-            '    index index.html index.htm index.nginx-debian.html;' \
-            '' \
-            '    server_name _;' \
-            '' \
-            '    # Customer Portal' \
-            '    location / {' \
-            '        try_files $uri $uri/ /index.html;' \
-            '    }' \
-            '' \
-            '    # Admin Panel' \
-            '    location /panel/ {' \
-            '        alias /var/www/html/panel/;' \
-            '        try_files $uri $uri/ /panel/index.html;' \
-            '    }' \
-            '' \
-            '    # API Proxy' \
-            '    location /api/ {' \
-            '        proxy_pass http://127.0.0.1:8001/api/;' \
-            '        proxy_set_header Host $host;' \
-            '        proxy_set_header X-Real-IP $remote_addr;' \
-            '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' \
-            '        proxy_set_header X-Forwarded-Proto $scheme;' \
-            '    }' \
-            '}' \
-            '' \
-            > /etc/nginx/sites-available/default
+          NGINX_SITE="/etc/nginx/sites-available/china-car-parts"
+          cp deployment/configs/nginx-production.conf "$NGINX_SITE"
+          ln -sf "$NGINX_SITE" /etc/nginx/sites-enabled/china-car-parts
+          if [ -f /etc/nginx/sites-enabled/default ]; then
+            rm /etc/nginx/sites-enabled/default
+          fi
 
           # Test Nginx configuration
           echo "🧪 Testing Nginx configuration..."
@@ -435,17 +417,17 @@ jobs:
           
           # Switch traffic by updating the primary server in upstream
           # Backup the current config
-          cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
-          
+          cp "$NGINX_SITE" "$NGINX_SITE.backup"
+
           # Switch primary and backup servers
           if [ "$TARGET_PORT" = "8001" ]; then
             # Make 8001 primary, 8002 backup
-            sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s backup;/ }' /etc/nginx/sites-available/default
+            sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s backup;/ }' "$NGINX_SITE"
           else
             # Make 8002 primary, 8001 backup  
-            sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s backup;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s;/ }' /etc/nginx/sites-available/default
+            sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s backup;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s;/ }' "$NGINX_SITE"
           fi
-          
+
           # Test config and reload
           nginx -t && nginx -s reload
           
@@ -458,7 +440,7 @@ jobs:
             echo "❌ Final API health check failed"
             echo "🔄 Attempting rollback..."
             # Rollback Nginx config
-            cp /etc/nginx/sites-available/default.backup /etc/nginx/sites-available/default
+            cp "$NGINX_SITE.backup" "$NGINX_SITE"
             nginx -t && nginx -s reload
             echo "❌ Deployment failed and rolled back"
             exit 1
