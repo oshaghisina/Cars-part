@@ -10,7 +10,7 @@ echo "=================================================="
 cd app/frontend/panel
 
 # Set production environment variable
-export VITE_API_BASE_URL="http://5.223.59.155/api/v1"
+export VITE_API_BASE_URL="/api/v1"
 
 echo "🔧 Setting API Base URL: $VITE_API_BASE_URL"
 

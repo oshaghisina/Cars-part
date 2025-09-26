@@ -275,7 +275,7 @@ jobs:
           echo "🎨 Building Admin Panel..."
           cd app/frontend/panel
           npm install
-          export VITE_API_BASE_URL="http://${{ secrets.PROD_HOST }}/api/v1"
+          export VITE_API_BASE_URL="/api/v1"
           npm run build
           
           # Build Customer Portal Frontend
