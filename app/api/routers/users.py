@@ -36,6 +36,7 @@ def to_model(model_cls, obj):
     # Fallback for Pydantic v1
     return model_cls.from_orm(obj)
 
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
