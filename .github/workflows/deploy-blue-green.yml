@@ -16,7 +16,7 @@ jobs:
           sudo apt-get install -y sshpass
           
           # Create deployment script
-          cat > deploy-blue-green.sh << 'EOF'
+          cat > deploy-blue-green.sh << 'SCRIPT_EOF'
           #!/bin/bash
           set -e
           
@@ -294,7 +294,7 @@ jobs:
           echo "🌐 Customer Portal: http://${{ secrets.PROD_HOST }}/"
           echo "🎛️ Admin Panel: http://${{ secrets.PROD_HOST }}/panel/"
           echo "🔗 API Health: http://${{ secrets.PROD_HOST }}/api/v1/health"
-          EOF
+          SCRIPT_EOF
           
           # Debug connection details
           echo "🔍 Connection details:"
