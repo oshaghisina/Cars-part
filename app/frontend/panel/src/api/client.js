@@ -6,9 +6,7 @@
 
 import axios from 'axios'
 
-// Use environment variable or fallback to relative path for proxy/nginx setups
-// For production, set VITE_API_BASE_URL=http://5.223.59.155/api/v1 (or rely on /api proxy)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
+import { API_BASE_URL } from './baseUrl'
 
 class AdminApiClient {
   constructor() {

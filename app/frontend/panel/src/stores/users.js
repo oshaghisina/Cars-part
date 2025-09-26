@@ -1,7 +1,9 @@
 import { defineStore } from "pinia";
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "/api/v1";
+import { API_BASE_URL } from "../api/baseUrl";
+
+const API_BASE = API_BASE_URL;
 
 export const useUsersStore = defineStore("users", {
   state: () => ({
