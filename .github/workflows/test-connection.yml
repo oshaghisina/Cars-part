@@ -17,7 +17,7 @@ jobs:
           echo "🔍 Connection details:"
           echo "  - Host: ${{ secrets.PROD_HOST }}"
           echo "  - User: ${{ secrets.PROD_USER }}"
-          echo "  - Password length: ${#{{ secrets.PROD_PASS }}}"
+          echo "  - Password: [HIDDEN]"
           
           # Test basic SSH connection
           echo "🔍 Testing basic SSH connection..."
