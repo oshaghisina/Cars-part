@@ -29,7 +29,7 @@ jobs:
           
           # Test 3: SSH with verbose output
           echo "🔍 Test 3: SSH with verbose output..."
-          sshpass -p "${{ secrets.PROD_PASS }}" ssh -v -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH test successful'" || echo "❌ SSH test failed"
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -vvv -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH test successful'" || echo "❌ SSH test failed"
           
           # Test 4: Try different SSH options
           echo "🔍 Test 4: Try different SSH options..."
@@ -38,5 +38,13 @@ jobs:
           # Test 5: Check if it's a timing issue
           echo "🔍 Test 5: Check timing with longer timeout..."
           sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH with longer timeout successful'" || echo "❌ SSH with longer timeout failed"
+          
+          # Test 6: Check SSH service status on server
+          echo "🔍 Test 6: Check SSH service status..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "systemctl status ssh --no-pager" || echo "❌ Could not check SSH service status"
+          
+          # Test 7: Check authentication methods
+          echo "🔍 Test 7: Check available authentication methods..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "grep -E '^(PasswordAuthentication|PermitRootLogin|UsePAM)' /etc/ssh/sshd_config" || echo "❌ Could not check SSH config"
           
           echo "✅ Diagnosis complete!"
