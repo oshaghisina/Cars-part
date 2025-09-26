@@ -308,11 +308,42 @@ jobs:
             '}' \
             '' \
             > /etc/nginx/sites-available/default
-          
+
           # Test Nginx configuration
           echo "🧪 Testing Nginx configuration..."
           nginx -t
-          
+
+          # Ensure systemd service definitions exist
+          ensure_service_file() {
+            local target="$1"
+            local port="$2"
+            local file="/etc/systemd/system/china-car-parts-api-${target}.service"
+            if [ ! -f "$file" ]; then
+              echo "🛠️ Creating missing systemd unit $file..."
+              printf '%s\n' \
+                '[Unit]' \
+                "Description=China Car Parts API (${target^})" \
+                'After=network.target' \
+                '' \
+                '[Service]' \
+                'Type=simple' \
+                'User=root' \
+                "WorkingDirectory=/opt/china-car-parts-${target}" \
+                "Environment=PATH=/opt/china-car-parts-${target}/venv/bin" \
+                "ExecStart=/opt/china-car-parts-${target}/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port ${port}" \
+                'Restart=always' \
+                '' \
+                '[Install]' \
+                'WantedBy=multi-user.target' \
+                '' \
+                > "$file"
+              systemctl daemon-reload
+              systemctl enable "china-car-parts-api-${target}"
+            fi
+          }
+          ensure_service_file blue 8001
+          ensure_service_file green 8002
+
           # Start services
           echo "🔄 Starting services..."
           systemctl restart china-car-parts-api-$TARGET
