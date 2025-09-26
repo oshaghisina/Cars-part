@@ -298,10 +298,10 @@ jobs:
           
           # Copy and execute script using password authentication
           echo "📤 Copying deployment script to production server..."
-          sshpass -p "${{ secrets.PROD_PASS }}" scp deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:/tmp/
+          sshpass -p "${{ secrets.PROD_PASS }}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:/tmp/
           
           echo "🚀 Executing deployment script on production server..."
-          sshpass -p "${{ secrets.PROD_PASS }}" ssh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "
             set -e
             echo '🔧 Making script executable...'
             chmod +x /tmp/deploy-blue-green.sh
