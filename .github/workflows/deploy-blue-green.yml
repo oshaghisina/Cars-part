@@ -243,13 +243,30 @@ jobs:
           echo "📁 Copying frontend builds to nginx directory..."
           mkdir -p /var/www/html/panel
           mkdir -p /var/www/html/web
-          
+
           echo "📋 Copying Admin Panel files..."
           cp -r app/frontend/panel/dist/* /var/www/html/panel/
-          
+
           echo "📋 Copying Customer Portal files..."
           cp -r app/frontend/web/dist/* /var/www/html/web/
-          
+
+          # Ensure Nginx is installed and ready
+          echo "🛠️ Ensuring Nginx is installed..."
+          if ! command -v nginx >/dev/null 2>&1; then
+            echo "🛠️ Nginx not found, installing..."
+            if command -v sudo >/dev/null 2>&1; then
+              sudo apt-get update
+              DEBIAN_FRONTEND=noninteractive sudo apt-get install -y nginx
+            else
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y nginx
+            fi
+          fi
+          if [ ! -d /etc/nginx ]; then
+            echo "❌ Nginx installation failed (missing /etc/nginx)"
+            exit 1
+          fi
+
           # Set proper file permissions
           echo "🔐 Setting file permissions..."
           chmod -R 755 /var/www/html/panel/
