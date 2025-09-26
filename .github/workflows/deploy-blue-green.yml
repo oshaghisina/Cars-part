@@ -78,39 +78,39 @@ jobs:
             
             # Create blue service
             cat > /etc/systemd/system/china-car-parts-api-blue.service << 'BLUE_EOF'
-[Unit]
-Description=China Car Parts API (Blue)
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/opt/china-car-parts-blue
-Environment=PATH=/opt/china-car-parts-blue/venv/bin
-ExecStart=/opt/china-car-parts-blue/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8001
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-BLUE_EOF
+            [Unit]
+            Description=China Car Parts API (Blue)
+            After=network.target
+            
+            [Service]
+            Type=simple
+            User=root
+            WorkingDirectory=/opt/china-car-parts-blue
+            Environment=PATH=/opt/china-car-parts-blue/venv/bin
+            ExecStart=/opt/china-car-parts-blue/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8001
+            Restart=always
+            
+            [Install]
+            WantedBy=multi-user.target
+            BLUE_EOF
             
             # Create green service
             cat > /etc/systemd/system/china-car-parts-api-green.service << 'GREEN_EOF'
-[Unit]
-Description=China Car Parts API (Green)
-After=network.target
-
-[Service]
-Type=simple
-User=root
-WorkingDirectory=/opt/china-car-parts-green
-Environment=PATH=/opt/china-car-parts-green/venv/bin
-ExecStart=/opt/china-car-parts-green/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8002
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-GREEN_EOF
+            [Unit]
+            Description=China Car Parts API (Green)
+            After=network.target
+            
+            [Service]
+            Type=simple
+            User=root
+            WorkingDirectory=/opt/china-car-parts-green
+            Environment=PATH=/opt/china-car-parts-green/venv/bin
+            ExecStart=/opt/china-car-parts-green/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8002
+            Restart=always
+            
+            [Install]
+            WantedBy=multi-user.target
+            GREEN_EOF
             
             # Reload systemd and start services
             echo "🔄 Reloading systemd and starting services..."
@@ -197,36 +197,36 @@ GREEN_EOF
           # Update Nginx configuration
           echo "🌐 Updating Nginx configuration..."
           cat > /etc/nginx/sites-available/default << 'NGINX_EOF'
-server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    
-    root /var/www/html;
-    index index.html index.htm index.nginx-debian.html;
-    
-    server_name _;
-    
-    # Customer Portal
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-    
-    # Admin Panel
-    location /panel/ {
-        alias /var/www/html/panel/;
-        try_files $uri $uri/ /panel/index.html;
-    }
-    
-    # API Proxy
-    location /api/ {
-        proxy_pass http://127.0.0.1:8001/api/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-NGINX_EOF
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+              
+              root /var/www/html;
+              index index.html index.htm index.nginx-debian.html;
+              
+              server_name _;
+              
+              # Customer Portal
+              location / {
+                  try_files $uri $uri/ /index.html;
+              }
+              
+              # Admin Panel
+              location /panel/ {
+                  alias /var/www/html/panel/;
+                  try_files $uri $uri/ /panel/index.html;
+              }
+              
+              # API Proxy
+              location /api/ {
+                  proxy_pass http://127.0.0.1:8001/api/;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+          NGINX_EOF
           
           # Test Nginx configuration
           echo "🧪 Testing Nginx configuration..."
