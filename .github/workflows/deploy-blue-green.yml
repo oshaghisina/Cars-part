@@ -154,8 +154,9 @@ jobs:
           git reset --hard HEAD
           git clean -fd
           git pull origin main
-          if [ ! -d "venv" ]; then
-            echo "🐍 Virtualenv missing for $TARGET, creating..."
+          if [ ! -f "venv/bin/activate" ]; then
+            echo "🐍 Virtualenv missing or broken for $TARGET, recreating..."
+            rm -rf venv
             echo "🐍 Ensuring python3-venv and python3-pip are installed..."
             if ! dpkg -s python3-venv >/dev/null 2>&1 || ! dpkg -s python3-pip >/dev/null 2>&1; then
               if command -v sudo >/dev/null 2>&1; then
