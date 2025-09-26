@@ -63,11 +63,11 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def ensure_critical_tables():
-    """Ensure critical OTP tables exist on startup."""
+    """Ensure critical OTP tables and User columns exist on startup."""
     try:
         import logging
 
-        from sqlalchemy import inspect
+        from sqlalchemy import inspect, text
 
         logger = logging.getLogger(__name__)
 
@@ -105,8 +105,53 @@ async def ensure_critical_tables():
         else:
             logger.info("All critical tables exist")
 
+        # Check if users table has required SMS columns
+        if "users" in existing_tables:
+            logger.info("Checking users table for required SMS columns...")
+            
+            # Get existing columns in users table
+            user_columns = inspector.get_columns("users")
+            existing_column_names = [col["name"] for col in user_columns]
+            
+            # Required SMS columns that should exist
+            required_sms_columns = [
+                "sms_notifications",
+                "sms_marketing", 
+                "sms_delivery",
+                "phone_verified"
+            ]
+            
+            missing_columns = [col for col in required_sms_columns if col not in existing_column_names]
+            
+            if missing_columns:
+                logger.warning(f"Missing SMS columns in users table: {missing_columns}. Adding them...")
+                
+                # Add missing columns with proper defaults
+                with engine.connect() as connection:
+                    for column in missing_columns:
+                        if column in ["sms_notifications", "sms_delivery", "phone_verified"]:
+                            # These default to True/False based on column purpose
+                            default_value = "TRUE" if column in ["sms_notifications", "sms_delivery"] else "FALSE"
+                            sql = f"ALTER TABLE users ADD COLUMN {column} BOOLEAN NOT NULL DEFAULT {default_value}"
+                        elif column == "sms_marketing":
+                            # Marketing defaults to False
+                            sql = f"ALTER TABLE users ADD COLUMN {column} BOOLEAN NOT NULL DEFAULT FALSE"
+                        
+                        try:
+                            connection.execute(text(sql))
+                            logger.info(f"Added column {column} to users table")
+                        except Exception as col_error:
+                            logger.error(f"Failed to add column {column}: {col_error}")
+                    
+                    # Commit the changes
+                    connection.commit()
+                
+                logger.info("SMS columns added successfully to users table")
+            else:
+                logger.info("All required SMS columns exist in users table")
+
     except Exception as e:
-        logger.error(f"Failed to ensure critical tables: {e}")
+        logger.error(f"Failed to ensure critical tables and columns: {e}")
 
 
 @app.get("/health")

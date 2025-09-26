@@ -1,81 +1,76 @@
 #!/usr/bin/env python3
-"""
-Create a default admin user for the Chinese Auto Parts Price Bot.
-"""
+"""Create admin user for production deployment."""
 
 import sys
 import os
-import secrets
-import string
-from datetime import datetime
 
 # Add the project root to Python path
-sys.path.append(os.path.dirname(__file__))
-
-from app.db.database import SessionLocal
-from app.db.models import User
-
-def generate_random_password(length=12):
-    """Generate a random password."""
-    characters = string.ascii_letters + string.digits + "!@#$%^&*"
-    return ''.join(secrets.choice(characters) for _ in range(length))
+project_root = os.path.dirname(__file__)
+sys.path.insert(0, project_root)
 
 def create_admin_user():
-    """Create a default admin user."""
-    print("🔐 Creating admin user...")
-    
-    db = SessionLocal()
-    
+    """Create admin user with proper error handling."""
     try:
-        # Check if admin user already exists and delete it
-        existing_admin = db.query(User).filter(User.username == "admin").first()
-        if existing_admin:
-            print("⚠️  Admin user already exists! Deleting and recreating...")
-            db.delete(existing_admin)
+        from app.db.database import SessionLocal
+        from app.db.models import User
+        import secrets
+        import string
+        
+        print("🔧 Creating admin user...")
+        
+        # Create database session
+        db = SessionLocal()
+        
+        try:
+            # Check if admin user already exists
+            existing_admin = db.query(User).filter(User.username == "admin").first()
+            if existing_admin:
+                print("⚠️  Admin user already exists, removing old one...")
+                db.delete(existing_admin)
+                db.commit()
+            
+            # Generate a random password
+            password_chars = string.ascii_letters + string.digits + "!@#$%^&*"
+            password = ''.join(secrets.choice(password_chars) for _ in range(12))
+            
+            # Create new admin user
+            admin_user = User(
+                username="admin",
+                email="admin@chinacarparts.local",
+                first_name="Admin",
+                last_name="User",
+                role="admin",
+                is_active=True,
+                is_verified=True,
+                phone="+989123456789"
+            )
+            
+            # Set password
+            admin_user.set_password(password)
+            
+            # Add to database
+            db.add(admin_user)
             db.commit()
-        
-        # Generate random password
-        password = generate_random_password()
-        
-        # Create admin user
-        admin_user = User(
-            username="admin",
-            email="admin@chinacarparts.com",
-            password_hash="",  # Will be set by set_password method
-            salt="",  # Will be set by set_password method
-            first_name="System",
-            last_name="Administrator",
-            role="admin",
-            is_active=True,
-            is_verified=True,
-            created_at=datetime.utcnow(),
-            last_login=None,
-            login_attempts=0,
-            locked_until=None
-        )
-        
-        # Set password using User model's method
-        admin_user.set_password(password)
-        
-        db.add(admin_user)
-        db.commit()
-        
-        print("✅ Admin user created successfully!")
-        print(f"   Username: admin")
-        print(f"   Email: admin@chinacarparts.com")
-        print(f"   Password: {password}")
-        print(f"   Role: admin")
-        print("\n🔑 Please save this password securely!")
-        print("   You can use these credentials to log into the admin panel.")
-        
-        return admin_user
-        
+            db.refresh(admin_user)
+            
+            print("✅ Admin user created successfully!")
+            print(f"📧 Email: admin@chinacarparts.local")
+            print(f"👤 Username: admin")
+            print(f"🔑 Password: {password}")
+            print("\n🚨 IMPORTANT: Save this password immediately!")
+            print("🔗 Login URL: http://your-server/panel/")
+            
+            return True
+            
+        finally:
+            db.close()
+            
     except Exception as e:
         print(f"❌ Error creating admin user: {e}")
-        db.rollback()
-        raise
-    finally:
-        db.close()
+        import traceback
+        traceback.print_exc()
+        return False
 
 if __name__ == "__main__":
-    create_admin_user()
+    success = create_admin_user()
+    sys.exit(0 if success else 1)
