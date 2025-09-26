@@ -19,6 +19,36 @@ jobs:
           cat > deploy-blue-green.sh << 'SCRIPT_EOF'
           #!/bin/bash
           set -e
+
+          ensure_python_tools() {
+            if ! dpkg -s python3-venv >/dev/null 2>&1 || ! dpkg -s python3-pip >/dev/null 2>&1; then
+              echo "🐍 Installing python3-venv and python3-pip..."
+              if command -v sudo >/dev/null 2>&1; then
+                sudo apt-get update
+                DEBIAN_FRONTEND=noninteractive sudo apt-get install -y python3-venv python3-pip
+              else
+                apt-get update
+                DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv python3-pip
+              fi
+            fi
+          }
+
+          ensure_virtualenv() {
+            local env_dir="$1"
+            local env_activate="$env_dir/bin/activate"
+            if [ ! -d "$env_dir" ] || [ ! -f "$env_activate" ]; then
+              echo "🐍 (Re)creating virtualenv at $env_dir..."
+              rm -rf "$env_dir"
+              ensure_python_tools
+              python3 -m venv "$env_dir"
+              if [ ! -f "$env_activate" ]; then
+                echo "❌ Failed to create virtualenv at $env_dir"
+                exit 1
+              fi
+              "$env_dir/bin/python" -m ensurepip --upgrade >/dev/null 2>&1 || true
+              "$env_dir/bin/python" -m pip install --upgrade pip
+            fi
+          }
           
           echo "🚀 Starting blue-green deployment..."
           echo "📊 System info:"
@@ -63,25 +93,17 @@ jobs:
             
             # Set up virtual environments
             echo "🐍 Setting up virtual environments..."
-            echo "🐍 Ensuring python3-venv and python3-pip are installed..."
-            if ! dpkg -s python3-venv >/dev/null 2>&1 || ! dpkg -s python3-pip >/dev/null 2>&1; then
-              if command -v sudo >/dev/null 2>&1; then
-                sudo apt-get update
-                DEBIAN_FRONTEND=noninteractive sudo apt-get install -y python3-venv python3-pip
-              else
-                apt-get update
-                DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv python3-pip
-              fi
-            fi
             cd /opt/china-car-parts-blue
-            python3 -m venv venv
+            ensure_virtualenv "/opt/china-car-parts-blue/venv"
             source venv/bin/activate
             pip install -r requirements.txt
-            
+            deactivate
+
             cd /opt/china-car-parts-green
-            python3 -m venv venv
+            ensure_virtualenv "/opt/china-car-parts-green/venv"
             source venv/bin/activate
             pip install -r requirements.txt
+            deactivate
             
             # Create systemd services
             echo "⚙️ Creating systemd services..."
@@ -194,21 +216,7 @@ jobs:
           git reset --hard HEAD
           git clean -fd
           git pull origin main
-          if [ ! -f "venv/bin/activate" ]; then
-            echo "🐍 Virtualenv missing or broken for $TARGET, recreating..."
-            rm -rf venv
-            echo "🐍 Ensuring python3-venv and python3-pip are installed..."
-            if ! dpkg -s python3-venv >/dev/null 2>&1 || ! dpkg -s python3-pip >/dev/null 2>&1; then
-              if command -v sudo >/dev/null 2>&1; then
-                sudo apt-get update
-                DEBIAN_FRONTEND=noninteractive sudo apt-get install -y python3-venv python3-pip
-              else
-                apt-get update
-                DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv python3-pip
-              fi
-            fi
-            python3 -m venv venv
-          fi
+          ensure_virtualenv "/opt/china-car-parts-$TARGET/venv"
           source venv/bin/activate
           pip install -r requirements.txt
 
