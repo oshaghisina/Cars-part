@@ -296,12 +296,22 @@ jobs:
           echo "🔗 API Health: http://${{ secrets.PROD_HOST }}/api/v1/health"
           EOF
           
+          # Debug connection details
+          echo "🔍 Connection details:"
+          echo "  - Host: ${{ secrets.PROD_HOST }}"
+          echo "  - User: ${{ secrets.PROD_USER }}"
+          echo "  - Password length: ${#{{ secrets.PROD_PASS }}}"
+          
+          # Test SSH connection first
+          echo "🔍 Testing SSH connection..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH connection test successful'"
+          
           # Copy and execute script using password authentication
           echo "📤 Copying deployment script to production server..."
-          sshpass -p "${{ secrets.PROD_PASS }}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:/tmp/
+          sshpass -p "${{ secrets.PROD_PASS }}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:/tmp/
           
           echo "🚀 Executing deployment script on production server..."
-          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "
             set -e
             echo '🔧 Making script executable...'
             chmod +x /tmp/deploy-blue-green.sh
