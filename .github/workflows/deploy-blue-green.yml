@@ -214,7 +214,7 @@ jobs:
           # Deploy to target environment
           cd /opt/china-car-parts-$TARGET
           git reset --hard HEAD
-          git clean -fd
+          git clean -fd -e data/ -e data/app.db
           git pull origin main
           ensure_virtualenv "/opt/china-car-parts-$TARGET/venv"
           source venv/bin/activate
