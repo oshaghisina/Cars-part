@@ -409,7 +409,8 @@
 import { ref, onMounted, reactive } from "vue";
 import axios from "axios";
 
-const API_BASE = "http://localhost:8001/api/v1";
+import { API_BASE_URL } from "../api/baseUrl";
+const API_BASE = API_BASE_URL;
 
 export default {
   name: "Parts",
