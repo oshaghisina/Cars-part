@@ -26,6 +26,16 @@ from app.schemas.user_schemas import (
 )
 from app.services.user_service import UserService
 
+
+# Compatibility helper for Pydantic v2/v1 schema creation from ORM objects
+def to_model(model_cls, obj):
+    """Create a Pydantic model from an ORM object in a version-safe way."""
+    if hasattr(model_cls, "model_validate"):
+        # Pydantic v2
+        return model_cls.model_validate(obj, from_attributes=True)
+    # Fallback for Pydantic v1
+    return model_cls.from_orm(obj)
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -80,7 +90,7 @@ async def login(login_data: UserLogin, request: Request, db: Session = Depends(g
     return LoginResponse(
         access_token=access_token,
         expires_in=expires_in_seconds,
-        user=UserResponse.from_orm(user),
+        user=to_model(UserResponse, user),
     )
 
 
@@ -104,7 +114,7 @@ async def logout(
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """Get current user information."""
-    return UserResponse.from_orm(current_user)
+    return to_model(UserResponse, current_user)
 
 
 @router.put("/me", response_model=UserResponse)
@@ -123,7 +133,7 @@ async def update_current_user(
 
     # Activity logging not implemented yet
 
-    return UserResponse.from_orm(updated_user)
+    return to_model(UserResponse, updated_user)
 
 
 @router.post("/change-password")
@@ -188,7 +198,7 @@ async def get_users(
         )
 
     return UserListResponse(
-        users=[UserSummary.from_orm(user) for user in users],
+        users=[to_model(UserSummary, user) for user in users],
         total=total,
         page=skip // limit + 1,
         limit=limit,
@@ -216,7 +226,7 @@ async def create_user(
 
         # Activity logging not implemented yet
 
-        return UserResponse.from_orm(user)
+        return to_model(UserResponse, user)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -240,7 +250,7 @@ async def get_user(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    return UserResponse.from_orm(user)
+    return to_model(UserResponse, user)
 
 
 @router.put("/{user_id}", response_model=UserResponse)
@@ -266,7 +276,7 @@ async def update_user(
 
         # Activity logging not implemented yet
 
-        return UserResponse.from_orm(updated_user)
+        return to_model(UserResponse, updated_user)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -418,7 +428,7 @@ async def create_users_bulk(
 
     # Activity logging not implemented yet
 
-    return [UserResponse.from_orm(user) for user in created_users]
+    return [to_model(UserResponse, user) for user in created_users]
 
 
 # Bulk role assignment endpoint temporarily disabled - BulkRoleAssignment
