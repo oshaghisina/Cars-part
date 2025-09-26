@@ -10,267 +10,273 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Production
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.PROD_HOST }}
-          username: ${{ secrets.PROD_USER }}
-          password: ${{ secrets.PROD_PASS }}
-          script: |
-            #!/bin/bash
-            set -e
+        run: |
+          # Install sshpass for password authentication
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+          
+          # Create deployment script
+          cat > deploy-blue-green.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          
+          echo "🚀 Starting blue-green deployment..."
+          
+          # Check if blue-green directories exist, if not, run setup first
+          if [ ! -d "/opt/china-car-parts-blue" ] || [ ! -d "/opt/china-car-parts-green" ]; then
+            echo "🔧 Blue-green directories not found. Running initial setup..."
             
-            echo "🚀 Starting blue-green deployment..."
+            # Create blue-green directories
+            echo "📁 Creating blue-green directories..."
+            mkdir -p /opt/china-car-parts-blue
+            mkdir -p /opt/china-car-parts-green
             
-            # Check if blue-green directories exist, if not, run setup first
-            if [ ! -d "/opt/china-car-parts-blue" ] || [ ! -d "/opt/china-car-parts-green" ]; then
-              echo "🔧 Blue-green directories not found. Running initial setup..."
-              
-              # Create blue-green directories
-              echo "📁 Creating blue-green directories..."
-              mkdir -p /opt/china-car-parts-blue
-              mkdir -p /opt/china-car-parts-green
-              
-              # Clone the repository to both directories
-              echo "📥 Cloning repository to blue environment..."
-              cd /opt/china-car-parts-blue
-              git clone https://github.com/${{ github.repository }}.git . || echo "Repository already exists, updating..."
-              git pull origin main
-              
-              echo "📥 Cloning repository to green environment..."
-              cd /opt/china-car-parts-green
-              git clone https://github.com/${{ github.repository }}.git . || echo "Repository already exists, updating..."
-              git pull origin main
-              
-              # Set up virtual environments
-              echo "🐍 Setting up virtual environments..."
-              cd /opt/china-car-parts-blue
-              python3 -m venv venv
-              source venv/bin/activate
-              pip install -r requirements.txt
-              
-              cd /opt/china-car-parts-green
-              python3 -m venv venv
-              source venv/bin/activate
-              pip install -r requirements.txt
-              
-              # Create systemd services
-              echo "⚙️ Creating systemd services..."
-              cat > /etc/systemd/system/china-car-parts-api-blue.service << 'SERVICE_EOF'
-              [Unit]
-              Description=China Car Parts API (Blue)
-              After=network.target
-              
-              [Service]
-              Type=simple
-              User=root
-              WorkingDirectory=/opt/china-car-parts-blue
-              Environment=PATH=/opt/china-car-parts-blue/venv/bin
-              ExecStart=/opt/china-car-parts-blue/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8001
-              Restart=always
-              
-              [Install]
-              WantedBy=multi-user.target
-              SERVICE_EOF
-              
-              cat > /etc/systemd/system/china-car-parts-api-green.service << 'SERVICE_EOF'
-              [Unit]
-              Description=China Car Parts API (Green)
-              After=network.target
-              
-              [Service]
-              Type=simple
-              User=root
-              WorkingDirectory=/opt/china-car-parts-green
-              Environment=PATH=/opt/china-car-parts-green/venv/bin
-              ExecStart=/opt/china-car-parts-green/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8002
-              Restart=always
-              
-              [Install]
-              WantedBy=multi-user.target
-              SERVICE_EOF
-              
-              # Reload systemd and start services
-              echo "🔄 Reloading systemd and starting services..."
-              systemctl daemon-reload
-              systemctl enable china-car-parts-api-blue
-              systemctl enable china-car-parts-api-green
-              systemctl start china-car-parts-api-blue
-              
-              echo "✅ Initial blue-green setup completed!"
-            else
-              echo "✅ Blue-green infrastructure already exists, proceeding with deployment..."
-            fi
-            
-            # Determine current and target environments
-            # Check which port is primary (not backup) in china_car_parts_api upstream
-            CURRENT_PORT=$(nginx -T 2>/dev/null | grep -A 5 'upstream china_car_parts_api' | grep -v backup | grep -o '800[12]' | head -1)
-            if [ "$CURRENT_PORT" = "8001" ]; then
-              TARGET="green"
-              TARGET_PORT="8002"
-            else
-              TARGET="blue"
-              TARGET_PORT="8001"
-            fi
-            
-            echo "🔄 Deploying to $TARGET environment..."
-            
-            # Deploy to target environment
-            cd /opt/china-car-parts-$TARGET
-            git reset --hard HEAD
-            git clean -fd
+            # Clone the repository to both directories
+            echo "📥 Cloning repository to blue environment..."
+            cd /opt/china-car-parts-blue
+            git clone https://github.com/${{ github.repository }}.git . || echo "Repository already exists, updating..."
             git pull origin main
+            
+            echo "📥 Cloning repository to green environment..."
+            cd /opt/china-car-parts-green
+            git clone https://github.com/${{ github.repository }}.git . || echo "Repository already exists, updating..."
+            git pull origin main
+            
+            # Set up virtual environments
+            echo "🐍 Setting up virtual environments..."
+            cd /opt/china-car-parts-blue
+            python3 -m venv venv
             source venv/bin/activate
             pip install -r requirements.txt
             
-            # Create database backup before migration
-            echo "📦 Creating database backup before migration..."
-            BACKUP_FILE="/opt/backups/production_db_backup_$(date +%Y%m%d_%H%M%S).db"
-            mkdir -p /opt/backups
-            if [ -f "/opt/china-car-parts-$TARGET/data/china_car_parts.db" ]; then
-              cp /opt/china-car-parts-$TARGET/data/china_car_parts.db "$BACKUP_FILE"
-              echo "✅ Database backup created: $BACKUP_FILE"
-            else
-              echo "⚠️ No existing database found, will create new one"
+            cd /opt/china-car-parts-green
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+            
+            # Create systemd services
+            echo "⚙️ Creating systemd services..."
+            cat > /etc/systemd/system/china-car-parts-api-blue.service << 'SERVICE_EOF'
+            [Unit]
+            Description=China Car Parts API (Blue)
+            After=network.target
+            
+            [Service]
+            Type=simple
+            User=root
+            WorkingDirectory=/opt/china-car-parts-blue
+            Environment=PATH=/opt/china-car-parts-blue/venv/bin
+            ExecStart=/opt/china-car-parts-blue/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8001
+            Restart=always
+            
+            [Install]
+            WantedBy=multi-user.target
+            SERVICE_EOF
+            
+            cat > /etc/systemd/system/china-car-parts-api-green.service << 'SERVICE_EOF'
+            [Unit]
+            Description=China Car Parts API (Green)
+            After=network.target
+            
+            [Service]
+            Type=simple
+            User=root
+            WorkingDirectory=/opt/china-car-parts-green
+            Environment=PATH=/opt/china-car-parts-green/venv/bin
+            ExecStart=/opt/china-car-parts-green/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8002
+            Restart=always
+            
+            [Install]
+            WantedBy=multi-user.target
+            SERVICE_EOF
+            
+            # Reload systemd and start services
+            echo "🔄 Reloading systemd and starting services..."
+            systemctl daemon-reload
+            systemctl enable china-car-parts-api-blue
+            systemctl enable china-car-parts-api-green
+            systemctl start china-car-parts-api-blue
+            
+            echo "✅ Initial blue-green setup completed!"
+          else
+            echo "✅ Blue-green infrastructure already exists, proceeding with deployment..."
+          fi
+          
+          # Determine current and target environments
+          # Check which port is primary (not backup) in china_car_parts_api upstream
+          CURRENT_PORT=$(nginx -T 2>/dev/null | grep -A 5 'upstream china_car_parts_api' | grep -v backup | grep -o '800[12]' | head -1)
+          if [ "$CURRENT_PORT" = "8001" ]; then
+            TARGET="green"
+            TARGET_PORT="8002"
+          else
+            TARGET="blue"
+            TARGET_PORT="8001"
+          fi
+          
+          echo "🔄 Deploying to $TARGET environment..."
+          
+          # Deploy to target environment
+          cd /opt/china-car-parts-$TARGET
+          git reset --hard HEAD
+          git clean -fd
+          git pull origin main
+          source venv/bin/activate
+          pip install -r requirements.txt
+          
+          # Create database backup before migration
+          echo "📦 Creating database backup before migration..."
+          BACKUP_FILE="/opt/backups/production_db_backup_$(date +%Y%m%d_%H%M%S).db"
+          mkdir -p /opt/backups
+          if [ -f "/opt/china-car-parts-$TARGET/data/china_car_parts.db" ]; then
+            cp /opt/china-car-parts-$TARGET/data/china_car_parts.db "$BACKUP_FILE"
+            echo "✅ Database backup created: $BACKUP_FILE"
+          else
+            echo "⚠️ No existing database found, will create new one"
+          fi
+          
+          # Run database migration
+          echo "🗄️ Running database migration..."
+          alembic upgrade head
+          
+          # Build Admin Panel Frontend
+          echo "🎨 Building Admin Panel..."
+          cd app/frontend/panel
+          npm install
+          export VITE_API_BASE_URL="http://${{ secrets.PROD_HOST }}/api/v1"
+          npm run build
+          
+          # Build Customer Portal Frontend
+          echo "🌐 Building Customer Portal..."
+          cd ../web
+          npm install
+          npm run build
+          
+          # Go back to project root
+          cd ../../..
+          
+          # Copy built frontend to nginx directory
+          echo "📁 Copying frontend builds to nginx directory..."
+          mkdir -p /var/www/html/panel
+          mkdir -p /var/www/html/web
+          
+          echo "📋 Copying Admin Panel files..."
+          cp -r app/frontend/panel/dist/* /var/www/html/panel/
+          
+          echo "📋 Copying Customer Portal files..."
+          cp -r app/frontend/web/dist/* /var/www/html/web/
+          
+          # Set proper file permissions
+          echo "🔐 Setting file permissions..."
+          chmod -R 755 /var/www/html/panel/
+          chmod -R 755 /var/www/html/web/
+          chown -R www-data:www-data /var/www/html/panel/
+          chown -R www-data:www-data /var/www/html/web/
+          
+          # Update Nginx configuration
+          echo "🌐 Updating Nginx configuration..."
+          cat > /etc/nginx/sites-available/default << 'NGINX_EOF'
+          server {
+              listen 80 default_server;
+              listen [::]:80 default_server;
+              
+              root /var/www/html;
+              index index.html index.htm index.nginx-debian.html;
+              
+              server_name _;
+              
+              # Customer Portal
+              location / {
+                  try_files $uri $uri/ /index.html;
+              }
+              
+              # Admin Panel
+              location /panel/ {
+                  alias /var/www/html/panel/;
+                  try_files $uri $uri/ /panel/index.html;
+              }
+              
+              # API Proxy
+              location /api/ {
+                  proxy_pass http://127.0.0.1:8001/api/;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+          NGINX_EOF
+          
+          # Test Nginx configuration
+          echo "🧪 Testing Nginx configuration..."
+          nginx -t
+          
+          # Start services
+          echo "🔄 Starting services..."
+          systemctl restart china-car-parts-api-$TARGET
+          
+          # Health check with retry logic
+          echo "⏳ Waiting for services to be ready..."
+          for i in {1..30}; do
+            if curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
+              echo "✅ Health check passed"
+              break
             fi
-            
-            # Run database migration
-            echo "🗄️ Running database migration..."
-            alembic upgrade head
-            
-            # Build Admin Panel Frontend
-            echo "🎨 Building Admin Panel..."
-            cd app/frontend/panel
-            npm install
-            export VITE_API_BASE_URL="http://${{ secrets.PROD_HOST }}/api/v1"
-            npm run build
-            
-            # Build Customer Portal Frontend
-            echo "🌐 Building Customer Portal..."
-            cd ../web
-            npm install
-            npm run build
-            
-            # Go back to project root
-            cd ../../..
-            
-            # Copy built frontend to nginx directory
-            echo "📁 Copying frontend builds to nginx directory..."
-            mkdir -p /var/www/html/panel
-            mkdir -p /var/www/html/web
-            
-            echo "📋 Copying Admin Panel files..."
-            cp -r app/frontend/panel/dist/* /var/www/html/panel/
-            
-            echo "📋 Copying Customer Portal files..."
-            cp -r app/frontend/web/dist/* /var/www/html/web/
-            
-            # Set proper file permissions
-            echo "🔐 Setting file permissions..."
-            chmod -R 755 /var/www/html/panel/
-            chmod -R 755 /var/www/html/web/
-            chown -R www-data:www-data /var/www/html/panel/
-            chown -R www-data:www-data /var/www/html/web/
-            
-            # Update Nginx configuration
-            echo "🌐 Updating Nginx configuration..."
-            cat > /etc/nginx/sites-available/default << 'NGINX_EOF'
-            server {
-                listen 80 default_server;
-                listen [::]:80 default_server;
-                
-                root /var/www/html;
-                index index.html index.htm index.nginx-debian.html;
-                
-                server_name _;
-                
-                # Customer Portal
-                location / {
-                    try_files $uri $uri/ /index.html;
-                }
-                
-                # Admin Panel
-                location /panel/ {
-                    alias /var/www/html/panel/;
-                    try_files $uri $uri/ /panel/index.html;
-                }
-                
-                # API Proxy
-                location /api/ {
-                    proxy_pass http://127.0.0.1:8001/api/;
-                    proxy_set_header Host $host;
-                    proxy_set_header X-Real-IP $remote_addr;
-                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto $scheme;
-                }
-            }
-            NGINX_EOF
-            
-            # Test Nginx configuration
-            echo "🧪 Testing Nginx configuration..."
-            nginx -t
-            
-            # Start services
-            echo "🔄 Starting services..."
-            systemctl restart china-car-parts-api-$TARGET
-            
-            # Health check with retry logic
-            echo "⏳ Waiting for services to be ready..."
-            for i in {1..30}; do
-              if curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
-                echo "✅ Health check passed"
-                break
-              fi
-              echo "⏳ Health check attempt $i/30..."
-              sleep 2
-            done
-            
-            # Final health check
-            if ! curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
-              echo "❌ Health check failed after 60 seconds"
-              exit 1
-            fi
-            
-            # Switch traffic by updating the primary server in upstream
-            # Backup the current config
-            cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
-            
-            # Switch primary and backup servers
-            if [ "$TARGET_PORT" = "8001" ]; then
-              # Make 8001 primary, 8002 backup
-              sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s backup;/ }' /etc/nginx/sites-available/default
-            else
-              # Make 8002 primary, 8001 backup  
-              sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s backup;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s;/ }' /etc/nginx/sites-available/default
-            fi
-            
-            # Test config and reload
+            echo "⏳ Health check attempt $i/30..."
+            sleep 2
+          done
+          
+          # Final health check
+          if ! curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
+            echo "❌ Health check failed after 60 seconds"
+            exit 1
+          fi
+          
+          # Switch traffic by updating the primary server in upstream
+          # Backup the current config
+          cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup
+          
+          # Switch primary and backup servers
+          if [ "$TARGET_PORT" = "8001" ]; then
+            # Make 8001 primary, 8002 backup
+            sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s backup;/ }' /etc/nginx/sites-available/default
+          else
+            # Make 8002 primary, 8001 backup  
+            sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s backup;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s;/ }' /etc/nginx/sites-available/default
+          fi
+          
+          # Test config and reload
+          nginx -t && nginx -s reload
+          
+          # Final comprehensive health check
+          echo "🏥 Running final health checks..."
+          sleep 5
+          
+          # Check API health
+          if ! curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
+            echo "❌ Final API health check failed"
+            echo "🔄 Attempting rollback..."
+            # Rollback Nginx config
+            cp /etc/nginx/sites-available/default.backup /etc/nginx/sites-available/default
             nginx -t && nginx -s reload
-            
-            # Final comprehensive health check
-            echo "🏥 Running final health checks..."
-            sleep 5
-            
-            # Check API health
-            if ! curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
-              echo "❌ Final API health check failed"
-              echo "🔄 Attempting rollback..."
-              # Rollback Nginx config
-              cp /etc/nginx/sites-available/default.backup /etc/nginx/sites-available/default
-              nginx -t && nginx -s reload
-              echo "❌ Deployment failed and rolled back"
-              exit 1
-            fi
-            
-            # Check frontend accessibility
-            if ! curl -f -s http://localhost/ > /dev/null; then
-              echo "⚠️ Frontend accessibility check failed, but API is working"
-            fi
-            
-            if ! curl -f -s http://localhost/panel/ > /dev/null; then
-              echo "⚠️ Admin panel accessibility check failed, but API is working"
-            fi
-            
-            echo "✅ Production deployment to $TARGET completed successfully!"
-            echo "🌐 Customer Portal: http://${{ secrets.PROD_HOST }}/"
-            echo "🎛️ Admin Panel: http://${{ secrets.PROD_HOST }}/panel/"
-            echo "🔗 API Health: http://${{ secrets.PROD_HOST }}/api/v1/health"
+            echo "❌ Deployment failed and rolled back"
+            exit 1
+          fi
+          
+          # Check frontend accessibility
+          if ! curl -f -s http://localhost/ > /dev/null; then
+            echo "⚠️ Frontend accessibility check failed, but API is working"
+          fi
+          
+          if ! curl -f -s http://localhost/panel/ > /dev/null; then
+            echo "⚠️ Admin panel accessibility check failed, but API is working"
+          fi
+          
+          echo "✅ Production deployment to $TARGET completed successfully!"
+          echo "🌐 Customer Portal: http://${{ secrets.PROD_HOST }}/"
+          echo "🎛️ Admin Panel: http://${{ secrets.PROD_HOST }}/panel/"
+          echo "🔗 API Health: http://${{ secrets.PROD_HOST }}/api/v1/health"
+          EOF
+          
+          # Copy and execute script using password authentication
+          sshpass -p "${{ secrets.PROD_PASS }}" scp deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:/tmp/
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "chmod +x /tmp/deploy-blue-green.sh && /tmp/deploy-blue-green.sh"
