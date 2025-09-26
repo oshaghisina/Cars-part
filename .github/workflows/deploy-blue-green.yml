@@ -171,7 +171,7 @@ jobs:
           fi
           source venv/bin/activate
           pip install -r requirements.txt
-          
+
           # Create database backup before migration
           echo "📦 Creating database backup before migration..."
           BACKUP_FILE="/opt/backups/production_db_backup_$(date +%Y%m%d_%H%M%S).db"
@@ -186,7 +186,43 @@ jobs:
           # Run database migration
           echo "🗄️ Running database migration..."
           alembic upgrade head
-          
+
+          # Ensure Node.js and npm are available for frontend builds
+          echo "🛠️ Ensuring Node.js environment is ready..."
+          if ! command -v npm >/dev/null 2>&1; then
+            echo "🛠️ npm not found, installing Node.js 18..."
+            if command -v curl >/dev/null 2>&1; then
+              curl -fsSL https://deb.nodesource.com/setup_18.x -o /tmp/nodesource_setup.sh
+              if command -v sudo >/dev/null 2>&1; then
+                sudo bash /tmp/nodesource_setup.sh
+                DEBIAN_FRONTEND=noninteractive sudo apt-get install -y nodejs
+              else
+                bash /tmp/nodesource_setup.sh
+                DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+              fi
+              rm -f /tmp/nodesource_setup.sh
+            else
+              echo "⚠️ curl not available; falling back to default apt repositories."
+              if command -v sudo >/dev/null 2>&1; then
+                sudo apt-get update
+                DEBIAN_FRONTEND=noninteractive sudo apt-get install -y nodejs npm
+              else
+                apt-get update
+                DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs npm
+              fi
+            fi
+          fi
+          if ! command -v npm >/dev/null 2>&1; then
+            echo "❌ npm installation failed; aborting deployment."
+            exit 1
+          fi
+          if command -v node >/dev/null 2>&1; then
+            node --version
+          else
+            echo "⚠️ node command not found after installation attempt"
+          fi
+          npm --version
+
           # Build Admin Panel Frontend
           echo "🎨 Building Admin Panel..."
           cd app/frontend/panel
