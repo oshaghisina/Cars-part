@@ -66,7 +66,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def ensure_critical_tables():
-    """Ensure critical OTP tables and User columns exist on startup."""
+    """Ensure critical tables (OTP, core app tables) and User columns exist on startup."""
     try:
         import logging
 
@@ -78,13 +78,17 @@ async def ensure_critical_tables():
         inspector = inspect(engine)
         existing_tables = inspector.get_table_names()
 
-        critical_tables = ["otp_codes", "rate_limits", "phone_verifications"]
+        critical_tables = [
+            "otp_codes", "rate_limits", "phone_verifications",
+            "parts", "part_categories", "prices", "synonyms", "order_items",
+            "part_specifications", "part_images", "leads", "orders"
+        ]
         missing_tables = [table for table in critical_tables if table not in existing_tables]
 
         if missing_tables:
             logger.warning(f"Missing critical tables: {missing_tables}. Creating them...")
 
-            # Import models to ensure they're registered
+            # Import models to ensure they're registered with SQLAlchemy Base
             from app.models.otp_models import (  # noqa: F401
                 OTPCode,
                 PhoneVerification,
@@ -101,10 +105,22 @@ async def ensure_critical_tables():
                 TelegramLinkToken,
                 TelegramUser,
             )
+            # Import core application models
+            from app.db.models import (  # noqa: F401
+                Part,
+                PartCategory,
+                Price,
+                Synonym,
+                OrderItem,
+                PartSpecification,
+                PartImage,
+                Lead,
+                Order,
+            )
 
             # Create missing tables
             Base.metadata.create_all(bind=engine)
-            logger.info("Critical tables created successfully")
+            logger.info(f"Critical tables created successfully: {missing_tables}")
         else:
             logger.info("All critical tables exist")
 
