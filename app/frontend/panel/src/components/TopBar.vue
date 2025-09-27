@@ -392,7 +392,7 @@
 
 <script>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useNavigationStore } from "@/stores/navigation";
 import { useAuthStore } from "@/stores/auth";
 import { useAnalyticsStore } from "@/stores/analytics";
@@ -401,7 +401,6 @@ export default {
   name: "TopBar",
   setup() {
     const route = useRoute();
-    const router = useRouter();
     const navigationStore = useNavigationStore();
     const authStore = useAuthStore();
     const analyticsStore = useAnalyticsStore();
