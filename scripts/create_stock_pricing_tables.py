@@ -13,7 +13,7 @@ project_root = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(project_root))
 
 from app.db.database import engine, Base
-from app.models.stock_models import StockLevel, Price
+from app.models.stock_models import StockLevel, PartPrice
 from app.db.models import Part, PartCategory
 
 def create_stock_pricing_tables():
