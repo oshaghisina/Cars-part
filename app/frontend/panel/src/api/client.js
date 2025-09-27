@@ -36,9 +36,11 @@ class AdminApiClient {
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
-          // Handle unauthorized access - clear token and redirect to login
+          // Handle unauthorized access - clear token and stay in panel context
           localStorage.removeItem('access_token')
-          window.location.href = '/login'
+          console.log('API: 401 Unauthorized - token cleared, staying in panel context')
+          // Don't redirect - let the panel handle authentication state
+          // The router guard or App.vue will show login modal
         } else if (error.response?.status === 403) {
           // Handle forbidden access - show permission error
           console.error('Permission denied:', error.response.data)

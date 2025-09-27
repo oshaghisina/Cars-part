@@ -104,6 +104,7 @@
 <script>
 import { ref, onMounted, nextTick } from "vue";
 import { useAuthStore } from "../stores/auth";
+import { useRouter } from "vue-router";
 
 export default {
   name: "LoginModal",
@@ -116,6 +117,7 @@ export default {
   emits: ["close"],
   setup(props, { emit }) {
     const authStore = useAuthStore();
+    const router = useRouter();
     const credentials = ref({
       username_or_email: "",
       password: "",
@@ -134,11 +136,11 @@ export default {
         console.log("Login result:", result);
 
         if (result.success) {
-          console.log("Login successful, closing modal and redirecting...");
+          console.log("Login successful, closing modal and navigating to dashboard...");
           emit("close");
-          // Add a small delay to prevent flash before redirect
+          // Navigate to dashboard within panel context
           setTimeout(() => {
-            window.location.href = "/";
+            router.push("/dashboard");
           }, 150);
         } else {
           error.value = result.message;

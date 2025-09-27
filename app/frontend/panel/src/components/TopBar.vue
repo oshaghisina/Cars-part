@@ -540,9 +540,9 @@ export default {
         console.log("TopBar: Starting logout process");
         if (authStore && authStore.logout) {
           await authStore.logout();
-          console.log("TopBar: Logout completed, redirecting to root");
-          // Force a page reload to ensure clean state and proper redirect
-          window.location.href = '/';
+          console.log("TopBar: Logout completed, staying in panel context");
+          // Stay in panel context - the App.vue will show login modal
+          // No redirect needed - authentication state will be handled by the app
         } else {
           console.warn("AuthStore logout method not available");
         }

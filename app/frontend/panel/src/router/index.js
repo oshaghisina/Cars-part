@@ -85,9 +85,10 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('access_token');
   const isAuthenticated = !!token;
   
-  // If trying to access protected routes without authentication, redirect to root
+  // If trying to access protected routes without authentication, stay in panel context
   if (!isAuthenticated && to.path !== '/') {
-    console.log('Router: User not authenticated, redirecting to root');
+    console.log('Router: User not authenticated, staying in panel context');
+    // Stay in panel context - the App.vue will show login modal
     next('/');
   } else {
     next();
