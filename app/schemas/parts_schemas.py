@@ -94,7 +94,9 @@ class PartCreateIn(BaseModel):
     vehicle_model: str = Field(description="Vehicle model")
     vehicle_trim: Optional[str] = Field(default=None, description="Vehicle trim")
     category: str = Field(description="Category name")
-    category_id: Optional[int] = Field(default=None, description="Category ID if using normalized categories")
+    category_id: Optional[int] = Field(
+        default=None, description="Category ID if using normalized categories"
+    )
     oem_code: Optional[str] = Field(default=None, description="OEM code")
     alt_codes: Optional[str] = Field(default=None, description="Alternative codes")
     position: Optional[str] = Field(default=None, description="Position")

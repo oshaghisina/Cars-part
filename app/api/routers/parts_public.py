@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.parts_schemas import PartDetail, PartListItem, PartListResponse
+from app.schemas.parts_schemas import PartDetail, PartListItem  # PartListResponse unused
 from app.services.parts_enhanced_service import PartsEnhancedService
 
 router = APIRouter()
@@ -28,7 +28,7 @@ def _serialize_part_list_item(part) -> PartListItem:
             "created_at": part.price_info.created_at,
             "updated_at": part.price_info.updated_at,
         }
-    
+
     stock_out = None
     if part.stock_level:
         in_stock = part.stock_level.current_stock - part.stock_level.reserved_quantity > 0
@@ -42,7 +42,7 @@ def _serialize_part_list_item(part) -> PartListItem:
             "created_at": part.stock_level.created_at,
             "updated_at": part.stock_level.updated_at,
         }
-    
+
     return PartListItem(
         id=part.id,
         part_name=part.part_name,
@@ -71,7 +71,7 @@ def _serialize_part_detail(part) -> PartDetail:
             "created_at": part.price_info.created_at,
             "updated_at": part.price_info.updated_at,
         }
-    
+
     stock_out = None
     if part.stock_level:
         in_stock = part.stock_level.current_stock - part.stock_level.reserved_quantity > 0
@@ -85,7 +85,7 @@ def _serialize_part_detail(part) -> PartDetail:
             "created_at": part.stock_level.created_at,
             "updated_at": part.stock_level.updated_at,
         }
-    
+
     return PartDetail(
         id=part.id,
         part_name=part.part_name,
@@ -117,7 +117,9 @@ async def list_parts(
     category: Optional[str] = Query(None, description="Filter by category name"),
     category_id: Optional[int] = Query(None, description="Filter by category ID"),
     vehicle_make: Optional[str] = Query(None, description="Filter by vehicle make"),
-    search: Optional[str] = Query(None, description="Search in part name, OEM code, or vehicle model"),
+    search: Optional[str] = Query(
+        None, description="Search in part name, OEM code, or vehicle model"
+    ),
     db: Session = Depends(get_db),
 ):
     """Get list of parts with pricing and stock information."""
@@ -132,9 +134,9 @@ async def list_parts(
             vehicle_make=vehicle_make,
             search=search,
         )
-        
+
         return [_serialize_part_list_item(part) for part in parts]
-        
+
     except Exception as e:
         print(f"Error in list_parts: {e}")
         # Return empty list on error to prevent 500s
@@ -147,12 +149,12 @@ async def get_part_detail(part_id: int, db: Session = Depends(get_db)):
     try:
         parts_service = PartsEnhancedService(db)
         part = parts_service.get_part_by_id(part_id)
-        
+
         if not part:
             raise HTTPException(status_code=404, detail="Part not found")
-        
+
         return _serialize_part_detail(part)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -166,7 +168,7 @@ async def list_categories(db: Session = Depends(get_db)):
     try:
         parts_service = PartsEnhancedService(db)
         categories = parts_service.get_categories()
-        
+
         return [
             {
                 "id": cat.id,
@@ -183,7 +185,7 @@ async def list_categories(db: Session = Depends(get_db)):
             }
             for cat in categories
         ]
-        
+
     except Exception as e:
         print(f"Error in list_categories: {e}")
         # Return empty list on error to prevent 500s

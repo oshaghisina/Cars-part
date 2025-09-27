@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import app.api.routers.ai_search as ai_search_module
 import app.api.routers.categories as categories_module
-import app.api.routers.parts as parts_module
+# import app.api.routers.parts as parts_module  # Temporarily disabled
 import app.api.routers.vehicles as vehicles_module
 import app.api.routers.wizard as wizard_module
 from app.api.routers import (
@@ -216,7 +216,8 @@ app.include_router(ai_search_module.router, prefix="/api/v1/ai-search", tags=["a
 app.include_router(wizard_module.router, prefix="/api/v1/wizard", tags=["wizard"])
 app.include_router(orders.router, prefix="/api/v1/orders", tags=["orders"])
 app.include_router(leads.router, prefix="/api/v1/leads", tags=["leads"])
-# app.include_router(parts_module.router, prefix="/api/v1/parts", tags=["parts"])  # Temporarily disabled
+# app.include_router(parts_module.router, prefix="/api/v1/parts", tags=["parts"])
+# Temporarily disabled
 app.include_router(parts_public_router, prefix="/api/v1/parts", tags=["parts-public"])
 app.include_router(parts_admin_router, prefix="/api/v1/admin/parts", tags=["parts-admin"])
 app.include_router(vehicles_module.router, prefix="/api/v1/vehicles", tags=["vehicles"])

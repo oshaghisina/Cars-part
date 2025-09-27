@@ -2,14 +2,14 @@
 Admin parts API endpoints (authentication required).
 """
 
-from typing import Optional
+# from typing import Optional  # Unused import
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.parts_schemas import (
-    ApiResponse,
+    # ApiResponse,  # Unused import
     PartCreateIn,
     PartDetail,
     PartUpdateIn,
@@ -37,7 +37,7 @@ def _serialize_part_detail(part) -> PartDetail:
             "created_at": part.price_info.created_at,
             "updated_at": part.price_info.updated_at,
         }
-    
+
     stock_out = None
     if part.stock_level:
         in_stock = part.stock_level.current_stock - part.stock_level.reserved_quantity > 0
@@ -51,7 +51,7 @@ def _serialize_part_detail(part) -> PartDetail:
             "created_at": part.stock_level.created_at,
             "updated_at": part.stock_level.updated_at,
         }
-    
+
     return PartDetail(
         id=part.id,
         part_name=part.part_name,
@@ -92,14 +92,14 @@ async def create_part(
         parts_service = PartsEnhancedService(db)
         part_data = request.dict(exclude_unset=True)
         part = parts_service.create_part(part_data)
-        
+
         if not part:
             raise HTTPException(status_code=400, detail="Failed to create part")
-        
+
         # Get the full part with relationships
         full_part = parts_service.get_part_by_id(part.id)
         return _serialize_part_detail(full_part)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -117,19 +117,19 @@ async def update_part(
     try:
         parts_service = PartsEnhancedService(db)
         update_data = request.dict(exclude_unset=True)
-        
+
         if not update_data:
             raise HTTPException(status_code=400, detail="No fields provided for update")
-        
+
         part = parts_service.update_part(part_id, update_data)
-        
+
         if not part:
             raise HTTPException(status_code=404, detail="Part not found")
-        
+
         # Get the full part with relationships
         full_part = parts_service.get_part_by_id(part.id)
         return _serialize_part_detail(full_part)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -148,10 +148,10 @@ async def set_part_price(
         parts_service = PartsEnhancedService(db)
         price_data = request.dict(exclude_unset=True)
         price = parts_service.set_part_price(part_id, price_data)
-        
+
         if not price:
             raise HTTPException(status_code=400, detail="Failed to set price")
-        
+
         return PriceOut(
             id=price.id,
             part_id=price.part_id,
@@ -162,7 +162,7 @@ async def set_part_price(
             created_at=price.created_at,
             updated_at=price.updated_at,
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -181,10 +181,10 @@ async def set_part_stock(
         parts_service = PartsEnhancedService(db)
         stock_data = request.dict(exclude_unset=True)
         stock = parts_service.set_part_stock(part_id, stock_data)
-        
+
         if not stock:
             raise HTTPException(status_code=400, detail="Failed to set stock")
-        
+
         in_stock = stock.current_stock - stock.reserved_quantity > 0
         return StockLevelOut(
             id=stock.id,
@@ -196,7 +196,7 @@ async def set_part_stock(
             created_at=stock.created_at,
             updated_at=stock.updated_at,
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -210,12 +210,12 @@ async def get_part_detail(part_id: int, db: Session = Depends(get_db)):
     try:
         parts_service = PartsEnhancedService(db)
         part = parts_service.get_part_by_id(part_id)
-        
+
         if not part:
             raise HTTPException(status_code=404, detail="Part not found")
-        
+
         return _serialize_part_detail(part)
-        
+
     except HTTPException:
         raise
     except Exception as e:
