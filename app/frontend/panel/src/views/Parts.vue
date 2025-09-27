@@ -657,47 +657,7 @@ export default {
       }
     };
 
-    const createPart = async () => {
-      try {
-        await axios.post(`${API_BASE}/parts/`, newPart);
-        showAddPartModal.value = false;
-        resetNewPart();
-        fetchParts();
-      } catch (err) {
-        error.value = err.response?.data?.detail || "Failed to create part";
-        console.error("Error creating part:", err);
-      }
-    };
 
-    const editPart = (part) => {
-      // Implement edit functionality
-      console.log("Edit part:", part);
-      // Navigate to edit form or open modal
-      // For now, just log the part data
-      selectedPart.value = part;
-      showEditModal.value = true;
-    };
-
-    const viewPart = (part) => {
-      // Implement view functionality
-      console.log("View part:", part);
-      // Navigate to detail view or open modal
-      // For now, just log the part data
-      selectedPart.value = part;
-      showDetailModal.value = true;
-    };
-
-    const deletePart = async (partId) => {
-      if (!confirm("Are you sure you want to delete this part?")) return;
-
-      try {
-        await axios.delete(`${API_BASE}/parts/${partId}`);
-        fetchParts();
-      } catch (err) {
-        error.value = err.response?.data?.detail || "Failed to delete part";
-        console.error("Error deleting part:", err);
-      }
-    };
 
     const handleFileUpload = (event) => {
       selectedFile.value = event.target.files[0];
