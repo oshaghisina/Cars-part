@@ -79,9 +79,18 @@ async def ensure_critical_tables():
         existing_tables = inspector.get_table_names()
 
         critical_tables = [
-            "otp_codes", "rate_limits", "phone_verifications",
-            "parts", "part_categories", "prices", "synonyms", "order_items",
-            "part_specifications", "part_images", "leads", "orders"
+            "otp_codes",
+            "rate_limits",
+            "phone_verifications",
+            "parts",
+            "part_categories",
+            "prices",
+            "synonyms",
+            "order_items",
+            "part_specifications",
+            "part_images",
+            "leads",
+            "orders",
         ]
         missing_tables = [table for table in critical_tables if table not in existing_tables]
 
@@ -89,6 +98,18 @@ async def ensure_critical_tables():
             logger.warning(f"Missing critical tables: {missing_tables}. Creating them...")
 
             # Import models to ensure they're registered with SQLAlchemy Base
+            # Import core application models
+            from app.db.models import (  # noqa: F401
+                Lead,
+                Order,
+                OrderItem,
+                Part,
+                PartCategory,
+                PartImage,
+                PartSpecification,
+                Price,
+                Synonym,
+            )
             from app.models.otp_models import (  # noqa: F401
                 OTPCode,
                 PhoneVerification,
@@ -104,18 +125,6 @@ async def ensure_critical_tables():
                 TelegramDeepLink,
                 TelegramLinkToken,
                 TelegramUser,
-            )
-            # Import core application models
-            from app.db.models import (  # noqa: F401
-                Part,
-                PartCategory,
-                Price,
-                Synonym,
-                OrderItem,
-                PartSpecification,
-                PartImage,
-                Lead,
-                Order,
             )
 
             # Create missing tables
