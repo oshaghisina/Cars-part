@@ -36,7 +36,7 @@ def create_admin_user():
             # Create new admin user
             admin_user = User(
                 username="admin",
-                email="admin@chinacarparts.local",
+                email="admin@example.com",
                 first_name="Admin",
                 last_name="User",
                 role="admin",
@@ -54,7 +54,7 @@ def create_admin_user():
             db.refresh(admin_user)
             
             print("✅ Admin user created successfully!")
-            print(f"📧 Email: admin@chinacarparts.local")
+            print(f"📧 Email: admin@example.com")
             print(f"👤 Username: admin")
             print(f"🔑 Password: {password}")
             print("\n🚨 IMPORTANT: Save this password immediately!")

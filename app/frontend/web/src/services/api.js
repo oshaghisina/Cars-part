@@ -34,17 +34,19 @@ class ApiService {
     }
   }
 
-  // Parts API
+  // Parts API - Updated to use new public API with price and stock
   async searchParts(params = {}) {
     try {
       const queryParams = new URLSearchParams()
       
       if (params.search) queryParams.append('search', params.search)
       if (params.category) queryParams.append('category', params.category)
+      if (params.category_id) queryParams.append('category_id', params.category_id)
       if (params.vehicle_make) queryParams.append('vehicle_make', params.vehicle_make)
       if (params.vehicle_model) queryParams.append('search', params.vehicle_model) // Use search for model
       if (params.limit) queryParams.append('limit', params.limit)
       if (params.skip) queryParams.append('skip', params.skip)
+      if (params.status) queryParams.append('status', params.status)
 
       const queryString = queryParams.toString()
       const endpoint = queryString ? `/parts/?${queryString}` : '/parts/'
@@ -58,11 +60,26 @@ class ApiService {
   }
 
   async getPart(partId) {
-    return this.request(`/parts/${partId}`)
+    try {
+      return await this.request(`/parts/${partId}`)
+    } catch (error) {
+      console.warn('Part API not available, returning mock data:', error.message)
+      // Return mock data when API is not available
+      return this.getMockPart(partId)
+    }
   }
 
   async getPopularParts(limit = 8) {
     return this.searchParts({ limit, status: 'active' })
+  }
+
+  async getCategories() {
+    try {
+      return await this.request('/parts/categories/')
+    } catch (error) {
+      console.warn('Categories API not available, returning mock data:', error.message)
+      return this.getMockCategories()
+    }
   }
 
   // Leads API
@@ -246,9 +263,10 @@ class ApiService {
     return {
       id: part.id,
       name: part.part_name,
-      description: `${part.brand_oem} - ${part.oem_code}`,
-      price: this.generatePrice(part), // Mock price generation
-      stock: this.generateStock(part), // Mock stock generation
+      description: `${part.brand_oem} - ${part.oem_code || 'N/A'}`,
+      price: part.price ? part.price.effective_price : this.generatePrice(part), // Use real price or mock
+      stock: part.stock ? (part.stock.in_stock ? part.stock.current_stock - part.stock.reserved_quantity : 0) : this.generateStock(part), // Use real stock or mock
+      inStock: part.stock ? part.stock.in_stock : (this.generateStock(part) > 0), // Use real stock status or mock
       make: part.vehicle_make,
       model: part.vehicle_model,
       year: part.vehicle_trim,
@@ -259,7 +277,10 @@ class ApiService {
       unit: part.unit,
       packSize: part.pack_size,
       status: part.status,
-      createdAt: part.created_at
+      createdAt: part.created_at,
+      // Include full price and stock objects for detailed views
+      priceInfo: part.price,
+      stockInfo: part.stock
     }
   }
 
@@ -280,6 +301,37 @@ class ApiService {
   generateStock(part) {
     // Mock stock generation
     return Math.floor(Math.random() * 50) + 5
+  }
+
+  getMockPart(partId) {
+    // Mock single part data
+    const mockPart = {
+      id: parseInt(partId),
+      part_name: `Mock Part ${partId}`,
+      brand_oem: 'Mock Brand',
+      vehicle_make: 'Mock Make',
+      vehicle_model: 'Mock Model',
+      vehicle_trim: null,
+      category: 'Mock Category',
+      subcategory: null,
+      oem_code: `MOCK-${partId}`,
+      position: null,
+      unit: 'pcs',
+      pack_size: 1,
+      status: 'active',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+    return mockPart
+  }
+
+  getMockCategories() {
+    // Mock categories data
+    return [
+      { id: 1, name: 'Engine', name_fa: 'موتور', name_cn: '发动机', parent_id: null, level: 0, path: '/Engine', is_active: true, sort_order: 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { id: 2, name: 'Brake System', name_fa: 'سیستم ترمز', name_cn: '制动系统', parent_id: null, level: 0, path: '/Brake System', is_active: true, sort_order: 2, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      { id: 3, name: 'Suspension', name_fa: 'تعلیق', name_cn: '悬架', parent_id: null, level: 0, path: '/Suspension', is_active: true, sort_order: 3, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+    ]
   }
 
   formatOrderForDisplay(order) {

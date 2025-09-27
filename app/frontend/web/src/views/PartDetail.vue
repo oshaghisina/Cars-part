@@ -1,29 +1,92 @@
 <template>
   <div class="part-detail min-h-screen bg-gray-50">
-    <!-- Breadcrumb Navigation -->
+    <!-- Enhanced Breadcrumb Navigation -->
     <div class="bg-white border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <nav class="flex" aria-label="Breadcrumb">
-          <ol class="flex items-center space-x-4">
-            <li>
-              <router-link to="/" class="text-gray-400 hover:text-gray-500 font-persian">
-                خانه
+          <ol class="flex items-center space-x-1 md:space-x-3">
+            <!-- Home -->
+            <li class="inline-flex items-center">
+              <router-link 
+                to="/" 
+                class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                <svg class="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+                </svg>
+                <span class="font-persian">خانه</span>
               </router-link>
             </li>
+            
+            <!-- Products -->
             <li>
               <div class="flex items-center">
-                <svg class="flex-shrink-0 h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                <svg class="w-3 h-3 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
-                <span class="ml-4 text-sm font-medium text-gray-500 font-persian">{{ part?.category || 'دسته‌بندی' }}</span>
+                <router-link 
+                  to="/products" 
+                  class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors font-persian"
+                >
+                  محصولات
+                </router-link>
               </div>
             </li>
+            
+            <!-- Category (if available) -->
+            <li v-if="part?.category">
+              <div class="flex items-center">
+                <svg class="w-3 h-3 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <router-link 
+                  :to="getCategoryLink()" 
+                  class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors font-persian"
+                >
+                  {{ part.category }}
+                </router-link>
+              </div>
+            </li>
+            
+            <!-- Subcategory (if available) -->
+            <li v-if="part?.subcategory">
+              <div class="flex items-center">
+                <svg class="w-3 h-3 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <router-link 
+                  :to="getSubcategoryLink()" 
+                  class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors font-persian"
+                >
+                  {{ part.subcategory }}
+                </router-link>
+              </div>
+            </li>
+            
+            <!-- Vehicle Make/Model (if available) -->
+            <li v-if="part?.vehicle_make && part?.vehicle_model">
+              <div class="flex items-center">
+                <svg class="w-3 h-3 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <router-link 
+                  :to="getVehicleLink()" 
+                  class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors font-persian"
+                >
+                  {{ part.vehicle_make }} {{ part.vehicle_model }}
+                </router-link>
+              </div>
+            </li>
+            
+            <!-- Current Product -->
             <li>
               <div class="flex items-center">
-                <svg class="flex-shrink-0 h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                <svg class="w-3 h-3 text-gray-400 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
-                <span class="ml-4 text-sm font-medium text-gray-900 font-persian">{{ part?.name || 'نام قطعه' }}</span>
+                <span class="ml-1 text-sm font-medium text-gray-500 truncate max-w-xs font-persian" :title="part?.name">
+                  {{ part?.name || 'نام قطعه' }}
+                </span>
               </div>
             </li>
           </ol>
@@ -31,11 +94,38 @@
       </div>
     </div>
 
-    <!-- Loading State -->
+    <!-- Enhanced Loading State -->
     <div v-if="loading" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="text-center">
-        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p class="mt-4 text-gray-600 font-persian text-rtl">در حال بارگذاری جزئیات قطعه...</p>
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2 font-persian-bold text-rtl">در حال بارگذاری</h3>
+        <p class="text-gray-600 font-persian text-rtl mb-4">در حال بارگذاری جزئیات قطعه...</p>
+        
+        <!-- Loading skeleton -->
+        <div class="mt-8 max-w-4xl mx-auto">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Image skeleton -->
+            <div class="space-y-4">
+              <div class="bg-gray-200 rounded-lg h-64 animate-pulse"></div>
+              <div class="flex space-x-2 space-x-reverse">
+                <div class="bg-gray-200 rounded h-16 w-16 animate-pulse"></div>
+                <div class="bg-gray-200 rounded h-16 w-16 animate-pulse"></div>
+                <div class="bg-gray-200 rounded h-16 w-16 animate-pulse"></div>
+              </div>
+            </div>
+            
+            <!-- Content skeleton -->
+            <div class="space-y-6">
+              <div class="space-y-2">
+                <div class="bg-gray-200 h-6 rounded animate-pulse"></div>
+                <div class="bg-gray-200 h-4 rounded animate-pulse w-3/4"></div>
+                <div class="bg-gray-200 h-4 rounded animate-pulse w-1/2"></div>
+              </div>
+              <div class="bg-gray-200 h-12 rounded animate-pulse"></div>
+              <div class="bg-gray-200 h-32 rounded animate-pulse"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -114,18 +204,45 @@
       </div>
     </div>
 
-    <!-- Error State -->
+    <!-- Enhanced Error State -->
     <div v-else class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="text-center">
         <div class="text-6xl mb-4">❌</div>
-        <h3 class="text-xl font-semibold text-gray-900 mb-2 font-persian-bold text-rtl">قطعه یافت نشد</h3>
-        <p class="text-gray-600 mb-4 font-persian text-rtl">قطعه مورد نظر یافت نشد.</p>
-        <router-link
-          to="/search"
-          class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 font-persian"
-        >
-          بازگشت به جستجو
-        </router-link>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2 font-persian-bold text-rtl">
+          {{ error ? 'خطا در بارگذاری قطعه' : 'قطعه یافت نشد' }}
+        </h3>
+        <p class="text-gray-600 mb-6 font-persian text-rtl max-w-md mx-auto">
+          {{ error || 'قطعه مورد نظر یافت نشد. ممکن است این قطعه حذف شده یا در دسترس نباشد.' }}
+        </p>
+        
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <router-link
+            to="/products"
+            class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors font-persian"
+          >
+            مشاهده همه محصولات
+          </router-link>
+          <router-link
+            to="/search"
+            class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors font-persian"
+          >
+            جستجوی قطعات
+          </router-link>
+          <button
+            @click="loadPart"
+            class="border border-blue-300 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors font-persian"
+          >
+            تلاش مجدد
+          </button>
+        </div>
+        
+        <!-- Help Text -->
+        <div class="mt-8 p-4 bg-gray-50 rounded-lg max-w-lg mx-auto">
+          <p class="text-sm text-gray-600 font-persian text-rtl">
+            اگر مطمئن هستید که این قطعه باید موجود باشد، لطفاً با تیم پشتیبانی تماس بگیرید.
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -302,6 +419,45 @@ export default {
       })
     }
 
+    // Breadcrumb link methods
+    const getCategoryLink = () => {
+      if (!part.value?.category) return '/products'
+      // Convert category name to slug for filtering
+      const categorySlug = part.value.category.toLowerCase().replace(/\s+/g, '-')
+      return {
+        name: 'Products',
+        query: {
+          category: categorySlug,
+          categoryName: part.value.category
+        }
+      }
+    }
+
+    const getSubcategoryLink = () => {
+      if (!part.value?.subcategory) return getCategoryLink()
+      // Create a more specific filter for subcategory
+      return {
+        name: 'Products',
+        query: {
+          category: part.value.category,
+          subcategory: part.value.subcategory,
+          categoryName: `${part.value.category} - ${part.value.subcategory}`
+        }
+      }
+    }
+
+    const getVehicleLink = () => {
+      if (!part.value?.vehicle_make || !part.value?.vehicle_model) return '/products'
+      return {
+        name: 'Products',
+        query: {
+          vehicleMake: part.value.vehicle_make,
+          vehicleModel: part.value.vehicle_model,
+          categoryName: `${part.value.vehicle_make} ${part.value.vehicle_model}`
+        }
+      }
+    }
+
     // Lifecycle
     onMounted(async () => {
       await loadUserData()
@@ -334,7 +490,10 @@ export default {
       handleViewSupersession,
       handleContactSupport,
       handleCrossReferencesVisible,
-      handleCrossReferencesLoaded
+      handleCrossReferencesLoaded,
+      getCategoryLink,
+      getSubcategoryLink,
+      getVehicleLink
     }
   }
 }

@@ -24,10 +24,16 @@ from app.api.routers import (
     users,
     vehicles_enhanced,
 )
+from app.api.routers.parts_public import router as parts_public_router
+from app.api.routers.parts_admin import router as parts_admin_router
 from app.core.config import settings
 from app.db.database import Base, engine
 from app.db.models import (  # noqa: F401; Ensure User model is loaded for foreign key relationships
     User,
+)
+from app.models.stock_models import (  # noqa: F401; Ensure stock models are loaded
+    StockLevel,
+    PartPrice,
 )
 
 # Conditionally import AI modules only if AI Gateway is enabled
@@ -91,6 +97,8 @@ async def ensure_critical_tables():
             "part_images",
             "leads",
             "orders",
+            "stock_levels",
+            "prices_new",
         ]
         missing_tables = [table for table in critical_tables if table not in existing_tables]
 
@@ -208,7 +216,9 @@ app.include_router(ai_search_module.router, prefix="/api/v1/ai-search", tags=["a
 app.include_router(wizard_module.router, prefix="/api/v1/wizard", tags=["wizard"])
 app.include_router(orders.router, prefix="/api/v1/orders", tags=["orders"])
 app.include_router(leads.router, prefix="/api/v1/leads", tags=["leads"])
-app.include_router(parts_module.router, prefix="/api/v1/parts", tags=["parts"])
+# app.include_router(parts_module.router, prefix="/api/v1/parts", tags=["parts"])  # Temporarily disabled
+app.include_router(parts_public_router, prefix="/api/v1/parts", tags=["parts-public"])
+app.include_router(parts_admin_router, prefix="/api/v1/admin/parts", tags=["parts-admin"])
 app.include_router(vehicles_module.router, prefix="/api/v1/vehicles", tags=["vehicles"])
 app.include_router(categories_module.router, prefix="/api/v1/categories", tags=["categories"])
 app.include_router(vehicles_enhanced.router, prefix="/api/v1", tags=["vehicles-enhanced"])

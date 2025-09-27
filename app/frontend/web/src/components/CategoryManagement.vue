@@ -191,7 +191,7 @@ export default {
     navigateToCategory(category) {
       // Navigate to Product List Page with category filter
       this.$router.push({
-        name: 'Search',
+        name: 'Products',
         query: {
           category: category.slug,
           categoryName: category.name

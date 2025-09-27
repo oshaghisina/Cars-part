@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 from sqlalchemy import distinct, func, or_
@@ -12,6 +12,37 @@ class PartsService:
     def __init__(self, db: Session):
         self.db = db
 
+    def _build_parts_query(
+        self,
+        *,
+        status: Optional[str] = None,
+        category: Optional[str] = None,
+        vehicle_make: Optional[str] = None,
+        search: Optional[str] = None,
+    ):
+        """Create a filtered SQLAlchemy query for parts."""
+        query = self.db.query(Part)
+
+        if status:
+            query = query.filter(Part.status == status)
+        if category:
+            query = query.filter(Part.category == category)
+        if vehicle_make:
+            query = query.filter(Part.vehicle_make == vehicle_make)
+
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    Part.part_name.ilike(search_term),
+                    Part.oem_code.ilike(search_term),
+                    Part.vehicle_model.ilike(search_term),
+                    Part.brand_oem.ilike(search_term),
+                )
+            )
+
+        return query
+
     def get_parts(
         self,
         skip: int = 0,
@@ -22,20 +53,56 @@ class PartsService:
         search: Optional[str] = None,
     ) -> List[Part]:
         """Get parts with filtering and search capabilities."""
-        query = self.db.query(Part)
+        query = self._build_parts_query(
+            status=status,
+            category=category,
+            vehicle_make=vehicle_make,
+            search=search,
+        )
 
-        # Apply filters
-        if status:
-            query = query.filter(Part.status == status)
-        if category:
-            query = query.filter(Part.category == category)
-        if vehicle_make:
-            query = query.filter(Part.vehicle_make == vehicle_make)
+        return (
+            query.order_by(Part.updated_at.desc(), Part.id.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
-        # Apply search
-        if search:
-            search_term = f"%{search.lower()}%"
-            query = query.filter(
+    def get_parts_with_total(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        status: Optional[str] = None,
+        category: Optional[str] = None,
+        vehicle_make: Optional[str] = None,
+        search: Optional[str] = None,
+    ) -> Tuple[List[Part], int]:
+        """Get parts and total count with filtering and search capabilities."""
+        query = self._build_parts_query(
+            status=status,
+            category=category,
+            vehicle_make=vehicle_make,
+            search=search,
+        )
+
+        total = query.count()
+        parts = (
+            query.order_by(Part.updated_at.desc(), Part.id.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+
+        return parts, total
+
+    def search_parts(self, query: str, limit: int = 20) -> List[Part]:
+        """Search parts across key fields."""
+        if not query:
+            return []
+
+        search_term = f"%{query}%"
+        return (
+            self.db.query(Part)
+            .filter(
                 or_(
                     Part.part_name.ilike(search_term),
                     Part.oem_code.ilike(search_term),
@@ -43,8 +110,10 @@ class PartsService:
                     Part.brand_oem.ilike(search_term),
                 )
             )
-
-        return query.offset(skip).limit(limit).all()
+            .order_by(Part.updated_at.desc(), Part.id.desc())
+            .limit(limit)
+            .all()
+        )
 
     def get_part_by_id(self, part_id: int) -> Optional[Part]:
         """Get a specific part by ID."""

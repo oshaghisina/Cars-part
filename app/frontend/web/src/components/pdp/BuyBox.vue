@@ -8,7 +8,7 @@
         <div v-if="!isProUser || showBothPrices" class="flex items-center justify-between">
           <div class="flex items-baseline gap-2">
             <span class="text-2xl font-bold text-gray-900 font-persian">{{ formatPrice(currentPrice) }}</span>
-            <span class="text-sm text-gray-500 font-persian">تومان</span>
+            <span class="text-sm text-gray-500 font-persian">{{ getCurrencySymbol(part.priceInfo?.currency || 'IRR') }}</span>
             <span v-if="originalPrice && originalPrice > currentPrice" class="text-sm text-gray-400 line-through font-persian">
               {{ formatPrice(originalPrice) }}
             </span>
@@ -22,7 +22,7 @@
         <div v-if="isProUser" class="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
           <div class="flex items-baseline gap-2">
             <span class="text-3xl font-bold text-blue-600 font-persian">{{ formatPrice(proPrice) }}</span>
-            <span class="text-sm text-blue-500 font-persian">تومان</span>
+            <span class="text-sm text-blue-500 font-persian">{{ getCurrencySymbol(part.priceInfo?.currency || 'IRR') }}</span>
             <span v-if="proSavings > 0" class="text-sm text-green-600 font-persian">
               ({{ proSavingsPercent }}% تخفیف حرفه‌ای)
             </span>
@@ -53,8 +53,8 @@
           <div :class="stockClasses" class="px-3 py-1 rounded-full text-sm font-medium font-persian">
             {{ stockMessage }}
           </div>
-          <div v-if="part.stock > 0" class="text-sm text-gray-600 font-persian">
-            ({{ part.stock }} عدد موجود)
+          <div v-if="part.stockInfo && part.stockInfo.in_stock" class="text-sm text-gray-600 font-persian">
+            ({{ part.stockInfo.current_stock - part.stockInfo.reserved_quantity }} عدد موجود)
           </div>
         </div>
         
@@ -369,9 +369,14 @@ export default {
     }
 
     // Computed properties for pricing
-    const originalPrice = computed(() => props.part?.originalPrice || props.part?.price)
+    const originalPrice = computed(() => props.part?.priceInfo?.list_price || 0)
     
-    const retailPrice = computed(() => props.part?.price || 0)
+    const retailPrice = computed(() => {
+      if (props.part?.priceInfo) {
+        return parseFloat(props.part.priceInfo.effective_price) || 0
+      }
+      return props.part?.price || 0 // Fallback to old price field
+    })
     
     const proPrice = computed(() => {
       if (!props.isProUser) return retailPrice.value
@@ -438,7 +443,9 @@ export default {
 
     const maxQuantity = computed(() => {
       if (!props.part) return 1
-      return Math.min(props.part.stock, 999) // Maximum 999 for UI purposes
+      const availableStock = props.part?.stockInfo?.in_stock ? 
+        (props.part.stockInfo.current_stock - props.part.stockInfo.reserved_quantity) : 0
+      return Math.min(availableStock, 999) // Maximum 999 for UI purposes
     })
 
     const quickQuantities = computed(() => {
@@ -457,27 +464,36 @@ export default {
 
     const stockMessage = computed(() => {
       if (!props.part) return ''
-      if (props.part.stock === 0) return 'ناموجود'
-      if (props.part.stock <= 5) return 'کم موجود'
-      if (props.part.stock <= 20) return 'موجود محدود'
+      const availableStock = props.part?.stockInfo?.in_stock ? 
+        (props.part.stockInfo.current_stock - props.part.stockInfo.reserved_quantity) : 0
+      
+      if (availableStock === 0) return 'ناموجود'
+      if (availableStock <= 5) return 'کم موجود'
+      if (availableStock <= 20) return 'موجود محدود'
       return 'موجود'
     })
 
     const stockClasses = computed(() => {
       if (!props.part) return 'bg-gray-100 text-gray-800'
-      if (props.part.stock === 0) return 'bg-red-100 text-red-800'
-      if (props.part.stock <= 5) return 'bg-orange-100 text-orange-800'
-      if (props.part.stock <= 20) return 'bg-yellow-100 text-yellow-800'
+      const availableStock = props.part?.stockInfo?.in_stock ? 
+        (props.part.stockInfo.current_stock - props.part.stockInfo.reserved_quantity) : 0
+      
+      if (availableStock === 0) return 'bg-red-100 text-red-800'
+      if (availableStock <= 5) return 'bg-orange-100 text-orange-800'
+      if (availableStock <= 20) return 'bg-yellow-100 text-yellow-800'
       return 'bg-green-100 text-green-800'
     })
 
     const stockWarning = computed(() => {
       if (!props.part) return ''
-      if (props.part.stock <= 3 && props.part.stock > 0) {
-        return `تنها ${props.part.stock} عدد باقی مانده!`
+      const availableStock = props.part?.stockInfo?.in_stock ? 
+        (props.part.stockInfo.current_stock - props.part.stockInfo.reserved_quantity) : 0
+      
+      if (availableStock <= 3 && availableStock > 0) {
+        return `تنها ${availableStock} عدد باقی مانده!`
       }
-      if (quantity.value > props.part.stock) {
-        return `حداکثر ${props.part.stock} عدد موجود است`
+      if (quantity.value > availableStock) {
+        return `حداکثر ${availableStock} عدد موجود است`
       }
       return ''
     })
@@ -531,18 +547,24 @@ export default {
 
     // Add to cart validation
     const canAddToCart = computed(() => {
-      return props.part && 
-             props.part.stock > 0 && 
-             quantity.value <= props.part.stock &&
+      if (!props.part) return false
+      const availableStock = props.part?.stockInfo?.in_stock ? 
+        (props.part.stockInfo.current_stock - props.part.stockInfo.reserved_quantity) : 0
+      
+      return availableStock > 0 && 
+             quantity.value <= availableStock &&
              quantity.value >= minQuantity.value &&
              props.compatibilityStatus !== 'incompatible' &&
              !addingToCart.value
     })
 
     const addToCartText = computed(() => {
-      if (props.part?.stock === 0) return 'ناموجود'
+      const availableStock = props.part?.stockInfo?.in_stock ? 
+        (props.part.stockInfo.current_stock - props.part.stockInfo.reserved_quantity) : 0
+      
+      if (availableStock === 0) return 'ناموجود'
       if (props.compatibilityStatus === 'incompatible') return 'غیرسازگار'
-      if (quantity.value > props.part?.stock) return 'موجودی کافی نیست'
+      if (quantity.value > availableStock) return 'موجودی کافی نیست'
       if (quantity.value < minQuantity.value) return `حداقل ${minQuantity.value} عدد`
       return 'افزودن به سبد خرید'
     })
@@ -551,6 +573,15 @@ export default {
     const formatPrice = (price) => {
       if (!price || price === 0) return '0'
       return new Intl.NumberFormat('fa-IR').format(price)
+    }
+
+    const getCurrencySymbol = (currency) => {
+      const symbols = {
+        'IRR': 'تومان',
+        'USD': '$',
+        'EUR': '€'
+      }
+      return symbols[currency] || currency
     }
 
     const setQuantity = (qty) => {
@@ -766,6 +797,7 @@ export default {
       
       // Methods
       formatPrice,
+      getCurrencySymbol,
       setQuantity,
       increaseQuantity,
       decreaseQuantity,

@@ -140,7 +140,7 @@ export default {
           emit("close");
           // Navigate to dashboard within panel context
           setTimeout(() => {
-            router.push("/dashboard");
+            router.push("/");
           }, 150);
         } else {
           error.value = result.message;

@@ -54,6 +54,8 @@ class Part(Base):
     # Relationships
     prices = relationship("Price", back_populates="part")
     synonyms = relationship("Synonym", back_populates="part")
+    stock_level = relationship("StockLevel", back_populates="part", uselist=False, cascade="all, delete-orphan")
+    price_info = relationship("PartPrice", back_populates="part", uselist=False, cascade="all, delete-orphan")
     order_items = relationship("OrderItem", back_populates="matched_part")
     category_obj = relationship("PartCategory", back_populates="parts")
     specifications = relationship(

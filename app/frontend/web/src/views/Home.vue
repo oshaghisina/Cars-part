@@ -12,8 +12,14 @@
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <router-link 
-              to="/search" 
+              to="/products" 
               class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors font-persian"
+            >
+              مشاهده همه محصولات
+            </router-link>
+            <router-link 
+              to="/search" 
+              class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors font-persian"
             >
               جستجوی قطعات
             </router-link>

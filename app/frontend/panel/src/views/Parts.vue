@@ -208,6 +208,18 @@
                     View
                   </button>
                   <button
+                    class="text-purple-600 hover:text-purple-900"
+                    @click="openPriceModal(part)"
+                  >
+                    Price
+                  </button>
+                  <button
+                    class="text-orange-600 hover:text-orange-900"
+                    @click="openStockModal(part)"
+                  >
+                    Stock
+                  </button>
+                  <button
                     class="text-red-600 hover:text-red-900"
                     @click="deletePart(part.id)"
                   >
@@ -402,12 +414,149 @@
         </div>
       </div>
     </div>
+
+    <!-- Price Management Modal -->
+    <div
+      v-if="showPriceModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    >
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+      >
+        <div class="mt-3">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            Manage Price - {{ selectedPart?.part_name }}
+          </h3>
+          <form @submit.prevent="savePrice">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">List Price *</label>
+                <input
+                  v-model="priceData.list_price"
+                  type="text"
+                  required
+                  placeholder="e.g., 450000"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Sale Price</label>
+                <input
+                  v-model="priceData.sale_price"
+                  type="text"
+                  placeholder="e.g., 400000 (optional)"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Currency</label>
+                <select
+                  v-model="priceData.currency"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="IRR">IRR (Iranian Rial)</option>
+                  <option value="USD">USD (US Dollar)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                </select>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                @click="showPriceModal = false"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              >
+                Save Price
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Management Modal -->
+    <div
+      v-if="showStockModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    >
+      <div
+        class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+      >
+        <div class="mt-3">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            Manage Stock - {{ selectedPart?.part_name }}
+          </h3>
+          <form @submit.prevent="saveStock">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Current Stock *</label>
+                <input
+                  v-model.number="stockData.current_stock"
+                  type="number"
+                  min="0"
+                  required
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Reserved Quantity</label>
+                <input
+                  v-model.number="stockData.reserved_quantity"
+                  type="number"
+                  min="0"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Minimum Stock Level</label>
+                <input
+                  v-model.number="stockData.min_stock_level"
+                  type="number"
+                  min="0"
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p class="mt-1 text-sm text-gray-500">
+                  Alert when stock falls below this level
+                </p>
+              </div>
+              <div v-if="selectedPart?.stock" class="p-3 bg-gray-50 rounded-md">
+                <p class="text-sm text-gray-600">
+                  <strong>Available:</strong> {{ selectedPart.stock.current_stock - selectedPart.stock.reserved_quantity }}
+                </p>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                @click="showStockModal = false"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+              >
+                Save Stock
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import { ref, onMounted, reactive } from "vue";
 import axios from "axios";
+import { partsApi } from "../api/partsApi";
 
 import { API_BASE_URL } from "../api/baseUrl";
 const API_BASE = API_BASE_URL;
@@ -427,6 +576,8 @@ export default {
     const selectedPart = ref(null);
     const showEditModal = ref(false);
     const showDetailModal = ref(false);
+    const showPriceModal = ref(false);
+    const showStockModal = ref(false);
 
     const filters = reactive({
       search: "",
@@ -449,24 +600,35 @@ export default {
       pack_size: null,
     });
 
+    const priceData = reactive({
+      list_price: "",
+      sale_price: "",
+      currency: "IRR",
+    });
+
+    const stockData = reactive({
+      current_stock: 0,
+      reserved_quantity: 0,
+      min_stock_level: 0,
+    });
+
     const fetchParts = async () => {
       loading.value = true;
       error.value = null;
 
       try {
-        const params = new URLSearchParams({
+        const params = {
           skip: (currentPage.value - 1) * 20,
           limit: 20,
-        });
+        };
 
-        if (filters.search) params.append("search", filters.search);
-        if (filters.category) params.append("category", filters.category);
-        if (filters.vehicle_make)
-          params.append("vehicle_make", filters.vehicle_make);
-        if (filters.status) params.append("status", filters.status);
+        if (filters.search) params.search = filters.search;
+        if (filters.category) params.category = filters.category;
+        if (filters.vehicle_make) params.vehicle_make = filters.vehicle_make;
+        if (filters.status) params.status = filters.status;
 
-        const response = await axios.get(`${API_BASE}/parts/?${params}`);
-        parts.value = response.data;
+        const data = await partsApi.getParts(params);
+        parts.value = data;
       } catch (err) {
         error.value = err.response?.data?.detail || "Failed to fetch parts";
         console.error("Error fetching parts:", err);
@@ -477,8 +639,8 @@ export default {
 
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/parts/categories/list`);
-        categories.value = response.data.categories;
+        const data = await partsApi.getCategories();
+        categories.value = data.map(cat => cat.name);
       } catch (err) {
         console.error("Error fetching categories:", err);
       }
@@ -611,6 +773,122 @@ export default {
         : "bg-red-100 text-red-800";
     };
 
+    const createPart = async () => {
+      try {
+        await partsApi.createPart(newPart);
+        showAddPartModal.value = false;
+        resetNewPart();
+        fetchParts();
+        // Show success message
+        console.log("Part created successfully");
+      } catch (err) {
+        error.value = err.response?.data?.detail || "Failed to create part";
+        console.error("Error creating part:", err);
+      }
+    };
+
+    const editPart = async () => {
+      try {
+        await partsApi.updatePart(selectedPart.value.id, selectedPart.value);
+        showEditModal.value = false;
+        fetchParts();
+        console.log("Part updated successfully");
+      } catch (err) {
+        error.value = err.response?.data?.detail || "Failed to update part";
+        console.error("Error updating part:", err);
+      }
+    };
+
+    const viewPart = async (part) => {
+      try {
+        const partDetail = await partsApi.getPart(part.id);
+        selectedPart.value = partDetail;
+        showDetailModal.value = true;
+      } catch (err) {
+        error.value = err.response?.data?.detail || "Failed to fetch part details";
+        console.error("Error fetching part details:", err);
+      }
+    };
+
+    const deletePart = async (part) => {
+      if (confirm(`Are you sure you want to delete ${part.part_name}?`)) {
+        try {
+          // Note: Delete endpoint not implemented yet in API
+          console.log("Delete functionality not implemented yet");
+          fetchParts();
+        } catch (err) {
+          error.value = err.response?.data?.detail || "Failed to delete part";
+          console.error("Error deleting part:", err);
+        }
+      }
+    };
+
+    const handleFileUpload = (event) => {
+      selectedFile.value = event.target.files[0];
+    };
+
+    const importParts = async () => {
+      if (!selectedFile.value) {
+        error.value = "Please select a file";
+        return;
+      }
+      // Note: Import functionality not implemented yet
+      console.log("Import functionality not implemented yet");
+      showImportModal.value = false;
+    };
+
+    const openPriceModal = (part) => {
+      selectedPart.value = part;
+      if (part.price) {
+        priceData.list_price = part.price.list_price;
+        priceData.sale_price = part.price.sale_price || "";
+        priceData.currency = part.price.currency;
+      } else {
+        priceData.list_price = "";
+        priceData.sale_price = "";
+        priceData.currency = "IRR";
+      }
+      showPriceModal.value = true;
+    };
+
+    const openStockModal = (part) => {
+      selectedPart.value = part;
+      if (part.stock) {
+        stockData.current_stock = part.stock.current_stock;
+        stockData.reserved_quantity = part.stock.reserved_quantity;
+        stockData.min_stock_level = part.stock.min_stock_level;
+      } else {
+        stockData.current_stock = 0;
+        stockData.reserved_quantity = 0;
+        stockData.min_stock_level = 0;
+      }
+      showStockModal.value = true;
+    };
+
+    const savePrice = async () => {
+      try {
+        await partsApi.setPartPrice(selectedPart.value.id, priceData);
+        showPriceModal.value = false;
+        fetchParts();
+        console.log("Price updated successfully");
+      } catch (err) {
+        error.value = err.response?.data?.detail || "Failed to update price";
+        console.error("Error updating price:", err);
+      }
+    };
+
+    const saveStock = async () => {
+      try {
+        await partsApi.setPartStock(selectedPart.value.id, stockData);
+        showStockModal.value = false;
+        fetchParts();
+        console.log("Stock updated successfully");
+      } catch (err) {
+        error.value = err.response?.data?.detail || "Failed to update stock";
+        console.error("Error updating stock:", err);
+      }
+    };
+
     onMounted(() => {
       fetchParts();
       fetchCategories();
@@ -626,12 +904,16 @@ export default {
       currentPage,
       filters,
       newPart,
+      priceData,
+      stockData,
       showAddPartModal,
       showImportModal,
       selectedFile,
       selectedPart,
       showEditModal,
       showDetailModal,
+      showPriceModal,
+      showStockModal,
       fetchParts,
       createPart,
       editPart,
@@ -639,6 +921,10 @@ export default {
       deletePart,
       handleFileUpload,
       importParts,
+      openPriceModal,
+      openStockModal,
+      savePrice,
+      saveStock,
       applyFilters,
       clearFilters,
       previousPage,
