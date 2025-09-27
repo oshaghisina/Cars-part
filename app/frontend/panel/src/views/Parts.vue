@@ -658,40 +658,6 @@ export default {
     };
 
 
-
-    const handleFileUpload = (event) => {
-      selectedFile.value = event.target.files[0];
-    };
-
-    const importParts = async () => {
-      if (!selectedFile.value) return;
-
-      try {
-        const formData = new FormData();
-        formData.append("file", selectedFile.value);
-
-        const response = await axios.post(
-          `${API_BASE}/parts/bulk-import`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          },
-        );
-
-        alert(
-          `Import completed: ${response.data.imported} parts imported, ${response.data.errors} errors`,
-        );
-        showImportModal.value = false;
-        selectedFile.value = null;
-        fetchParts();
-      } catch (err) {
-        error.value = err.response?.data?.detail || "Failed to import parts";
-        console.error("Error importing parts:", err);
-      }
-    };
-
     const applyFilters = () => {
       currentPage.value = 1;
       fetchParts();
