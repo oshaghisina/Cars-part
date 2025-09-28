@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import app.api.routers.ai_search as ai_search_module
 import app.api.routers.categories as categories_module
+
 # import app.api.routers.parts as parts_module  # Temporarily disabled
 import app.api.routers.vehicles as vehicles_module
 import app.api.routers.wizard as wizard_module
@@ -24,16 +25,16 @@ from app.api.routers import (
     users,
     vehicles_enhanced,
 )
-from app.api.routers.parts_public import router as parts_public_router
 from app.api.routers.parts_admin import router as parts_admin_router
+from app.api.routers.parts_public import router as parts_public_router
 from app.core.config import settings
 from app.db.database import Base, engine
 from app.db.models import (  # noqa: F401; Ensure User model is loaded for foreign key relationships
     User,
 )
 from app.models.stock_models import (  # noqa: F401; Ensure stock models are loaded
-    StockLevel,
     PartPrice,
+    StockLevel,
 )
 
 # Conditionally import AI modules only if AI Gateway is enabled

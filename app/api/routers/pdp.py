@@ -47,9 +47,11 @@ async def get_part_detail(
     # Build query with eager loading for performance
     query = db.query(Part).options(
         joinedload(Part.category_obj),
-        joinedload(Part.specifications)
-        if include_specifications
-        else joinedload(Part.specifications).load_only("id"),
+        (
+            joinedload(Part.specifications)
+            if include_specifications
+            else joinedload(Part.specifications).load_only("id")
+        ),
         joinedload(Part.images) if include_images else joinedload(Part.images).load_only("id"),
         joinedload(Part.prices) if include_prices else joinedload(Part.prices).load_only("id"),
     )
@@ -289,17 +291,21 @@ async def get_part_alternatives_internal(
                 "compatibility_notes": alt.compatibility_notes,
                 "vehicle_make": alt.vehicle_make,
                 "vehicle_model": alt.vehicle_model,
-                "price": {
-                    "amount": float(best_price.price) if best_price else None,
-                    "currency": best_price.currency if best_price else "IRR",
-                    "seller": best_price.seller_name if best_price else None,
-                    "min_order_qty": best_price.min_order_qty if best_price else 1,
-                }
-                if best_price
-                else None,
-                "image": {"url": main_image.image_url, "alt_text": main_image.alt_text}
-                if main_image
-                else None,
+                "price": (
+                    {
+                        "amount": float(best_price.price) if best_price else None,
+                        "currency": best_price.currency if best_price else "IRR",
+                        "seller": best_price.seller_name if best_price else None,
+                        "min_order_qty": best_price.min_order_qty if best_price else 1,
+                    }
+                    if best_price
+                    else None
+                ),
+                "image": (
+                    {"url": main_image.image_url, "alt_text": main_image.alt_text}
+                    if main_image
+                    else None
+                ),
                 "availability": (
                     "in_stock"
                     if best_price and best_price.available_qty and best_price.available_qty > 0
@@ -779,16 +785,20 @@ async def search_parts(
                 "oem_code": part.oem_code,
                 "vehicle_make": part.vehicle_make,
                 "vehicle_model": part.vehicle_model,
-                "price": {
-                    "amount": float(best_price.price) if best_price else None,
-                    "currency": best_price.currency if best_price else "IRR",
-                    "seller": best_price.seller_name if best_price else None,
-                }
-                if best_price
-                else None,
-                "image": {"url": main_image.image_url, "alt_text": main_image.alt_text}
-                if main_image
-                else None,
+                "price": (
+                    {
+                        "amount": float(best_price.price) if best_price else None,
+                        "currency": best_price.currency if best_price else "IRR",
+                        "seller": best_price.seller_name if best_price else None,
+                    }
+                    if best_price
+                    else None
+                ),
+                "image": (
+                    {"url": main_image.image_url, "alt_text": main_image.alt_text}
+                    if main_image
+                    else None
+                ),
                 "availability": (
                     "in_stock"
                     if best_price and best_price.available_qty and best_price.available_qty > 0

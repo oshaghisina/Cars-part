@@ -2,17 +2,19 @@
 Enhanced parts service with stock and pricing integration.
 """
 
+import logging
 from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import Part, PartCategory
-from app.models.stock_models import StockLevel, PartPrice
+from app.models.stock_models import PartPrice, StockLevel
 from app.services.logging_enhancements import (
-    PartsAuditLogger, PartsErrorLogger, log_database_operation
+    PartsAuditLogger,
+    PartsErrorLogger,
+    log_database_operation,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +36,7 @@ class PartsEnhancedService:
     ):
         """Create a filtered SQLAlchemy query for parts with stock and pricing."""
         query = self.db.query(Part).options(
-            joinedload(Part.stock_level),
-            joinedload(Part.price_info)
+            joinedload(Part.stock_level), joinedload(Part.price_info)
         )
 
         if status:
@@ -103,10 +104,12 @@ class PartsEnhancedService:
     def get_part_by_id(self, part_id: int) -> Optional[Part]:
         """Get a single part with stock and pricing info."""
         try:
-            return self.db.query(Part).options(
-                joinedload(Part.stock_level),
-                joinedload(Part.price_info)
-            ).filter(Part.id == part_id).first()
+            return (
+                self.db.query(Part)
+                .options(joinedload(Part.stock_level), joinedload(Part.price_info))
+                .filter(Part.id == part_id)
+                .first()
+            )
         except Exception as e:
             print(f"Error in get_part_by_id: {e}")
             return None
@@ -171,7 +174,8 @@ class PartsEnhancedService:
                 # Log audit trail
                 PartsAuditLogger.log_price_update(part_id, price_data, user_id)
                 effective_price = (
-                    existing_price.sale_price if existing_price.sale_price
+                    existing_price.sale_price
+                    if existing_price.sale_price
                     else existing_price.list_price
                 )
                 logger.info(f"Updated price for part {part_id}: {effective_price}")
@@ -179,7 +183,7 @@ class PartsEnhancedService:
                 return existing_price
             else:
                 # Create new price
-                price_data['part_id'] = part_id
+                price_data["part_id"] = part_id
                 price = PartPrice(**price_data)
                 self.db.add(price)
                 self.db.commit()
@@ -213,7 +217,7 @@ class PartsEnhancedService:
                 return existing_stock
             else:
                 # Create new stock level
-                stock_data['part_id'] = part_id
+                stock_data["part_id"] = part_id
                 stock = StockLevel(**stock_data)
                 self.db.add(stock)
                 self.db.commit()

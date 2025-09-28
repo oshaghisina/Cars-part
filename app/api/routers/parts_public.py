@@ -8,7 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.parts_schemas import PartDetail, PartListItem  # PartListResponse unused
+from app.schemas.parts_schemas import (  # PartListResponse unused
+    PartDetail,
+    PartListItem,
+)
 from app.services.parts_enhanced_service import PartsEnhancedService
 
 router = APIRouter()

@@ -474,9 +474,9 @@ class TelegramService:
                 "linked_users": linked_users,
                 "unlinked_users": total_telegram_users - linked_users,
                 "active_sessions": active_sessions,
-                "link_rate": (linked_users / total_telegram_users * 100)
-                if total_telegram_users > 0
-                else 0,
+                "link_rate": (
+                    (linked_users / total_telegram_users * 100) if total_telegram_users > 0 else 0
+                ),
             }
 
         except Exception as e:

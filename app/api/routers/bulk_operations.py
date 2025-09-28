@@ -308,9 +308,9 @@ async def import_categories(
                     category_data = {
                         "name": row["name"],
                         "description": row.get("description", ""),
-                        "parent_id": row.get("parent_id")
-                        if not pd.isna(row.get("parent_id"))
-                        else None,
+                        "parent_id": (
+                            row.get("parent_id") if not pd.isna(row.get("parent_id")) else None
+                        ),
                     }
                     new_category = PartCategory(**category_data)
                     db.add(new_category)

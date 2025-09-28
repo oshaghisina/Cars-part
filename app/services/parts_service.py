@@ -61,10 +61,7 @@ class PartsService:
         )
 
         return (
-            query.order_by(Part.updated_at.desc(), Part.id.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
+            query.order_by(Part.updated_at.desc(), Part.id.desc()).offset(skip).limit(limit).all()
         )
 
     def get_parts_with_total(
@@ -86,10 +83,7 @@ class PartsService:
 
         total = query.count()
         parts = (
-            query.order_by(Part.updated_at.desc(), Part.id.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
+            query.order_by(Part.updated_at.desc(), Part.id.desc()).offset(skip).limit(limit).all()
         )
 
         return parts, total
@@ -230,18 +224,22 @@ class PartsService:
                     "brand_oem": str(row["brand_oem"]).strip(),
                     "vehicle_make": str(row["vehicle_make"]).strip(),
                     "vehicle_model": str(row["vehicle_model"]).strip(),
-                    "vehicle_trim": str(row.get("vehicle_trim", "")).strip()
-                    if pd.notna(row.get("vehicle_trim"))
-                    else None,
+                    "vehicle_trim": (
+                        str(row.get("vehicle_trim", "")).strip()
+                        if pd.notna(row.get("vehicle_trim"))
+                        else None
+                    ),
                     "oem_code": (
                         str(row.get("oem_code", "")).strip()
                         if pd.notna(row.get("oem_code"))
                         else None
                     ),
                     "category": str(row["category"]).strip(),
-                    "subcategory": str(row.get("subcategory", "")).strip()
-                    if pd.notna(row.get("subcategory"))
-                    else None,
+                    "subcategory": (
+                        str(row.get("subcategory", "")).strip()
+                        if pd.notna(row.get("subcategory"))
+                        else None
+                    ),
                     "position": (
                         str(row.get("position", "")).strip()
                         if pd.notna(row.get("position"))

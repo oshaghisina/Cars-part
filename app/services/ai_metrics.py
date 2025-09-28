@@ -302,9 +302,11 @@ class AIMetricsCollector:
                     "request_count": metrics.request_count,
                     "success_count": metrics.success_count,
                     "failure_count": metrics.failure_count,
-                    "success_rate": metrics.success_count / metrics.request_count
-                    if metrics.request_count > 0
-                    else 0.0,
+                    "success_rate": (
+                        metrics.success_count / metrics.request_count
+                        if metrics.request_count > 0
+                        else 0.0
+                    ),
                     "avg_duration_ms": metrics.avg_duration_ms,
                     "min_duration_ms": metrics.min_duration_ms,
                     "max_duration_ms": metrics.max_duration_ms,
@@ -327,9 +329,11 @@ class AIMetricsCollector:
                     "request_count": metrics.request_count,
                     "success_count": metrics.success_count,
                     "failure_count": metrics.failure_count,
-                    "success_rate": metrics.success_count / metrics.request_count
-                    if metrics.request_count > 0
-                    else 0.0,
+                    "success_rate": (
+                        metrics.success_count / metrics.request_count
+                        if metrics.request_count > 0
+                        else 0.0
+                    ),
                     "avg_duration_ms": metrics.avg_duration_ms,
                     "min_duration_ms": metrics.min_duration_ms,
                     "max_duration_ms": metrics.max_duration_ms,

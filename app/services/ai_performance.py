@@ -368,7 +368,7 @@ class QueryOptimizer:
 
     def _contains_persian(self, text: str) -> bool:
         """Check if text contains Persian characters."""
-        persian_chars = set("\u0600-\u06FF")
+        persian_chars = set("\u0600-\u06ff")
         return any(char in persian_chars for char in text)
 
     def _contains_english(self, text: str) -> bool:

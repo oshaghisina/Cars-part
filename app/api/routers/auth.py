@@ -31,11 +31,11 @@ async def get_auth_config(current_user=Depends(require_admin)) -> Dict[str, Any]
                 "algorithm": settings.jwt_algorithm,
                 "access_token_expire_minutes": settings.jwt_access_token_expire_minutes,
                 "secret_key_length": len(settings.jwt_secret_key),
-                "secret_key_masked": settings.jwt_secret_key[:8]
-                + "..."
-                + settings.jwt_secret_key[-4:]
-                if len(settings.jwt_secret_key) > 12
-                else "***",
+                "secret_key_masked": (
+                    settings.jwt_secret_key[:8] + "..." + settings.jwt_secret_key[-4:]
+                    if len(settings.jwt_secret_key) > 12
+                    else "***"
+                ),
             },
             "claims": {
                 "canonical_format": "sub=user_id (integer)",

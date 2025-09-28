@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 # Stock Management Schemas
 class StockLevelIn(BaseModel):
     """Input schema for stock level updates."""
+
     current_stock: int = Field(ge=0, description="Current stock quantity")
     reserved_quantity: int = Field(default=0, ge=0, description="Reserved quantity")
     min_stock_level: int = Field(default=0, ge=0, description="Minimum stock level for alerts")
@@ -18,6 +19,7 @@ class StockLevelIn(BaseModel):
 
 class StockLevelOut(BaseModel):
     """Output schema for stock level information."""
+
     id: int
     part_id: int
     current_stock: int
@@ -31,6 +33,7 @@ class StockLevelOut(BaseModel):
 # Pricing Schemas
 class PriceIn(BaseModel):
     """Input schema for price updates."""
+
     list_price: str = Field(description="List price as string to avoid precision issues")
     sale_price: Optional[str] = Field(default=None, description="Sale price if different from list")
     currency: str = Field(default="IRR", description="Currency code")
@@ -38,6 +41,7 @@ class PriceIn(BaseModel):
 
 class PriceOut(BaseModel):
     """Output schema for price information."""
+
     id: int
     part_id: int
     list_price: str
@@ -51,6 +55,7 @@ class PriceOut(BaseModel):
 # Part Schemas
 class PartListItem(BaseModel):
     """Minimal part information for list views."""
+
     id: int
     part_name: str
     brand_oem: str
@@ -65,6 +70,7 @@ class PartListItem(BaseModel):
 
 class PartDetail(BaseModel):
     """Full part information for detail views."""
+
     id: int
     part_name: str
     brand_oem: str
@@ -88,6 +94,7 @@ class PartDetail(BaseModel):
 
 class PartCreateIn(BaseModel):
     """Input schema for part creation."""
+
     part_name: str = Field(description="Part name")
     brand_oem: str = Field(description="Brand/OEM")
     vehicle_make: str = Field(description="Vehicle make")
@@ -107,6 +114,7 @@ class PartCreateIn(BaseModel):
 
 class PartUpdateIn(BaseModel):
     """Input schema for part updates."""
+
     part_name: Optional[str] = None
     brand_oem: Optional[str] = None
     vehicle_make: Optional[str] = None
@@ -125,6 +133,7 @@ class PartUpdateIn(BaseModel):
 # Category Schemas
 class CategoryOut(BaseModel):
     """Output schema for categories."""
+
     id: int
     name: str
     name_fa: Optional[str]
@@ -141,6 +150,7 @@ class CategoryOut(BaseModel):
 # Response Schemas
 class PartListResponse(BaseModel):
     """Response schema for parts list."""
+
     items: List[PartListItem]
     total: int
     page: int
@@ -149,6 +159,7 @@ class PartListResponse(BaseModel):
 
 class ApiResponse(BaseModel):
     """Generic API response wrapper."""
+
     success: bool
     message: str
     data: Optional[dict] = None

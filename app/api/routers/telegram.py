@@ -269,9 +269,9 @@ async def telegram_login(
             "role": platform_user.role,
             "is_active": platform_user.is_active,
             "is_verified": platform_user.is_verified,
-            "last_login": platform_user.last_login.isoformat()
-            if platform_user.last_login
-            else None,
+            "last_login": (
+                platform_user.last_login.isoformat() if platform_user.last_login else None
+            ),
         }
 
         telegram_user_data = {
