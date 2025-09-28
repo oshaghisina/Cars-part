@@ -21,6 +21,7 @@ sys.path.insert(0, str(project_root))
 from app.db.database import engine, Base
 from app.db.models import *  # Import all models to register them
 from app.models.stock_models import PartPrice, StockLevel  # Import new models
+from sqlalchemy import inspect, text
 
 
 def ensure_alembic_version_table(conn):
@@ -56,7 +57,6 @@ def create_all_tables():
         print("✅ All tables created successfully!")
         
         # Verify tables were created
-        from sqlalchemy import inspect
         inspector = inspect(engine)
         created_tables = inspector.get_table_names()
         
