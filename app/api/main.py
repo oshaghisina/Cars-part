@@ -64,6 +64,8 @@ cors_origins = [
     # Test client origins
     "http://testserver",
     "https://testserver",
+    "http://testclient",
+    "https://testclient",
 ]
 app.add_middleware(
     CORSMiddleware,
