@@ -311,32 +311,33 @@ def pytest_collection_modifyitems(config, items):
 
 
 # Test reporting
-def pytest_html_report_title(report):
-    """Set custom HTML report title."""
-    report.title = "AI Gateway Test Report"
+# Note: HTML report hooks are disabled as pytest-html is not installed
+# def pytest_html_report_title(report):
+#     """Set custom HTML report title."""
+#     report.title = "AI Gateway Test Report"
 
 
-def pytest_html_results_table_header(cells):
-    """Customize HTML report table header."""
-    cells.insert(1, '<th class="sortable" data-column-type="text">Test Category</th>')
-    cells.insert(2, '<th class="sortable" data-column-type="text">Duration</th>')
+# def pytest_html_results_table_header(cells):
+#     """Customize HTML report table header."""
+#     cells.insert(1, '<th class="sortable" data-column-type="text">Test Category</th>')
+#     cells.insert(2, '<th class="sortable" data-column-type="text">Duration</th>')
 
 
-def pytest_html_results_table_row(report, cells):
-    """Customize HTML report table rows."""
-    # Add test category based on markers
-    category = "Unknown"
-    if hasattr(report, 'keywords'):
-        if 'unit' in str(report.keywords):
-            category = "Unit"
-        elif 'integration' in str(report.keywords):
-            category = "Integration"
-        elif 'performance' in str(report.keywords):
-            category = "Performance"
-        elif 'api' in str(report.keywords):
-            category = "API"
-        elif 'e2e' in str(report.keywords):
-            category = "E2E"
-    
-    cells.insert(1, f'<td class="col-category">{category}</td>')
-    cells.insert(2, f'<td class="col-duration">{report.duration:.3f}s</td>')
+# def pytest_html_results_table_row(report, cells):
+#     """Customize HTML report table rows."""
+#     # Add test category based on markers
+#     category = "Unknown"
+#     if hasattr(report, 'keywords'):
+#         if 'unit' in str(report.keywords):
+#             category = "Unit"
+#         elif 'integration' in str(report.keywords):
+#             category = "Integration"
+#         elif 'performance' in str(report.keywords):
+#             category = "Performance"
+#         elif 'api' in str(report.keywords):
+#             category = "API"
+#         elif 'e2e' in str(report.keywords):
+#             category = "E2E"
+#     
+#     cells.insert(1, f'<td class="col-category">{category}</td>')
+#     cells.insert(2, f'<td class="col-duration">{report.duration:.3f}s</td>')
