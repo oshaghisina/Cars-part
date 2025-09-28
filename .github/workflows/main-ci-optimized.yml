@@ -56,10 +56,10 @@ jobs:
       uses: ./.github/actions/run-tests
       with:
         run-backend-tests: 'true'
-        run-frontend-tests: env.RUN_FRONTEND_TESTS
+        run-frontend-tests: 'false'
         run-linting: 'true'
-        run-security-scan: env.RUN_SECURITY_SCAN
-        run-coverage: env.RUN_COVERAGE
+        run-security-scan: 'true'
+        run-coverage: 'true'
         
     - name: '🎨 Build Frontend Applications'
       uses: ./.github/actions/build-frontend
@@ -74,8 +74,8 @@ jobs:
       shell: bash
       run: |
         echo "status=success" >> $GITHUB_OUTPUT
-        echo "coverage-available=${{ env.RUN_COVERAGE }}" >> $GITHUB_OUTPUT
-        echo "security-scan-available=${{ env.RUN_SECURITY_SCAN }}" >> $GITHUB_OUTPUT
+        echo "coverage-available=true" >> $GITHUB_OUTPUT
+        echo "security-scan-available=true" >> $GITHUB_OUTPUT
         
     - name: '📦 Upload CI Artifacts'
       if: always()
@@ -96,7 +96,7 @@ jobs:
   security-scan:
     name: '🔒 Security Scanning'
     runs-on: ubuntu-latest
-    if: env.RUN_SECURITY_SCAN == 'true'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     needs: [main-ci]
     
     steps:
@@ -136,7 +136,7 @@ jobs:
   coverage-report:
     name: '📊 Coverage Reporting'
     runs-on: ubuntu-latest
-    if: env.RUN_COVERAGE == 'true' && env.IS_MAIN_BRANCH == 'true'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [main-ci]
     
     steps:

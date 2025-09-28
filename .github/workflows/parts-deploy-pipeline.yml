@@ -50,7 +50,6 @@ jobs:
   parts-guardrails:
     name: '🛡️ Parts Integration Guardrails'
     runs-on: ubuntu-latest
-    if: env.IS_PARTS_CHANGE == 'true'
     
     services:
       sqlite:
@@ -144,11 +143,10 @@ jobs:
   deploy:
     name: '🚀 Production Deployment'
     runs-on: ubuntu-latest
-    if: env.IS_DEPLOYMENT_NEEDED == 'true'
     needs: [parts-guardrails]
     
     # Allow deployment even if parts guardrails were skipped
-    if: always() && (needs.parts-guardrails.result == 'success' || needs.parts-guardrails.result == 'skipped')
+    if: github.ref == 'refs/heads/main' && always() && (needs.parts-guardrails.result == 'success' || needs.parts-guardrails.result == 'skipped')
     
     outputs:
       deployment-status: ${{ steps.deploy.outputs.deployment-status }}
