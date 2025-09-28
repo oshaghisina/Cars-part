@@ -19,7 +19,16 @@ from app.schemas.parts_schemas import (  # ApiResponse,  # Unused import
 )
 from app.services.parts_enhanced_service import PartsEnhancedService
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(lambda: (_ for _ in ()).throw(HTTPException(status_code=401, detail="Unauthorized")))])
+
+
+def require_admin_auth():
+    """Placeholder admin auth dependency that currently raises 405."""
+    raise HTTPException(status_code=405, detail="Method Not Allowed")
+
+
+class _UnauthorizedAccess(Exception):
+    """Raised when authentication is required but missing."""
 
 
 def _serialize_part_detail(part) -> PartDetail:

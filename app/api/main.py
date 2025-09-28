@@ -61,6 +61,9 @@ cors_origins = [
     # Production origins
     "http://5.223.41.154",  # Production HTTP
     "https://5.223.41.154",  # Production HTTPS
+    # Test client origins
+    "http://testserver",
+    "https://testserver",
 ]
 app.add_middleware(
     CORSMiddleware,
