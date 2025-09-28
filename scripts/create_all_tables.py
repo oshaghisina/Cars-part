@@ -20,7 +20,20 @@ sys.path.insert(0, str(project_root))
 
 from app.db.database import engine, Base
 from app.db.models import *  # Import all models to register them
-from app.models.stock_models import StockLevel, PartPrice  # Import new models
+from app.models.stock_models import PartPrice, StockLevel  # Import new models
+
+
+def ensure_alembic_version_table(conn):
+    """Create alembic_version table if it does not exist."""
+    conn.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS alembic_version (
+                version_num VARCHAR(32) NOT NULL PRIMARY KEY
+            )
+            """
+        )
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +50,9 @@ def create_all_tables():
         # Create all tables
         print("🏗️  Creating all tables...")
         Base.metadata.create_all(bind=engine)
+        # Ensure alembic_version exists
+        with engine.begin() as conn:
+            ensure_alembic_version_table(conn)
         print("✅ All tables created successfully!")
         
         # Verify tables were created
