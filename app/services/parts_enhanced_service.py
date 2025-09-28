@@ -3,9 +3,10 @@ Enhanced parts service with stock and pricing integration.
 """
 
 import logging
+from decimal import Decimal
 from typing import Dict, List, Optional, Tuple
 
-from sqlalchemy import or_
+from sqlalchemy import Numeric, cast, func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.models import Part, PartCategory
@@ -32,12 +33,20 @@ class PartsEnhancedService:
         category: Optional[str] = None,
         category_id: Optional[int] = None,
         vehicle_make: Optional[str] = None,
+        vehicle_model: Optional[str] = None,
+        vehicle_trim: Optional[str] = None,
         search: Optional[str] = None,
+        price_min: Optional[Decimal] = None,
+        price_max: Optional[Decimal] = None,
     ):
         """Create a filtered SQLAlchemy query for parts with stock and pricing."""
-        query = self.db.query(Part).options(
-            joinedload(Part.stock_level), joinedload(Part.price_info)
-        )
+        join_price = price_min is not None or price_max is not None
+
+        query = self.db.query(Part)
+        if join_price:
+            query = query.outerjoin(PartPrice)
+
+        query = query.options(joinedload(Part.stock_level), joinedload(Part.price_info))
 
         if status:
             query = query.filter(Part.status == status)
@@ -47,6 +56,10 @@ class PartsEnhancedService:
             query = query.filter(Part.category_id == category_id)
         if vehicle_make:
             query = query.filter(Part.vehicle_make == vehicle_make)
+        if vehicle_model:
+            query = query.filter(Part.vehicle_model == vehicle_model)
+        if vehicle_trim:
+            query = query.filter(Part.vehicle_trim == vehicle_trim)
 
         if search:
             search_term = f"%{search}%"
@@ -59,6 +72,19 @@ class PartsEnhancedService:
                 )
             )
 
+        if join_price:
+            price_expr = cast(
+                func.nullif(
+                    func.coalesce(PartPrice.sale_price, PartPrice.list_price), ""
+                ),
+                Numeric(12, 2),
+            )
+
+            if price_min is not None:
+                query = query.filter(price_expr >= price_min)
+            if price_max is not None:
+                query = query.filter(price_expr <= price_max)
+
         return query
 
     @log_database_operation("parts", "SELECT")
@@ -70,7 +96,11 @@ class PartsEnhancedService:
         category: Optional[str] = None,
         category_id: Optional[int] = None,
         vehicle_make: Optional[str] = None,
+        vehicle_model: Optional[str] = None,
+        vehicle_trim: Optional[str] = None,
         search: Optional[str] = None,
+        price_min: Optional[Decimal] = None,
+        price_max: Optional[Decimal] = None,
     ) -> Tuple[List[Part], int]:
         """Get parts with stock and pricing info, plus total count."""
         try:
@@ -80,7 +110,11 @@ class PartsEnhancedService:
                 category=category,
                 category_id=category_id,
                 vehicle_make=vehicle_make,
+                vehicle_model=vehicle_model,
+                vehicle_trim=vehicle_trim,
                 search=search,
+                price_min=price_min,
+                price_max=price_max,
             )
             total = count_query.count()
 
@@ -90,7 +124,11 @@ class PartsEnhancedService:
                 category=category,
                 category_id=category_id,
                 vehicle_make=vehicle_make,
+                vehicle_model=vehicle_model,
+                vehicle_trim=vehicle_trim,
                 search=search,
+                price_min=price_min,
+                price_max=price_max,
             )
             parts = query.offset(skip).limit(limit).all()
 

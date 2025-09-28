@@ -189,49 +189,19 @@ export const usePartsStore = defineStore("parts", {
           ? computedTotal
           : items.length || 0;
 
+        const resolvedPage = Number(response.data?.page ?? page) || page;
+        const resolvedLimit = Number(response.data?.per_page ?? limit) || limit;
+
         this.parts = items;
         this.pagination = {
-          page,
-          limit,
+          page: resolvedPage,
+          limit: resolvedLimit,
           total,
-          totalPages: total ? Math.max(1, Math.ceil(total / limit)) : 1,
+          totalPages: total
+            ? Math.max(1, Math.ceil(total / resolvedLimit))
+            : 1,
         };
       } catch (error) {
-        if (error.response && [404, 405].includes(error.response.status)) {
-          try {
-            const legacyQuery = sanitizeParams({
-              skip: (page - 1) * limit,
-              limit,
-              ...baseFilters,
-              status: statusOverride,
-              ...additionalParams,
-            });
-
-            const fallbackResponse = await apiClient.get("/parts", {
-              params: legacyQuery,
-            });
-
-            const fallbackItems = Array.isArray(fallbackResponse.data)
-              ? fallbackResponse.data
-              : Array.isArray(fallbackResponse.data?.items)
-                ? fallbackResponse.data.items
-                : [];
-
-            this.parts = fallbackItems;
-            const fallbackTotal = fallbackResponse.headers?.["x-total-count"]
-              ? Number(fallbackResponse.headers["x-total-count"])
-              : fallbackItems.length;
-            this.pagination = {
-              page,
-              limit,
-              total: fallbackTotal,
-              totalPages: Math.max(1, Math.ceil((fallbackTotal || 0) / limit)),
-            };
-            return;
-          } catch (fallbackError) {
-            console.error("Fallback parts fetch failed:", fallbackError);
-          }
-        }
         this.error = error.response?.data?.detail || "Failed to fetch parts";
         console.error("Error fetching parts:", error);
       } finally {

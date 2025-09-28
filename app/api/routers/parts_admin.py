@@ -4,13 +4,18 @@ Admin parts API endpoints (authentication required).
 
 # from typing import Optional  # Unused import
 
-from fastapi import APIRouter, Depends, HTTPException
+from decimal import Decimal
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.parts_schemas import (  # ApiResponse,  # Unused import
     PartCreateIn,
     PartDetail,
+    PartListItem,
+    PartListResponse,
     PartUpdateIn,
     PriceIn,
     PriceOut,
@@ -19,16 +24,50 @@ from app.schemas.parts_schemas import (  # ApiResponse,  # Unused import
 )
 from app.services.parts_enhanced_service import PartsEnhancedService
 
-router = APIRouter(dependencies=[Depends(lambda: (_ for _ in ()).throw(HTTPException(status_code=401, detail="Unauthorized")))])
+router = APIRouter()
 
 
-def require_admin_auth():
-    """Placeholder admin auth dependency that currently raises 405."""
-    raise HTTPException(status_code=405, detail="Method Not Allowed")
+def _serialize_part_list_item(part) -> PartListItem:
+    """Convert ORM part instance to list response."""
+    price_out = None
+    if part.price_info:
+        price_out = {
+            "id": part.price_info.id,
+            "part_id": part.price_info.part_id,
+            "list_price": part.price_info.list_price,
+            "sale_price": part.price_info.sale_price,
+            "currency": part.price_info.currency,
+            "effective_price": part.price_info.sale_price or part.price_info.list_price,
+            "created_at": part.price_info.created_at,
+            "updated_at": part.price_info.updated_at,
+        }
 
+    stock_out = None
+    if part.stock_level:
+        in_stock = part.stock_level.current_stock - part.stock_level.reserved_quantity > 0
+        stock_out = {
+            "id": part.stock_level.id,
+            "part_id": part.stock_level.part_id,
+            "current_stock": part.stock_level.current_stock,
+            "reserved_quantity": part.stock_level.reserved_quantity,
+            "min_stock_level": part.stock_level.min_stock_level,
+            "in_stock": in_stock,
+            "created_at": part.stock_level.created_at,
+            "updated_at": part.stock_level.updated_at,
+        }
 
-class _UnauthorizedAccess(Exception):
-    """Raised when authentication is required but missing."""
+    return PartListItem(
+        id=part.id,
+        part_name=part.part_name,
+        brand_oem=part.brand_oem,
+        vehicle_make=part.vehicle_make,
+        vehicle_model=part.vehicle_model,
+        category=part.category,
+        oem_code=part.oem_code,
+        status=part.status,
+        price=price_out,
+        stock=stock_out,
+    )
 
 
 def _serialize_part_detail(part) -> PartDetail:
@@ -81,6 +120,74 @@ def _serialize_part_detail(part) -> PartDetail:
         created_at=part.created_at,
         updated_at=part.updated_at,
     )
+
+
+@router.get("/", response_model=PartListResponse)
+async def list_parts(
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    limit: int = Query(20, ge=1, le=200, description="Items per page"),
+    search: Optional[str] = Query(None, description="Search term"),
+    status: Optional[str] = Query(None, description="Filter by status"),
+    category: Optional[str] = Query(None, description="Filter by category name"),
+    category_id: Optional[int] = Query(None, description="Filter by category id"),
+    vehicle_make: Optional[str] = Query(None, description="Filter by vehicle make"),
+    brand: Optional[str] = Query(
+        None, description="Alias for vehicle make filter (brand)"
+    ),
+    model: Optional[str] = Query(None, description="Filter by vehicle model"),
+    vehicle_model: Optional[str] = Query(
+        None, description="Alias for vehicle model filter"
+    ),
+    trim: Optional[str] = Query(None, description="Filter by vehicle trim"),
+    vehicle_trim: Optional[str] = Query(
+        None, description="Alias for vehicle trim filter"
+    ),
+    price_min: Optional[Decimal] = Query(
+        None, description="Filter by minimum effective price"
+    ),
+    price_max: Optional[Decimal] = Query(
+        None, description="Filter by maximum effective price"
+    ),
+    db: Session = Depends(get_db),
+):
+    """List parts for admin panel with pagination and filters."""
+    try:
+        parts_service = PartsEnhancedService(db)
+
+        make_filter = vehicle_make or brand
+        model_filter = vehicle_model or model
+        trim_filter = vehicle_trim or trim
+
+        skip = (page - 1) * limit
+
+        parts, total = parts_service.get_parts_with_total(
+            skip=skip,
+            limit=limit,
+            status=status,
+            category=category,
+            category_id=category_id,
+            vehicle_make=make_filter,
+            vehicle_model=model_filter,
+            vehicle_trim=trim_filter,
+            search=search,
+            price_min=price_min,
+            price_max=price_max,
+        )
+
+        items = [_serialize_part_list_item(part) for part in parts]
+
+        return PartListResponse(
+            items=items,
+            total=total,
+            page=page,
+            per_page=limit,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as exc:  # pragma: no cover - defensive logging
+        print(f"Error listing admin parts: {exc}")
+        raise HTTPException(status_code=500, detail="Failed to list parts")
 
 
 # TODO: Add authentication dependency
