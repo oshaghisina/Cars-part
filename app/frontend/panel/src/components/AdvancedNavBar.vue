@@ -487,6 +487,7 @@ import { useRouter } from "vue-router";
 export default {
   name: "AdvancedNavBar",
   setup() {
+    const router = useRouter();
     const searchQuery = ref("");
     const mobileMenuOpen = ref(false);
     const userName = ref("Admin User");
@@ -515,7 +516,6 @@ export default {
     const performGlobalSearch = async (query) => {
       try {
         // Navigate to search results page with query parameter
-        const router = useRouter();
         router.push({
           path: "/search",
           query: { q: query },

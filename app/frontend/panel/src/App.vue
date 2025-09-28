@@ -1,16 +1,25 @@
 <template>
   <div id="app" class="min-h-screen bg-gray-50">
     <!-- Loading State -->
-    <div v-if="isInitializing" class="min-h-screen flex items-center justify-center bg-gray-50">
+    <div
+      v-if="isInitializing"
+      class="min-h-screen flex items-center justify-center bg-gray-50"
+    >
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"
+        ></div>
         <p class="text-gray-600">Initializing...</p>
       </div>
     </div>
 
     <!-- Login Modal -->
     <transition name="fade" mode="out-in">
-      <LoginModal v-if="!authStore.isAuthenticated" :show="true" @close="handleLoginClose" />
+      <LoginModal
+        v-if="!authStore.isAuthenticated"
+        :show="true"
+        @close="handleLoginClose"
+      />
     </transition>
 
     <!-- Main App Content (only show when authenticated) -->
@@ -62,7 +71,7 @@ export default {
         console.log("App: Auth state after initialization:", {
           isAuthenticated: authStore.isAuthenticated,
           user: authStore.user,
-          hasToken: !!authStore.token
+          hasToken: !!authStore.token,
         });
       } catch (error) {
         console.error("App: Error during auth initialization:", error);
@@ -85,9 +94,9 @@ export default {
           from: oldValue,
           to: newValue,
           user: authStore.user,
-          hasToken: !!authStore.token
+          hasToken: !!authStore.token,
         });
-      }
+      },
     );
 
     const handleLoginClose = () => {
@@ -166,15 +175,18 @@ main::-webkit-scrollbar-thumb:hover {
 }
 
 /* Transition animations */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-.fade-enter-to, .fade-leave-from {
+.fade-enter-to,
+.fade-leave-from {
   opacity: 1;
 }
 </style>

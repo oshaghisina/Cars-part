@@ -15,7 +15,9 @@
 
           <form class="space-y-4" @submit.prevent="handleLogin">
             <div>
-              <label for="username" class="block text-sm font-medium text-gray-700"
+              <label
+                for="username"
+                class="block text-sm font-medium text-gray-700"
                 >Username</label
               >
               <input
@@ -31,7 +33,9 @@
             </div>
 
             <div>
-              <label for="password" class="block text-sm font-medium text-gray-700"
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700"
                 >Password</label
               >
               <input
@@ -136,7 +140,9 @@ export default {
         console.log("Login result:", result);
 
         if (result.success) {
-          console.log("Login successful, closing modal and navigating to dashboard...");
+          console.log(
+            "Login successful, closing modal and navigating to dashboard...",
+          );
           emit("close");
           // Navigate to dashboard within panel context
           setTimeout(() => {
@@ -175,29 +181,35 @@ export default {
 
 <style scoped>
 /* Modal transitions */
-.modal-enter-active, .modal-leave-active {
+.modal-enter-active,
+.modal-leave-active {
   transition: opacity 0.3s ease;
 }
 
-.modal-enter-from, .modal-leave-to {
+.modal-enter-from,
+.modal-leave-to {
   opacity: 0;
 }
 
-.modal-enter-to, .modal-leave-from {
+.modal-enter-to,
+.modal-leave-from {
   opacity: 1;
 }
 
 /* Modal content transitions */
-.modal-content-enter-active, .modal-content-leave-active {
+.modal-content-enter-active,
+.modal-content-leave-active {
   transition: all 0.3s ease;
 }
 
-.modal-content-enter-from, .modal-content-leave-to {
+.modal-content-enter-from,
+.modal-content-leave-to {
   opacity: 0;
   transform: scale(0.9) translateY(-20px);
 }
 
-.modal-content-enter-to, .modal-content-leave-from {
+.modal-content-enter-to,
+.modal-content-leave-from {
   opacity: 1;
   transform: scale(1) translateY(0);
 }

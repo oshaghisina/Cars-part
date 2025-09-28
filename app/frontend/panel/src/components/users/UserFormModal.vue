@@ -158,9 +158,9 @@
                 />
                 <button
                   type="button"
-                  @click="generateRandomPassword"
                   :disabled="generatingPassword"
                   class="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 text-sm hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+                  @click="generateRandomPassword"
                 >
                   <svg
                     v-if="!generatingPassword"
@@ -431,7 +431,9 @@ export default {
         formData.value.password = result.password;
       } catch (err) {
         error.value =
-          err.response?.data?.detail || err.message || "Failed to generate password";
+          err.response?.data?.detail ||
+          err.message ||
+          "Failed to generate password";
       } finally {
         generatingPassword.value = false;
       }

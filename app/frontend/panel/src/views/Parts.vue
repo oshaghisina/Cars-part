@@ -221,7 +221,7 @@
                   </button>
                   <button
                     class="text-red-600 hover:text-red-900"
-                    @click="deletePart(part.id)"
+                    @click="deletePart(part)"
                   >
                     Delete
                   </button>
@@ -430,7 +430,9 @@
           <form @submit.prevent="savePrice">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">List Price *</label>
+                <label class="block text-sm font-medium text-gray-700"
+                  >List Price *</label
+                >
                 <input
                   v-model="priceData.list_price"
                   type="text"
@@ -440,7 +442,9 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Sale Price</label>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Sale Price</label
+                >
                 <input
                   v-model="priceData.sale_price"
                   type="text"
@@ -449,7 +453,9 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Currency</label>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Currency</label
+                >
                 <select
                   v-model="priceData.currency"
                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -495,7 +501,9 @@
           <form @submit.prevent="saveStock">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700">Current Stock *</label>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Current Stock *</label
+                >
                 <input
                   v-model.number="stockData.current_stock"
                   type="number"
@@ -505,7 +513,9 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Reserved Quantity</label>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Reserved Quantity</label
+                >
                 <input
                   v-model.number="stockData.reserved_quantity"
                   type="number"
@@ -514,7 +524,9 @@
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700">Minimum Stock Level</label>
+                <label class="block text-sm font-medium text-gray-700"
+                  >Minimum Stock Level</label
+                >
                 <input
                   v-model.number="stockData.min_stock_level"
                   type="number"
@@ -527,7 +539,11 @@
               </div>
               <div v-if="selectedPart?.stock" class="p-3 bg-gray-50 rounded-md">
                 <p class="text-sm text-gray-600">
-                  <strong>Available:</strong> {{ selectedPart.stock.current_stock - selectedPart.stock.reserved_quantity }}
+                  <strong>Available:</strong>
+                  {{
+                    selectedPart.stock.current_stock -
+                    selectedPart.stock.reserved_quantity
+                  }}
                 </p>
               </div>
             </div>
@@ -640,7 +656,7 @@ export default {
     const fetchCategories = async () => {
       try {
         const data = await partsApi.getCategories();
-        categories.value = data.map(cat => cat.name);
+        categories.value = data.map((cat) => cat.name);
       } catch (err) {
         console.error("Error fetching categories:", err);
       }
@@ -656,7 +672,6 @@ export default {
         console.error("Error fetching vehicle makes:", err);
       }
     };
-
 
     const applyFilters = () => {
       currentPage.value = 1;
@@ -731,7 +746,8 @@ export default {
         selectedPart.value = partDetail;
         showDetailModal.value = true;
       } catch (err) {
-        error.value = err.response?.data?.detail || "Failed to fetch part details";
+        error.value =
+          err.response?.data?.detail || "Failed to fetch part details";
         console.error("Error fetching part details:", err);
       }
     };

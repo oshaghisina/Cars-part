@@ -9,7 +9,12 @@ const routes = [
   {
     path: "/parts",
     name: "Parts",
-    component: () => import("../views/Parts.vue"),
+    component: () => import("../views/parts/Parts.vue"),
+  },
+  {
+    path: "/search",
+    name: "Search",
+    component: () => import("../views/search/Search.vue"),
   },
   {
     path: "/orders",
@@ -75,21 +80,21 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/panel/'),
+  history: createWebHistory("/panel/"),
   routes,
 });
 
 // Navigation guard to handle authentication
 router.beforeEach((to, from, next) => {
   // Check if user is authenticated by looking at localStorage
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   const isAuthenticated = !!token;
-  
+
   // If trying to access protected routes without authentication, stay in panel context
-  if (!isAuthenticated && to.path !== '/') {
-    console.log('Router: User not authenticated, staying in panel context');
+  if (!isAuthenticated && to.path !== "/") {
+    console.log("Router: User not authenticated, staying in panel context");
     // Stay in panel context - the App.vue will show login modal
-    next('/');
+    next("/");
   } else {
     next();
   }

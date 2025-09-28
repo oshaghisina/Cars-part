@@ -3,12 +3,12 @@
 
 export const productionConfig = {
   // API Base URL for production server
-  API_BASE_URL: '/api/v1',
-  
+  API_BASE_URL: "/api/v1",
+
   // Other production settings
-  APP_TITLE: 'China Car Parts - Admin Panel',
-  DEBUG: false
-}
+  APP_TITLE: "China Car Parts - Admin Panel",
+  DEBUG: false,
+};
 
 // Instructions for deployment:
 // 1. Set VITE_API_BASE_URL=/api/v1 in your production environment

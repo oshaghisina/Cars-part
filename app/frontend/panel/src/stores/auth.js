@@ -24,7 +24,7 @@ export const useAuthStore = defineStore("auth", {
           console.log("Auth store: Authentication state updated:", {
             isAuthenticated: this.isAuthenticated,
             user: this.user,
-            hasToken: !!this.token
+            hasToken: !!this.token,
           });
           return { success: true, user: this.user };
         } else {
@@ -52,7 +52,9 @@ export const useAuthStore = defineStore("auth", {
         this.token = null;
         this.isAuthenticated = false;
         localStorage.removeItem("access_token");
-        console.log("Auth store: Logout completed, authentication state cleared");
+        console.log(
+          "Auth store: Logout completed, authentication state cleared",
+        );
       }
     },
 
@@ -64,7 +66,9 @@ export const useAuthStore = defineStore("auth", {
           const user = await adminApi.getCurrentUser();
           this.user = user;
           this.isAuthenticated = true;
-          console.log("Auth store: Token validation successful, user authenticated");
+          console.log(
+            "Auth store: Token validation successful, user authenticated",
+          );
         } catch (error) {
           console.error("Auth store: Token validation failed:", error);
           this.logout();

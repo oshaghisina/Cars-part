@@ -532,6 +532,7 @@ export default {
   name: "NavBar",
   setup() {
     const authStore = useAuthStore();
+    const router = useRouter();
     const searchQuery = ref("");
     const mobileMenuOpen = ref(false);
     const userName = ref(authStore.user?.username || "Admin User");
@@ -560,7 +561,6 @@ export default {
     const performGlobalSearch = async (query) => {
       try {
         // Navigate to search results page with query parameter
-        const router = useRouter();
         router.push({
           path: "/search",
           query: { q: query },

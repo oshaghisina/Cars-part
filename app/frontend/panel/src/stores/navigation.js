@@ -8,6 +8,7 @@ export const useNavigationStore = defineStore("navigation", () => {
   const mobileMenuOpen = ref(false);
   const activeGroup = ref(null);
   const searchQuery = ref("");
+  const router = useRouter();
 
   // Navigation structure
   const navigationGroups = ref([
@@ -154,7 +155,6 @@ export const useNavigationStore = defineStore("navigation", () => {
   };
 
   const performSearch = () => {
-    const router = useRouter();
     if (searchQuery.value.trim()) {
       // Implement search functionality
       router.push({ path: "/search", query: { q: searchQuery.value } });

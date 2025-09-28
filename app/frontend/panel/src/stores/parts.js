@@ -1,9 +1,22 @@
 import { defineStore } from "pinia";
-import axios from "axios";
 
-import { API_BASE_URL } from "../api/baseUrl";
+import apiClient, { partsApi } from "../api/partsApi";
 
-const API_BASE = API_BASE_URL;
+const sanitizeParams = (params) =>
+  Object.fromEntries(
+    Object.entries(params).filter(([, value]) => {
+      if (value === null || value === undefined) return false;
+      if (typeof value === "string" && value.trim() === "") return false;
+      return true;
+    }),
+  );
+
+const normalizeStatusFilter = (isActive) => {
+  if (isActive === null || isActive === undefined) {
+    return undefined;
+  }
+  return isActive ? "active" : "inactive";
+};
 
 export const usePartsStore = defineStore("parts", {
   state: () => ({
@@ -94,27 +107,131 @@ export const usePartsStore = defineStore("parts", {
   },
 
   actions: {
-    async fetchParts(params = {}) {
+    async fetchParts(overrides = {}) {
       this.loading = true;
       this.error = null;
-      try {
-        const queryParams = new URLSearchParams({
-          skip: ((params.page || 1) - 1) * (params.limit || 20),
-          limit: params.limit || 20,
-          ...params,
-        });
 
-        const response = await axios.get(`${API_BASE}/parts/?${queryParams}`);
-        this.parts = response.data;
+      const page = overrides.page || this.pagination.page || 1;
+      const limit = overrides.limit || this.pagination.limit || 20;
+
+      const baseFilters = {
+        search: Object.prototype.hasOwnProperty.call(overrides, "search")
+          ? overrides.search
+          : this.filters.search,
+        category: Object.prototype.hasOwnProperty.call(overrides, "category")
+          ? overrides.category
+          : this.filters.category,
+        brand: Object.prototype.hasOwnProperty.call(overrides, "brand")
+          ? overrides.brand
+          : this.filters.brand,
+        model: Object.prototype.hasOwnProperty.call(overrides, "model")
+          ? overrides.model
+          : this.filters.model,
+        trim: Object.prototype.hasOwnProperty.call(overrides, "trim")
+          ? overrides.trim
+          : this.filters.trim,
+        price_min: Object.prototype.hasOwnProperty.call(overrides, "price_min")
+          ? overrides.price_min
+          : this.filters.priceMin,
+        price_max: Object.prototype.hasOwnProperty.call(overrides, "price_max")
+          ? overrides.price_max
+          : this.filters.priceMax,
+      };
+
+      const statusOverride = Object.prototype.hasOwnProperty.call(
+        overrides,
+        "status",
+      )
+        ? overrides.status
+        : normalizeStatusFilter(this.filters.isActive);
+
+      const additionalParams = sanitizeParams({ ...overrides });
+      delete additionalParams.page;
+      delete additionalParams.limit;
+      delete additionalParams.search;
+      delete additionalParams.category;
+      delete additionalParams.brand;
+      delete additionalParams.model;
+      delete additionalParams.trim;
+      delete additionalParams.price_min;
+      delete additionalParams.price_max;
+      delete additionalParams.status;
+
+      const query = sanitizeParams({
+        page,
+        limit,
+        ...baseFilters,
+        status: statusOverride,
+        ...additionalParams,
+      });
+
+      try {
+        const response = await apiClient.get("/admin/parts", { params: query });
+
+        let items = [];
+        if (Array.isArray(response.data?.items)) {
+          items = response.data.items;
+        } else if (Array.isArray(response.data?.results)) {
+          items = response.data.results;
+        } else if (Array.isArray(response.data?.data)) {
+          items = response.data.data;
+        } else if (Array.isArray(response.data)) {
+          items = response.data;
+        }
+
+        const totalFromBody =
+          response.data?.pagination?.total ?? response.data?.total ?? null;
+        const totalFromHeader = response.headers?.["x-total-count"] ?? null;
+        const computedTotal = Number(
+          totalFromBody ?? totalFromHeader ?? items.length ?? 0,
+        );
+        const total = Number.isFinite(computedTotal)
+          ? computedTotal
+          : items.length || 0;
+
+        this.parts = items;
         this.pagination = {
-          page: params.page || 1,
-          limit: params.limit || 20,
-          total: response.headers["x-total-count"] || 0,
-          totalPages: Math.ceil(
-            (response.headers["x-total-count"] || 0) / (params.limit || 20),
-          ),
+          page,
+          limit,
+          total,
+          totalPages: total ? Math.max(1, Math.ceil(total / limit)) : 1,
         };
       } catch (error) {
+        if (error.response && [404, 405].includes(error.response.status)) {
+          try {
+            const legacyQuery = sanitizeParams({
+              skip: (page - 1) * limit,
+              limit,
+              ...baseFilters,
+              status: statusOverride,
+              ...additionalParams,
+            });
+
+            const fallbackResponse = await apiClient.get("/parts", {
+              params: legacyQuery,
+            });
+
+            const fallbackItems = Array.isArray(fallbackResponse.data)
+              ? fallbackResponse.data
+              : Array.isArray(fallbackResponse.data?.items)
+                ? fallbackResponse.data.items
+                : [];
+
+            this.parts = fallbackItems;
+            const fallbackTotal = fallbackResponse.headers?.["x-total-count"]
+              ? Number(fallbackResponse.headers["x-total-count"])
+              : fallbackItems.length;
+            this.pagination = {
+              page,
+              limit,
+              total: fallbackTotal,
+              totalPages: Math.max(1, Math.ceil((fallbackTotal || 0) / limit)),
+            };
+            return;
+          } catch (fallbackError) {
+            console.error("Fallback parts fetch failed:", fallbackError);
+          }
+        }
         this.error = error.response?.data?.detail || "Failed to fetch parts";
         console.error("Error fetching parts:", error);
       } finally {
@@ -126,9 +243,11 @@ export const usePartsStore = defineStore("parts", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.post(`${API_BASE}/parts/`, partData);
-        this.parts.unshift(response.data);
-        return response.data;
+        const response = await partsApi.createPart(partData);
+        if (response) {
+          this.parts.unshift(response);
+        }
+        return response;
       } catch (error) {
         this.error = error.response?.data?.detail || "Failed to create part";
         console.error("Error creating part:", error);
@@ -142,12 +261,12 @@ export const usePartsStore = defineStore("parts", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.put(`${API_BASE}/parts/${id}`, partData);
+        const response = await partsApi.updatePart(id, partData);
         const index = this.parts.findIndex((part) => part.id === id);
-        if (index !== -1) {
-          this.parts[index] = response.data;
+        if (index !== -1 && response) {
+          this.parts[index] = response;
         }
-        return response.data;
+        return response;
       } catch (error) {
         this.error = error.response?.data?.detail || "Failed to update part";
         console.error("Error updating part:", error);
@@ -161,7 +280,7 @@ export const usePartsStore = defineStore("parts", {
       this.loading = true;
       this.error = null;
       try {
-        await axios.delete(`${API_BASE}/parts/${id}`);
+        await partsApi.deletePart(id);
         this.parts = this.parts.filter((part) => part.id !== id);
         return true;
       } catch (error) {
@@ -177,9 +296,9 @@ export const usePartsStore = defineStore("parts", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get(`${API_BASE}/parts/${id}`);
-        this.currentPart = response.data;
-        return response.data;
+        const response = await partsApi.getPart(id);
+        this.currentPart = response;
+        return response;
       } catch (error) {
         this.error = error.response?.data?.detail || "Failed to fetch part";
         console.error("Error fetching part:", error);
@@ -193,9 +312,9 @@ export const usePartsStore = defineStore("parts", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get(
-          `${API_BASE}/parts/search?q=${encodeURIComponent(query)}`,
-        );
+        const response = await apiClient.get("/admin/parts", {
+          params: sanitizeParams({ search: query, limit: 50 }),
+        });
         return response.data;
       } catch (error) {
         this.error = error.response?.data?.detail || "Failed to search parts";
@@ -210,9 +329,9 @@ export const usePartsStore = defineStore("parts", {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get(
-          `${API_BASE}/parts/?category_id=${categoryId}`,
-        );
+        const response = await apiClient.get("/admin/parts", {
+          params: sanitizeParams({ category_id: categoryId, limit: 100 }),
+        });
         return response.data;
       } catch (error) {
         this.error =
@@ -228,11 +347,13 @@ export const usePartsStore = defineStore("parts", {
       this.loading = true;
       this.error = null;
       try {
-        const params = new URLSearchParams({ brand_id: brandId });
-        if (modelId) params.append("model_id", modelId);
-        if (trimId) params.append("trim_id", trimId);
-
-        const response = await axios.get(`${API_BASE}/parts/?${params}`);
+        const response = await apiClient.get("/admin/parts", {
+          params: sanitizeParams({
+            brand_id: brandId,
+            model_id: modelId,
+            trim_id: trimId,
+          }),
+        });
         return response.data;
       } catch (error) {
         this.error =
