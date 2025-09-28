@@ -64,9 +64,9 @@ runs:
       run: |
         echo "::group::🧪 Backend Tests"
         if [ "${{ inputs.run-coverage }}" = "true" ]; then
-          pytest app/tests/ --cov=app --cov-report=xml --cov-report=html
+          pytest tests/ --cov=app --cov-report=xml --cov-report=html
         else
-          pytest app/tests/
+          pytest tests/
         fi
         echo "::endgroup::"
 
