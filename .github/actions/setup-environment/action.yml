@@ -74,7 +74,7 @@ runs:
       if: inputs.setup-database == 'true'
       shell: bash
       run: |
-        python scripts/create_stock_pricing_tables.py
+        python scripts/create_all_tables.py
         python scripts/create_admin_user.py
 
     - name: '✅ Environment setup complete'

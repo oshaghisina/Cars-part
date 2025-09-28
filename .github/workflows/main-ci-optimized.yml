@@ -50,7 +50,7 @@ jobs:
         node-version: '18'
         install-backend-deps: 'true'
         install-frontend-deps: 'true'
-        setup-database: 'false'
+        setup-database: 'true'
         
     - name: '🧪 Run Tests and Quality Checks'
       uses: ./.github/actions/run-tests
