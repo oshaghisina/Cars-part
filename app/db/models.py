@@ -21,7 +21,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db.database import Base
-from app.models.stock_models import StockLevel, PartPrice  # noqa: F401
+from app.models.stock_models import PartPrice, StockLevel  # noqa: F401
 
 
 class Part(Base):
