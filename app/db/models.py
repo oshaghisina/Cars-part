@@ -21,6 +21,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.db.database import Base
+from app.models.stock_models import StockLevel, PartPrice  # noqa: F401
 
 
 class Part(Base):
@@ -495,8 +496,3 @@ class PartImage(Base):
 
     # Relationships
     part = relationship("Part", back_populates="images")
-
-
-# Import stock models to ensure they're registered with SQLAlchemy
-# This prevents "failed to locate a name" errors when Part model references them
-from app.models.stock_models import StockLevel, PartPrice  # noqa: F401
