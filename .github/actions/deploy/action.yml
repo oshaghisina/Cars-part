@@ -1,0 +1,146 @@
+name: 'Deploy to Production'
+description: 'Deploy application to production server with blue-green strategy'
+inputs:
+  server-host:
+    description: 'Production server hostname or IP'
+    required: true
+  server-user:
+    description: 'SSH username for production server'
+    required: true
+  server-password:
+    description: 'SSH password for production server'
+    required: true
+  deployment-type:
+    description: 'Deployment type (blue-green, rolling, direct)'
+    required: false
+    default: 'blue-green'
+  environment:
+    description: 'Target environment (production, staging)'
+    required: false
+    default: 'production'
+  rollback-on-failure:
+    description: 'Rollback on deployment failure'
+    required: false
+    default: 'true'
+
+outputs:
+  deployment-status:
+    description: 'Deployment status (success, failed, rolled-back)'
+    value: ${{ steps.deploy.outputs.status }}
+  deployment-url:
+    description: 'Deployment URL'
+    value: ${{ steps.deploy.outputs.url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: '🔐 Setup SSH Connection'
+      shell: bash
+      run: |
+        echo "::group::🔐 Setting up SSH Connection"
+        echo "Installing sshpass for password authentication..."
+        sudo apt-get update
+        sudo apt-get install -y sshpass
+        
+        echo "Testing SSH connection to ${{ inputs.server-host }}..."
+        sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "echo 'SSH connection successful'"
+        echo "::endgroup::"
+
+    - name: '🚀 Deploy Application'
+      id: deploy
+      shell: bash
+      run: |
+        echo "::group::🚀 Deploying Application"
+        
+        if [ "${{ inputs.deployment-type }}" = "blue-green" ]; then
+          echo "🔄 Starting blue-green deployment..."
+          
+          # Determine current and new environments
+          CURRENT_ENV=$(sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "ls -la /opt/china-car-parts/ | grep -E '(blue|green)' | head -1 | awk '{print \$NF}' | cut -d'-' -f2")
+          
+          if [ "$CURRENT_ENV" = "blue" ]; then
+            NEW_ENV="green"
+          else
+            NEW_ENV="blue"
+          fi
+          
+          echo "Current environment: $CURRENT_ENV"
+          echo "New environment: $NEW_ENV"
+          
+          # Create deployment directory
+          sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "mkdir -p /opt/china-car-parts/$NEW_ENV"
+          
+          # Copy application files
+          echo "📦 Copying application files..."
+          sshpass -p "${{ inputs.server-password }}" scp -o StrictHostKeyChecking=no -r app/ ${{ inputs.server-user }}@${{ inputs.server-host }}:/opt/china-car-parts/$NEW_ENV/
+          sshpass -p "${{ inputs.server-password }}" scp -o StrictHostKeyChecking=no requirements.txt ${{ inputs.server-user }}@${{ inputs.server-host }}:/opt/china-car-parts/$NEW_ENV/
+          
+          # Setup Python environment
+          echo "🐍 Setting up Python environment..."
+          sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "cd /opt/china-car-parts/$NEW_ENV && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
+          
+          # Build frontend applications
+          echo "🎨 Building frontend applications..."
+          sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "cd /opt/china-car-parts/$NEW_ENV/app/frontend/web && npm ci && npm run build"
+          sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "cd /opt/china-car-parts/$NEW_ENV/app/frontend/panel && npm ci && npm run build"
+          
+          # Start new services
+          echo "🚀 Starting new services..."
+          sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "cd /opt/china-car-parts/$NEW_ENV && source venv/bin/activate && python -m uvicorn app.api.main:app --host 0.0.0.0 --port 800$([ "$NEW_ENV" = "blue" ] && echo "1" || echo "2") &"
+          
+          # Wait for services to start
+          echo "⏳ Waiting for services to start..."
+          sleep 15
+          
+          # Health check
+          echo "🔍 Performing health check..."
+          if sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "curl -f http://localhost:800$([ "$NEW_ENV" = "blue" ] && echo "1" || echo "2")/api/v1/health"; then
+            echo "✅ Health check passed"
+            
+            # Update Nginx configuration
+            echo "🔧 Updating Nginx configuration..."
+            sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "sudo sed -i 's/server 127.0.0.1:800[12]/server 127.0.0.1:800$([ "$NEW_ENV" = "blue" ] && echo "1" || echo "2")/g' /etc/nginx/sites-available/china-car-parts"
+            sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "sudo nginx -s reload"
+            
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "url=http://${{ inputs.server-host }}" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Health check failed"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "url=" >> $GITHUB_OUTPUT
+          fi
+          
+        else
+          echo "❌ Unsupported deployment type: ${{ inputs.deployment-type }}"
+          echo "status=failed" >> $GITHUB_OUTPUT
+          echo "url=" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "::endgroup::"
+
+    - name: '🔄 Rollback on Failure'
+      if: inputs.rollback-on-failure == 'true' && steps.deploy.outputs.status == 'failed'
+      shell: bash
+      run: |
+        echo "::group::🔄 Rolling Back Deployment"
+        echo "❌ Deployment failed, initiating rollback..."
+        
+        # Revert Nginx configuration
+        sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "sudo nginx -s reload"
+        
+        # Stop new services
+        sshpass -p "${{ inputs.server-password }}" ssh -o StrictHostKeyChecking=no ${{ inputs.server-user }}@${{ inputs.server-host }} "pkill -f 'uvicorn.*800[12]'"
+        
+        echo "✅ Rollback completed"
+        echo "::endgroup::"
+
+    - name: '✅ Deployment Summary'
+      shell: bash
+      run: |
+        echo "::group::✅ Deployment Summary"
+        echo "🚀 Deployment Type: ${{ inputs.deployment-type }}"
+        echo "🌍 Environment: ${{ inputs.environment }}"
+        echo "📊 Status: ${{ steps.deploy.outputs.status }}"
+        echo "🔗 URL: ${{ steps.deploy.outputs.url }}"
+        echo "🔄 Rollback: ${{ inputs.rollback-on-failure }}"
+        echo "::endgroup::"

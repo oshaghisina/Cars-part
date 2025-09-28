@@ -1,0 +1,494 @@
+name: Deploy to Production (Blue-Green)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Production
+        run: |
+          # Install sshpass for password authentication
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+          
+          # Create deployment script
+          cat > deploy-blue-green.sh << 'SCRIPT_EOF'
+          #!/bin/bash
+          set -e
+
+          ensure_python_tools() {
+            if ! dpkg -s python3-venv >/dev/null 2>&1 || ! dpkg -s python3-pip >/dev/null 2>&1; then
+              echo "🐍 Installing python3-venv and python3-pip..."
+              if command -v sudo >/dev/null 2>&1; then
+                sudo apt-get update
+                DEBIAN_FRONTEND=noninteractive sudo apt-get install -y python3-venv python3-pip
+              else
+                apt-get update
+                DEBIAN_FRONTEND=noninteractive apt-get install -y python3-venv python3-pip
+              fi
+            fi
+          }
+
+          ensure_virtualenv() {
+            local env_dir="$1"
+            local env_activate="$env_dir/bin/activate"
+            if [ ! -d "$env_dir" ] || [ ! -f "$env_activate" ]; then
+              echo "🐍 (Re)creating virtualenv at $env_dir..."
+              rm -rf "$env_dir"
+              ensure_python_tools
+              python3 -m venv "$env_dir"
+              if [ ! -f "$env_activate" ]; then
+                echo "❌ Failed to create virtualenv at $env_dir"
+                exit 1
+              fi
+              "$env_dir/bin/python" -m ensurepip --upgrade >/dev/null 2>&1 || true
+              "$env_dir/bin/python" -m pip install --upgrade pip
+            fi
+          }
+          
+          echo "🚀 Starting blue-green deployment..."
+          echo "📊 System info:"
+          echo "  - OS: $(uname -a)"
+          echo "  - User: $(whoami)"
+          echo "  - PWD: $(pwd)"
+          echo "  - Python: $(python3 --version 2>/dev/null || echo 'Not found')"
+          echo "  - Node: $(node --version 2>/dev/null || echo 'Not found')"
+          echo "  - NPM: $(npm --version 2>/dev/null || echo 'Not found')"
+          
+          # Check if blue-green directories exist, if not, run setup first
+          if [ ! -d "/opt/china-car-parts-blue" ] || [ ! -d "/opt/china-car-parts-green" ]; then
+            echo "🔧 Blue-green directories not found. Running initial setup..."
+            
+            # Create blue-green directories
+            echo "📁 Creating blue-green directories..."
+            mkdir -p /opt/china-car-parts-blue
+            mkdir -p /opt/china-car-parts-green
+            
+            # Clone the repository to both directories
+            echo "📥 Cloning repository to blue environment..."
+            cd /opt/china-car-parts-blue
+            if [ ! -d ".git" ]; then
+              echo "  - Cloning fresh repository..."
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              echo "  - Repository exists, updating..."
+              git fetch origin
+              git reset --hard origin/main
+            fi
+            
+            echo "📥 Cloning repository to green environment..."
+            cd /opt/china-car-parts-green
+            if [ ! -d ".git" ]; then
+              echo "  - Cloning fresh repository..."
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              echo "  - Repository exists, updating..."
+              git fetch origin
+              git reset --hard origin/main
+            fi
+            
+            # Set up virtual environments
+            echo "🐍 Setting up virtual environments..."
+            cd /opt/china-car-parts-blue
+            ensure_virtualenv "/opt/china-car-parts-blue/venv"
+            source venv/bin/activate
+            pip install -r requirements.txt
+            deactivate
+
+            cd /opt/china-car-parts-green
+            ensure_virtualenv "/opt/china-car-parts-green/venv"
+            source venv/bin/activate
+            pip install -r requirements.txt
+            deactivate
+            
+            # Create systemd services
+            echo "⚙️ Creating systemd services..."
+            mkdir -p /var/log/china-car-parts
+            
+            # Create blue API service
+            printf '%s\n' \
+              '[Unit]' \
+              'Description=China Car Parts API (Blue)' \
+              'After=network.target' \
+              '' \
+              '[Service]' \
+              'Type=simple' \
+              'User=root' \
+              'WorkingDirectory=/opt/china-car-parts-blue' \
+              'Environment=PATH=/opt/china-car-parts-blue/venv/bin' \
+              'ExecStart=/opt/china-car-parts-blue/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8001' \
+              'Restart=always' \
+              '' \
+              '[Install]' \
+              'WantedBy=multi-user.target' \
+              '' \
+              > /etc/systemd/system/china-car-parts-api-blue.service
+
+            # Create blue bot service
+            printf '%s\n' \
+              '[Unit]' \
+              'Description=China Car Parts Telegram Bot Service (Blue)' \
+              'After=network.target china-car-parts-api-blue.service' \
+              '' \
+              '[Service]' \
+              'User=root' \
+              'WorkingDirectory=/opt/china-car-parts-blue' \
+              'Environment=PATH=/opt/china-car-parts-blue/venv/bin' \
+              'ExecStart=/opt/china-car-parts-blue/venv/bin/python -m app.bot.bot' \
+              'Restart=always' \
+              '' \
+              '[Install]' \
+              'WantedBy=multi-user.target' \
+              '' \
+              > /etc/systemd/system/china-car-parts-bot-blue.service
+
+            # Create green API service
+            printf '%s\n' \
+              '[Unit]' \
+              'Description=China Car Parts API (Green)' \
+              'After=network.target' \
+              '' \
+              '[Service]' \
+              'Type=simple' \
+              'User=root' \
+              'WorkingDirectory=/opt/china-car-parts-green' \
+              'Environment=PATH=/opt/china-car-parts-green/venv/bin' \
+              'ExecStart=/opt/china-car-parts-green/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port 8002' \
+              'Restart=always' \
+              '' \
+              '[Install]' \
+              'WantedBy=multi-user.target' \
+              '' \
+              > /etc/systemd/system/china-car-parts-api-green.service
+
+            # Create green bot service
+            printf '%s\n' \
+              '[Unit]' \
+              'Description=China Car Parts Telegram Bot Service (Green)' \
+              'After=network.target china-car-parts-api-green.service' \
+              '' \
+              '[Service]' \
+              'User=root' \
+              'WorkingDirectory=/opt/china-car-parts-green' \
+              'Environment=PATH=/opt/china-car-parts-green/venv/bin' \
+              'ExecStart=/opt/china-car-parts-green/venv/bin/python -m app.bot.bot' \
+              'Restart=always' \
+              '' \
+              '[Install]' \
+              'WantedBy=multi-user.target' \
+              '' \
+              > /etc/systemd/system/china-car-parts-bot-green.service
+
+            # Reload systemd and start services
+            echo "🔄 Reloading systemd and starting services..."
+            systemctl daemon-reload
+            systemctl enable china-car-parts-api-blue
+            systemctl enable china-car-parts-api-green
+            systemctl enable china-car-parts-bot-blue
+            systemctl enable china-car-parts-bot-green
+            systemctl start china-car-parts-api-blue
+            systemctl start china-car-parts-bot-blue
+            
+            echo "✅ Initial blue-green setup completed!"
+          else
+            echo "✅ Blue-green infrastructure already exists, proceeding with deployment..."
+          fi
+          
+          # Determine current and target environments
+          # Check which port is primary (not backup) in china_car_parts_api upstream
+          CURRENT_PORT=$(nginx -T 2>/dev/null | grep -A 5 'upstream china_car_parts_api' | grep -v backup | grep -o '800[12]' | head -1)
+          if [ "$CURRENT_PORT" = "8001" ]; then
+            TARGET="green"
+            TARGET_PORT="8002"
+          else
+            TARGET="blue"
+            TARGET_PORT="8001"
+          fi
+          
+          echo "🔄 Deploying to $TARGET environment..."
+          
+          # Deploy to target environment
+          cd /opt/china-car-parts-$TARGET
+          git reset --hard HEAD
+          git clean -fd -e data/ -e data/app.db
+          git pull origin main
+          ensure_virtualenv "/opt/china-car-parts-$TARGET/venv"
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+          # Create database backup before migration
+          echo "📦 Creating database backup before migration..."
+          BACKUP_FILE="/opt/backups/production_db_backup_$(date +%Y%m%d_%H%M%S).db"
+          mkdir -p /opt/backups
+          if [ -f "/opt/china-car-parts-$TARGET/data/china_car_parts.db" ]; then
+            cp /opt/china-car-parts-$TARGET/data/china_car_parts.db "$BACKUP_FILE"
+            echo "✅ Database backup created: $BACKUP_FILE"
+          else
+            echo "⚠️ No existing database found, will create new one"
+          fi
+          
+          # Run database migration
+          echo "🗄️ Running database migration..."
+          alembic upgrade head
+
+          # Ensure Node.js and npm are available for frontend builds
+          echo "🛠️ Ensuring Node.js environment is ready..."
+          if ! command -v npm >/dev/null 2>&1; then
+            echo "🛠️ npm not found, installing Node.js 18..."
+            if command -v curl >/dev/null 2>&1; then
+              curl -fsSL https://deb.nodesource.com/setup_18.x -o /tmp/nodesource_setup.sh
+              if command -v sudo >/dev/null 2>&1; then
+                sudo bash /tmp/nodesource_setup.sh
+                DEBIAN_FRONTEND=noninteractive sudo apt-get install -y nodejs
+              else
+                bash /tmp/nodesource_setup.sh
+                DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+              fi
+              rm -f /tmp/nodesource_setup.sh
+            else
+              echo "⚠️ curl not available; falling back to default apt repositories."
+              if command -v sudo >/dev/null 2>&1; then
+                sudo apt-get update
+                DEBIAN_FRONTEND=noninteractive sudo apt-get install -y nodejs npm
+              else
+                apt-get update
+                DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs npm
+              fi
+            fi
+          fi
+          if ! command -v npm >/dev/null 2>&1; then
+            echo "❌ npm installation failed; aborting deployment."
+            exit 1
+          fi
+          if command -v node >/dev/null 2>&1; then
+            node --version
+          else
+            echo "⚠️ node command not found after installation attempt"
+          fi
+          npm --version
+
+          # Build Admin Panel Frontend
+          echo "🎨 Building Admin Panel..."
+          cd app/frontend/panel
+          npm install
+          export VITE_API_BASE_URL="/api/v1"
+          npm run build
+          
+          # Build Customer Portal Frontend
+          echo "🌐 Building Customer Portal..."
+          cd ../web
+          npm install
+          npm run build
+          
+          # Go back to project root
+          cd ../../..
+          
+          # Copy built frontend to shared directories used by Nginx
+          echo "📁 Copying frontend builds to shared directories..."
+          echo "🔍 Checking Admin Panel build..."
+          ls -la app/frontend/panel/dist/ || echo "❌ Admin Panel dist directory not found"
+          echo "🔍 Checking Customer Portal build..."
+          ls -la app/frontend/web/dist/ || echo "❌ Customer Portal dist directory not found"
+
+          mkdir -p /opt/china-car-parts/app/frontend/panel/dist
+          mkdir -p /opt/china-car-parts/app/frontend/web/dist
+
+          echo "📋 Copying Admin Panel files..."
+          cp -r app/frontend/panel/dist/* /opt/china-car-parts/app/frontend/panel/dist/ || echo "❌ Failed to copy Admin Panel files"
+          echo "📋 Copying Customer Portal files..."
+          cp -r app/frontend/web/dist/* /opt/china-car-parts/app/frontend/web/dist/ || echo "❌ Failed to copy Customer Portal files"
+
+          echo "🔍 Verifying copied files..."
+          ls -la /opt/china-car-parts/app/frontend/panel/dist/ || echo "❌ Admin Panel files not found in target"
+          ls -la /opt/china-car-parts/app/frontend/web/dist/ || echo "❌ Customer Portal files not found in target"
+
+          # Ensure Nginx is installed and ready
+          echo "🛠️ Ensuring Nginx is installed..."
+          if ! command -v nginx >/dev/null 2>&1; then
+            echo "🛠️ Nginx not found, installing..."
+            if command -v sudo >/dev/null 2>&1; then
+              sudo apt-get update
+              DEBIAN_FRONTEND=noninteractive sudo apt-get install -y nginx
+            else
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y nginx
+            fi
+          fi
+          if [ ! -d /etc/nginx ]; then
+            echo "❌ Nginx installation failed (missing /etc/nginx)"
+            exit 1
+          fi
+
+          # Set proper file permissions
+          echo "🔐 Setting file permissions..."
+          chmod -R 755 /opt/china-car-parts/app/frontend/panel/dist/
+          chmod -R 755 /opt/china-car-parts/app/frontend/web/dist/
+          chown -R www-data:www-data /opt/china-car-parts/app/frontend/panel/dist/ || true
+          chown -R www-data:www-data /opt/china-car-parts/app/frontend/web/dist/ || true
+
+          # Update Nginx configuration
+          echo "🌐 Updating Nginx configuration..."
+          NGINX_SITE="/etc/nginx/sites-available/china-car-parts"
+          cp deployment/configs/nginx-production.conf "$NGINX_SITE"
+          ln -sf "$NGINX_SITE" /etc/nginx/sites-enabled/china-car-parts
+          if [ -f /etc/nginx/sites-enabled/default ]; then
+            rm /etc/nginx/sites-enabled/default
+          fi
+
+          # Test Nginx configuration
+          echo "🧪 Testing Nginx configuration..."
+          nginx -t
+
+          # Ensure systemd service definitions exist
+          ensure_api_service() {
+            local target="$1"
+            local port="$2"
+            local file="/etc/systemd/system/china-car-parts-api-${target}.service"
+            if [ ! -f "$file" ]; then
+              echo "🛠️ Creating missing systemd unit $file..."
+              printf '%s\n' \
+                '[Unit]' \
+                "Description=China Car Parts API (${target^})" \
+                'After=network.target' \
+                '' \
+                '[Service]' \
+                'Type=simple' \
+                'User=root' \
+                "WorkingDirectory=/opt/china-car-parts-${target}" \
+                "Environment=PATH=/opt/china-car-parts-${target}/venv/bin" \
+                "ExecStart=/opt/china-car-parts-${target}/venv/bin/python -m uvicorn app.api.main:app --host 0.0.0.0 --port ${port}" \
+                'Restart=always' \
+                '' \
+                '[Install]' \
+                'WantedBy=multi-user.target' \
+                '' \
+                > "$file"
+              systemctl daemon-reload
+              systemctl enable "china-car-parts-api-${target}"
+            fi
+          }
+          ensure_bot_service() {
+            local target="$1"
+            local file="/etc/systemd/system/china-car-parts-bot-${target}.service"
+            if [ ! -f "$file" ]; then
+              echo "🛠️ Creating missing systemd unit $file..."
+              printf '%s\n' \
+                '[Unit]' \
+                "Description=China Car Parts Telegram Bot Service (${target^})" \
+                "After=network.target china-car-parts-api-${target}.service" \
+                '' \
+                '[Service]' \
+                'User=root' \
+                "WorkingDirectory=/opt/china-car-parts-${target}" \
+                "Environment=PATH=/opt/china-car-parts-${target}/venv/bin" \
+                "ExecStart=/opt/china-car-parts-${target}/venv/bin/python -m app.bot.bot" \
+                'Restart=always' \
+                '' \
+                '[Install]' \
+                'WantedBy=multi-user.target' \
+                '' \
+                > "$file"
+              systemctl daemon-reload
+              systemctl enable "china-car-parts-bot-${target}"
+            fi
+          }
+          ensure_api_service blue 8001
+          ensure_api_service green 8002
+          ensure_bot_service blue
+          ensure_bot_service green
+
+          # Start services
+          echo "🔄 Starting services..."
+          systemctl restart china-car-parts-api-$TARGET
+          systemctl restart china-car-parts-bot-$TARGET
+          
+          # Health check with retry logic
+          echo "⏳ Waiting for services to be ready..."
+          for i in {1..30}; do
+            if curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
+              echo "✅ Health check passed"
+              break
+            fi
+            echo "⏳ Health check attempt $i/30..."
+            sleep 2
+          done
+          
+          # Final health check
+          if ! curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
+            echo "❌ Health check failed after 60 seconds"
+            exit 1
+          fi
+          
+          # Switch traffic by updating the primary server in upstream
+          # Backup the current config
+          cp "$NGINX_SITE" "$NGINX_SITE.backup"
+
+          # Switch primary and backup servers
+          if [ "$TARGET_PORT" = "8001" ]; then
+            # Make 8001 primary, 8002 backup
+            sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s backup;/ }' "$NGINX_SITE"
+          else
+            # Make 8002 primary, 8001 backup  
+            sed -i '/upstream china_car_parts_api/,/}/ { s/server 127.0.0.1:8001.*/server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s backup;/; s/server 127.0.0.1:8002.*/server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s;/ }' "$NGINX_SITE"
+          fi
+
+          # Test config and reload
+          nginx -t && nginx -s reload
+          
+          # Final comprehensive health check
+          echo "🏥 Running final health checks..."
+          sleep 5
+          
+          # Check API health
+          if ! curl -f -s http://localhost:$TARGET_PORT/api/v1/health > /dev/null; then
+            echo "❌ Final API health check failed"
+            echo "🔄 Attempting rollback..."
+            # Rollback Nginx config
+            cp "$NGINX_SITE.backup" "$NGINX_SITE"
+            nginx -t && nginx -s reload
+            echo "❌ Deployment failed and rolled back"
+            exit 1
+          fi
+          
+          # Check frontend accessibility
+          if ! curl -f -s http://localhost/ > /dev/null; then
+            echo "⚠️ Frontend accessibility check failed, but API is working"
+          fi
+          
+          if ! curl -f -s http://localhost/panel/ > /dev/null; then
+            echo "⚠️ Admin panel accessibility check failed, but API is working"
+          fi
+          
+          echo "✅ Production deployment to $TARGET completed successfully!"
+          echo "🌐 Customer Portal: http://${{ secrets.PROD_HOST }}/"
+          echo "🎛️ Admin Panel: http://${{ secrets.PROD_HOST }}/panel/"
+          echo "🔗 API Health: http://${{ secrets.PROD_HOST }}/api/v1/health"
+          SCRIPT_EOF
+          
+          # Debug connection details
+          echo "🔍 Connection details:"
+          echo "  - Host: ${{ secrets.PROD_HOST }}"
+          echo "  - User: ${{ secrets.PROD_USER }}"
+          echo "  - Password: [HIDDEN]"
+          
+          # Test SSH connection first
+          echo "🔍 Testing SSH connection..."
+          sshpass -p "${{ secrets.PROD_SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH connection test successful'"
+          
+          # Copy and execute script using password authentication
+          echo "📤 Copying deployment script to production server..."
+          sshpass -p "${{ secrets.PROD_SSH_PASSWORD }}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 deploy-blue-green.sh ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:/tmp/
+          
+          echo "🚀 Executing deployment script on production server..."
+          sshpass -p "${{ secrets.PROD_SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "
+            set -e
+            echo '🔧 Making script executable...'
+            chmod +x /tmp/deploy-blue-green.sh
+            echo '▶️ Running deployment script...'
+            /tmp/deploy-blue-green.sh
+            echo '✅ Deployment script completed successfully!'
+          "

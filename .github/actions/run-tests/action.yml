@@ -1,0 +1,121 @@
+name: 'Run Tests and Quality Checks'
+description: 'Run backend and frontend tests with quality checks'
+inputs:
+  run-backend-tests:
+    description: 'Run backend tests'
+    required: false
+    default: 'true'
+  run-frontend-tests:
+    description: 'Run frontend tests'
+    required: false
+    default: 'true'
+  run-linting:
+    description: 'Run linting checks'
+    required: false
+    default: 'true'
+  run-security-scan:
+    description: 'Run security scanning'
+    required: false
+    default: 'false'
+  run-coverage:
+    description: 'Generate coverage reports'
+    required: false
+    default: 'true'
+
+outputs:
+  backend-test-result:
+    description: 'Backend test result'
+    value: ${{ steps.backend-tests.outcome }}
+  frontend-test-result:
+    description: 'Frontend test result'
+    value: ${{ steps.frontend-tests.outcome }}
+  linting-result:
+    description: 'Linting result'
+    value: ${{ steps.linting.outcome }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: '🔍 Run Backend Linting'
+      if: inputs.run-linting == 'true' && inputs.run-backend-tests == 'true'
+      id: backend-linting
+      shell: bash
+      run: |
+        echo "::group::🔍 Backend Linting"
+        flake8 app/
+        black --check app/
+        isort --check-only app/
+        echo "::endgroup::"
+
+    - name: '🔍 Run Frontend Linting'
+      if: inputs.run-linting == 'true' && inputs.run-frontend-tests == 'true'
+      id: frontend-linting
+      shell: bash
+      run: |
+        echo "::group::🔍 Frontend Linting"
+        cd app/frontend/web && npm run lint
+        cd ../panel && npm run lint
+        echo "::endgroup::"
+
+    - name: '🧪 Run Backend Tests'
+      if: inputs.run-backend-tests == 'true'
+      id: backend-tests
+      shell: bash
+      run: |
+        echo "::group::🧪 Backend Tests"
+        if [ "${{ inputs.run-coverage }}" = "true" ]; then
+          pytest app/tests/ --cov=app --cov-report=xml --cov-report=html
+        else
+          pytest app/tests/
+        fi
+        echo "::endgroup::"
+
+    - name: '🧪 Run Frontend Tests'
+      if: inputs.run-frontend-tests == 'true'
+      id: frontend-tests
+      shell: bash
+      run: |
+        echo "::group::🧪 Frontend Tests"
+        cd app/frontend/web && npm run test:unit
+        cd ../panel && npm run test:unit
+        echo "::endgroup::"
+
+    - name: '🔒 Run Security Scan'
+      if: inputs.run-security-scan == 'true'
+      id: security-scan
+      shell: bash
+      run: |
+        echo "::group::🔒 Security Scan"
+        # Install Trivy
+        sudo apt-get update
+        sudo apt-get install wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+        echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install trivy
+        
+        # Run Trivy scan
+        trivy fs --format sarif --output trivy-results.sarif .
+        echo "::endgroup::"
+
+    - name: '📊 Upload Coverage Reports'
+      if: inputs.run-coverage == 'true' && inputs.run-backend-tests == 'true'
+      shell: bash
+      run: |
+        echo "::group::📊 Coverage Reports"
+        if [ -f coverage.xml ]; then
+          echo "Coverage report generated: coverage.xml"
+        else
+          echo "No coverage report found"
+        fi
+        echo "::endgroup::"
+
+    - name: '✅ Test Results Summary'
+      shell: bash
+      run: |
+        echo "::group::✅ Test Results Summary"
+        echo "Backend Tests: ${{ steps.backend-tests.outcome }}"
+        echo "Frontend Tests: ${{ steps.frontend-tests.outcome }}"
+        echo "Linting: ${{ steps.linting.outcome }}"
+        echo "Security Scan: ${{ steps.security-scan.outcome }}"
+        echo "::endgroup::"

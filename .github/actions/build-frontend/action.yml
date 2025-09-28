@@ -1,0 +1,101 @@
+name: 'Build Frontend Applications'
+description: 'Build web portal and admin panel frontend applications'
+inputs:
+  build-web:
+    description: 'Build web portal'
+    required: false
+    default: 'true'
+  build-panel:
+    description: 'Build admin panel'
+    required: false
+    default: 'true'
+  build-mode:
+    description: 'Build mode (dev, preview, production)'
+    required: false
+    default: 'production'
+  upload-artifacts:
+    description: 'Upload build artifacts'
+    required: false
+    default: 'false'
+
+outputs:
+  web-build-path:
+    description: 'Web portal build path'
+    value: ${{ steps.build-web.outputs.build-path }}
+  panel-build-path:
+    description: 'Admin panel build path'
+    value: ${{ steps.build-panel.outputs.build-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: '🎨 Build Web Portal'
+      if: inputs.build-web == 'true'
+      id: build-web
+      shell: bash
+      run: |
+        echo "::group::🎨 Building Web Portal"
+        cd app/frontend/web
+        
+        if [ "${{ inputs.build-mode }}" = "production" ]; then
+          npm run build
+          echo "build-path=app/frontend/web/dist" >> $GITHUB_OUTPUT
+        elif [ "${{ inputs.build-mode }}" = "preview" ]; then
+          npm run build
+          echo "build-path=app/frontend/web/dist" >> $GITHUB_OUTPUT
+        else
+          npm run dev -- --host 0.0.0.0 --port 5174 &
+          echo "build-path=app/frontend/web" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "✅ Web portal build completed"
+        echo "::endgroup::"
+
+    - name: '🎨 Build Admin Panel'
+      if: inputs.build-panel == 'true'
+      id: build-panel
+      shell: bash
+      run: |
+        echo "::group::🎨 Building Admin Panel"
+        cd app/frontend/panel
+        
+        if [ "${{ inputs.build-mode }}" = "production" ]; then
+          npm run build
+          echo "build-path=app/frontend/panel/dist" >> $GITHUB_OUTPUT
+        elif [ "${{ inputs.build-mode }}" = "preview" ]; then
+          npm run build
+          echo "build-path=app/frontend/panel/dist" >> $GITHUB_OUTPUT
+        else
+          npm run dev -- --host 0.0.0.0 --port 5173 &
+          echo "build-path=app/frontend/panel" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "✅ Admin panel build completed"
+        echo "::endgroup::"
+
+    - name: '📦 Upload Frontend Artifacts'
+      if: inputs.upload-artifacts == 'true'
+      shell: bash
+      run: |
+        echo "::group::📦 Uploading Frontend Artifacts"
+        
+        if [ "${{ inputs.build-web }}" = "true" ] && [ "${{ inputs.build-mode }}" != "dev" ]; then
+          echo "📦 Uploading web portal build"
+          # Artifact upload will be handled by the calling workflow
+        fi
+        
+        if [ "${{ inputs.build-panel }}" = "true" ] && [ "${{ inputs.build-mode }}" != "dev" ]; then
+          echo "📦 Uploading admin panel build"
+          # Artifact upload will be handled by the calling workflow
+        fi
+        
+        echo "::endgroup::"
+
+    - name: '✅ Frontend Build Summary'
+      shell: bash
+      run: |
+        echo "::group::✅ Frontend Build Summary"
+        echo "🌐 Web Portal: ${{ inputs.build-web }} (${{ inputs.build-mode }})"
+        echo "🎨 Admin Panel: ${{ inputs.build-panel }} (${{ inputs.build-mode }})"
+        echo "📦 Artifacts: ${{ inputs.upload-artifacts }}"
+        echo "::endgroup::"

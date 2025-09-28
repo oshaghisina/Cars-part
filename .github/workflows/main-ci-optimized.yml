@@ -1,0 +1,205 @@
+name: 'Main CI/CD Pipeline (Optimized)'
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      run-security-scan:
+        description: 'Run security scanning'
+        type: boolean
+        default: true
+      run-coverage:
+        description: 'Generate coverage reports'
+        type: boolean
+        default: true
+      run-frontend-tests:
+        description: 'Run frontend tests'
+        type: boolean
+        default: true
+
+env:
+  IS_MAIN_BRANCH: ${{ github.ref == 'refs/heads/main' }}
+  RUN_SECURITY_SCAN: ${{ github.event.inputs.run-security-scan != 'false' }}
+  RUN_COVERAGE: ${{ github.event.inputs.run-coverage != 'false' }}
+  RUN_FRONTEND_TESTS: ${{ github.event.inputs.run-frontend-tests != 'false' }}
+
+jobs:
+  # ============================================================================
+  # MAIN CI/CD JOB
+  # ============================================================================
+  main-ci:
+    name: '🔍 Main CI/CD Pipeline'
+    runs-on: ubuntu-latest
+    
+    outputs:
+      status: ${{ steps.ci-status.outputs.status }}
+      coverage-available: ${{ steps.ci-status.outputs.coverage-available }}
+      security-scan-available: ${{ steps.ci-status.outputs.security-scan-available }}
+    
+    steps:
+    - name: '📋 Checkout Repository'
+      uses: actions/checkout@v4
+      
+    - name: '🔧 Setup Environment'
+      uses: ./.github/actions/setup-environment
+      with:
+        python-version: '3.11'
+        node-version: '18'
+        install-backend-deps: 'true'
+        install-frontend-deps: 'true'
+        setup-database: 'false'
+        
+    - name: '🧪 Run Tests and Quality Checks'
+      uses: ./.github/actions/run-tests
+      with:
+        run-backend-tests: 'true'
+        run-frontend-tests: env.RUN_FRONTEND_TESTS
+        run-linting: 'true'
+        run-security-scan: env.RUN_SECURITY_SCAN
+        run-coverage: env.RUN_COVERAGE
+        
+    - name: '🎨 Build Frontend Applications'
+      uses: ./.github/actions/build-frontend
+      with:
+        build-web: 'true'
+        build-panel: 'true'
+        build-mode: 'production'
+        upload-artifacts: 'true'
+        
+    - name: '📊 Set CI Status'
+      id: ci-status
+      shell: bash
+      run: |
+        echo "status=success" >> $GITHUB_OUTPUT
+        echo "coverage-available=${{ env.RUN_COVERAGE }}" >> $GITHUB_OUTPUT
+        echo "security-scan-available=${{ env.RUN_SECURITY_SCAN }}" >> $GITHUB_OUTPUT
+        
+    - name: '📦 Upload CI Artifacts'
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-artifacts
+        path: |
+          coverage.xml
+          htmlcov/
+          trivy-results.sarif
+          app/frontend/web/dist/
+          app/frontend/panel/dist/
+        retention-days: 7
+
+  # ============================================================================
+  # SECURITY SCANNING JOB
+  # ============================================================================
+  security-scan:
+    name: '🔒 Security Scanning'
+    runs-on: ubuntu-latest
+    if: env.RUN_SECURITY_SCAN == 'true'
+    needs: [main-ci]
+    
+    steps:
+    - name: '📋 Checkout Repository'
+      uses: actions/checkout@v4
+      
+    - name: '🔧 Setup Environment'
+      uses: ./.github/actions/setup-environment
+      with:
+        python-version: '3.11'
+        node-version: '18'
+        install-backend-deps: 'true'
+        install-frontend-deps: 'false'
+        setup-database: 'false'
+        
+    - name: '🔒 Run Security Scan'
+      uses: ./.github/actions/run-tests
+      with:
+        run-backend-tests: 'false'
+        run-frontend-tests: 'false'
+        run-linting: 'false'
+        run-security-scan: 'true'
+        run-coverage: 'false'
+        
+    - name: '📊 Upload Security Results'
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-results
+        path: |
+          trivy-results.sarif
+        retention-days: 30
+
+  # ============================================================================
+  # COVERAGE REPORTING JOB
+  # ============================================================================
+  coverage-report:
+    name: '📊 Coverage Reporting'
+    runs-on: ubuntu-latest
+    if: env.RUN_COVERAGE == 'true' && env.IS_MAIN_BRANCH == 'true'
+    needs: [main-ci]
+    
+    steps:
+    - name: '📋 Checkout Repository'
+      uses: actions/checkout@v4
+      
+    - name: '📥 Download Coverage Artifacts'
+      uses: actions/download-artifact@v4
+      with:
+        name: ci-artifacts
+        path: ./artifacts
+        
+    - name: '📊 Upload Coverage to Codecov'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./artifacts/coverage.xml
+        flags: backend
+        name: backend-coverage
+        fail_ci_if_error: false
+        
+    - name: '📈 Generate Coverage Report'
+      shell: bash
+      run: |
+        echo "::group::📈 Coverage Report"
+        if [ -f "./artifacts/coverage.xml" ]; then
+          echo "✅ Coverage report available"
+          echo "📊 Coverage file: ./artifacts/coverage.xml"
+        else
+          echo "❌ Coverage report not found"
+        fi
+        echo "::endgroup::"
+
+  # ============================================================================
+  # NOTIFICATION JOB
+  # ============================================================================
+  notify:
+    name: '📢 Notify Results'
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [main-ci, security-scan, coverage-report]
+    
+    steps:
+    - name: '📊 Workflow Summary'
+      shell: bash
+      run: |
+        echo "::group::📊 Main CI/CD Summary"
+        echo "🔍 Main CI: ${{ needs.main-ci.result }}"
+        echo "🔒 Security Scan: ${{ needs.security-scan.result }}"
+        echo "📊 Coverage Report: ${{ needs.coverage-report.result }}"
+        echo "🌍 Branch: ${{ github.ref_name }}"
+        echo "⏰ Completed: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+        echo "::endgroup::"
+        
+    - name: '📦 Artifact Summary'
+      if: always()
+      shell: bash
+      run: |
+        echo "::group::📦 Available Artifacts"
+        echo "🔍 CI Artifacts: Available"
+        if [ "${{ needs.security-scan.result }}" != "skipped" ]; then
+          echo "🔒 Security Results: Available"
+        fi
+        if [ "${{ needs.coverage-report.result }}" != "skipped" ]; then
+          echo "📊 Coverage Report: Available"
+        fi
+        echo "::endgroup::"

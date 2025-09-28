@@ -1,0 +1,106 @@
+name: Parts & Inventory Integration Guardrails
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'app/api/routers/parts_*.py'
+      - 'app/services/parts_enhanced_service.py'
+      - 'app/schemas/parts_schemas.py'
+      - 'app/models/stock_models.py'
+      - 'app/frontend/web/src/views/Search.vue'
+      - 'app/frontend/web/src/components/pdp/BuyBox.vue'
+      - 'app/frontend/web/src/services/api.js'
+      - 'app/frontend/panel/src/views/Parts.vue'
+      - 'app/frontend/panel/src/api/partsApi.js'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'app/api/routers/parts_*.py'
+      - 'app/services/parts_enhanced_service.py'
+      - 'app/schemas/parts_schemas.py'
+      - 'app/models/stock_models.py'
+      - 'app/frontend/web/src/views/Search.vue'
+      - 'app/frontend/web/src/components/pdp/BuyBox.vue'
+      - 'app/frontend/web/src/services/api.js'
+      - 'app/frontend/panel/src/views/Parts.vue'
+      - 'app/frontend/panel/src/api/partsApi.js'
+
+jobs:
+  guardrails:
+    runs-on: ubuntu-latest
+    
+    services:
+      sqlite:
+        image: sqlite:latest
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install frontend dependencies
+      run: |
+        cd app/frontend/web && npm ci
+        cd ../panel && npm ci
+    
+    - name: Build frontend applications
+      run: |
+        cd app/frontend/web && npm run build
+        cd ../panel && npm run build
+    
+    - name: Set up test database
+      run: |
+        python scripts/create_stock_pricing_tables.py
+        python scripts/create_admin_user.py
+    
+    - name: Start backend server
+      run: |
+        cd app && python -m uvicorn api.main:app --host 0.0.0.0 --port 8001 &
+        sleep 10
+    
+    - name: Start frontend servers
+      run: |
+        cd app/frontend/web && npm run preview -- --host 0.0.0.0 --port 5174 &
+        cd ../panel && npm run preview -- --host 0.0.0.0 --port 5173 &
+        sleep 15
+    
+    - name: Run CI Guardrails
+      run: |
+        python scripts/ci_guardrails_parts.py --fail-fast
+    
+    - name: Run Smoke Tests
+      run: |
+        python scripts/smoke_test_parts_integration.py --verbose
+      continue-on-error: true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: guardrails-results
+        path: |
+          *.log
+          test-results/

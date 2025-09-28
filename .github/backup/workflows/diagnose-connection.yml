@@ -1,0 +1,50 @@
+name: Diagnose Production Server Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Diagnose SSH Connection Issues
+        run: |
+          # Install sshpass for password authentication
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+          
+          # Debug connection details
+          echo "🔍 Connection details:"
+          echo "  - Host: ${{ secrets.PROD_HOST }}"
+          echo "  - User: ${{ secrets.PROD_USER }}"
+          echo "  - Password: [HIDDEN]"
+          
+          # Test 1: Basic connectivity
+          echo "🔍 Test 1: Basic connectivity (ping test)..."
+          ping -c 3 ${{ secrets.PROD_HOST }} || echo "❌ Ping failed"
+          
+          # Test 2: SSH port check
+          echo "🔍 Test 2: SSH port check..."
+          nc -zv ${{ secrets.PROD_HOST }} 22 || echo "❌ SSH port not accessible"
+          
+          # Test 3: SSH with verbose output
+          echo "🔍 Test 3: SSH with verbose output..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -vvv -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH test successful'" || echo "❌ SSH test failed"
+          
+          # Test 4: Try different SSH options
+          echo "🔍 Test 4: Try different SSH options..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -o PreferredAuthentications=password -o PubkeyAuthentication=no ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH with password auth only successful'" || echo "❌ SSH with password auth only failed"
+          
+          # Test 5: Check if it's a timing issue
+          echo "🔍 Test 5: Check timing with longer timeout..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=30 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH with longer timeout successful'" || echo "❌ SSH with longer timeout failed"
+          
+          # Test 6: Check SSH service status on server
+          echo "🔍 Test 6: Check SSH service status..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "systemctl status ssh --no-pager" || echo "❌ Could not check SSH service status"
+          
+          # Test 7: Check authentication methods
+          echo "🔍 Test 7: Check available authentication methods..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "grep -E '^(PasswordAuthentication|PermitRootLogin|UsePAM)' /etc/ssh/sshd_config" || echo "❌ Could not check SSH config"
+          
+          echo "✅ Diagnosis complete!"

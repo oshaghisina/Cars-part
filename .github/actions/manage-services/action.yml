@@ -1,0 +1,171 @@
+name: 'Manage Application Services'
+description: 'Start, stop, and manage backend and frontend services'
+inputs:
+  start-backend:
+    description: 'Start backend API server'
+    required: false
+    default: 'false'
+  start-web:
+    description: 'Start web portal server'
+    required: false
+    default: 'false'
+  start-panel:
+    description: 'Start admin panel server'
+    required: false
+    default: 'false'
+  backend-port:
+    description: 'Backend API port'
+    required: false
+    default: '8001'
+  web-port:
+    description: 'Web portal port'
+    required: false
+    default: '5174'
+  panel-port:
+    description: 'Admin panel port'
+    required: false
+    default: '5173'
+  wait-time:
+    description: 'Wait time for services to start (seconds)'
+    required: false
+    default: '10'
+
+outputs:
+  backend-pid:
+    description: 'Backend process ID'
+    value: ${{ steps.start-backend.outputs.pid }}
+  web-pid:
+    description: 'Web portal process ID'
+    value: ${{ steps.start-web.outputs.pid }}
+  panel-pid:
+    description: 'Admin panel process ID'
+    value: ${{ steps.start-panel.outputs.pid }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: '🔧 Start Backend API Server'
+      if: inputs.start-backend == 'true'
+      id: start-backend
+      shell: bash
+      run: |
+        echo "::group::🔧 Starting Backend API Server"
+        cd app
+        python -m uvicorn api.main:app --host 0.0.0.0 --port ${{ inputs.backend-port }} &
+        BACKEND_PID=$!
+        echo "pid=$BACKEND_PID" >> $GITHUB_OUTPUT
+        echo "Backend API started with PID: $BACKEND_PID"
+        echo "::endgroup::"
+
+    - name: '🌐 Start Web Portal Server'
+      if: inputs.start-web == 'true'
+      id: start-web
+      shell: bash
+      run: |
+        echo "::group::🌐 Starting Web Portal Server"
+        cd app/frontend/web
+        npm run preview -- --host 0.0.0.0 --port ${{ inputs.web-port }} &
+        WEB_PID=$!
+        echo "pid=$WEB_PID" >> $GITHUB_OUTPUT
+        echo "Web portal started with PID: $WEB_PID"
+        echo "::endgroup::"
+
+    - name: '🎨 Start Admin Panel Server'
+      if: inputs.start-panel == 'true'
+      id: start-panel
+      shell: bash
+      run: |
+        echo "::group::🎨 Starting Admin Panel Server"
+        cd app/frontend/panel
+        npm run preview -- --host 0.0.0.0 --port ${{ inputs.panel-port }} &
+        PANEL_PID=$!
+        echo "pid=$PANEL_PID" >> $GITHUB_OUTPUT
+        echo "Admin panel started with PID: $PANEL_PID"
+        echo "::endgroup::"
+
+    - name: '⏳ Wait for Services to Start'
+      if: inputs.start-backend == 'true' || inputs.start-web == 'true' || inputs.start-panel == 'true'
+      shell: bash
+      run: |
+        echo "::group::⏳ Waiting for Services to Start"
+        echo "Waiting ${{ inputs.wait-time }} seconds for services to initialize..."
+        sleep ${{ inputs.wait-time }}
+        
+        # Check if services are running
+        if [ "${{ inputs.start-backend }}" = "true" ]; then
+          if ps -p ${{ steps.start-backend.outputs.pid }} > /dev/null; then
+            echo "✅ Backend API is running (PID: ${{ steps.start-backend.outputs.pid }})"
+          else
+            echo "❌ Backend API failed to start"
+            exit 1
+          fi
+        fi
+        
+        if [ "${{ inputs.start-web }}" = "true" ]; then
+          if ps -p ${{ steps.start-web.outputs.pid }} > /dev/null; then
+            echo "✅ Web portal is running (PID: ${{ steps.start-web.outputs.pid }})"
+          else
+            echo "❌ Web portal failed to start"
+            exit 1
+          fi
+        fi
+        
+        if [ "${{ inputs.start-panel }}" = "true" ]; then
+          if ps -p ${{ steps.start-panel.outputs.pid }} > /dev/null; then
+            echo "✅ Admin panel is running (PID: ${{ steps.start-panel.outputs.pid }})"
+          else
+            echo "❌ Admin panel failed to start"
+            exit 1
+          fi
+        fi
+        
+        echo "::endgroup::"
+
+    - name: '🔍 Health Check Services'
+      if: inputs.start-backend == 'true' || inputs.start-web == 'true' || inputs.start-panel == 'true'
+      shell: bash
+      run: |
+        echo "::group::🔍 Health Check Services"
+        
+        if [ "${{ inputs.start-backend }}" = "true" ]; then
+          echo "🔍 Checking backend API health..."
+          for i in {1..5}; do
+            if curl -f http://localhost:${{ inputs.backend-port }}/api/v1/health > /dev/null 2>&1; then
+              echo "✅ Backend API health check passed"
+              break
+            else
+              echo "⏳ Backend API health check attempt $i/5..."
+              sleep 2
+            fi
+          done
+        fi
+        
+        if [ "${{ inputs.start-web }}" = "true" ]; then
+          echo "🔍 Checking web portal..."
+          if curl -f http://localhost:${{ inputs.web-port }} > /dev/null 2>&1; then
+            echo "✅ Web portal is accessible"
+          else
+            echo "⚠️ Web portal may not be ready yet"
+          fi
+        fi
+        
+        if [ "${{ inputs.start-panel }}" = "true" ]; then
+          echo "🔍 Checking admin panel..."
+          if curl -f http://localhost:${{ inputs.panel-port }} > /dev/null 2>&1; then
+            echo "✅ Admin panel is accessible"
+          else
+            echo "⚠️ Admin panel may not be ready yet"
+          fi
+        fi
+        
+        echo "::endgroup::"
+
+    - name: '✅ Service Management Summary'
+      shell: bash
+      run: |
+        echo "::group::✅ Service Management Summary"
+        echo "🔧 Backend API: ${{ inputs.start-backend }} (Port: ${{ inputs.backend-port }})"
+        echo "🌐 Web Portal: ${{ inputs.start-web }} (Port: ${{ inputs.web-port }})"
+        echo "🎨 Admin Panel: ${{ inputs.start-panel }} (Port: ${{ inputs.panel-port }})"
+        echo "⏳ Wait Time: ${{ inputs.wait-time }}s"
+        echo "::endgroup::"

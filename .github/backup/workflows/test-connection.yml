@@ -1,0 +1,44 @@
+name: Test Production Server Connection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-connection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test SSH Connection
+        run: |
+          # Install sshpass for password authentication
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+          
+          # Debug connection details
+          echo "🔍 Connection details:"
+          echo "  - Host: ${{ secrets.PROD_HOST }}"
+          echo "  - User: ${{ secrets.PROD_USER }}"
+          echo "  - Password: [HIDDEN]"
+          
+          # Test basic SSH connection
+          echo "🔍 Testing basic SSH connection..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "echo 'SSH connection test successful'"
+          
+          # Test SCP file transfer
+          echo "🔍 Testing SCP file transfer..."
+          echo "test content" > test-file.txt
+          sshpass -p "${{ secrets.PROD_PASS }}" scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 test-file.txt ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }}:/tmp/
+          
+          # Test file execution
+          echo "🔍 Testing remote command execution..."
+          sshpass -p "${{ secrets.PROD_PASS }}" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 ${{ secrets.PROD_USER }}@${{ secrets.PROD_HOST }} "
+            echo 'Remote command execution test successful'
+            echo 'Current user: $(whoami)'
+            echo 'Current directory: $(pwd)'
+            echo 'System info: $(uname -a)'
+            echo 'Python version: $(python3 --version 2>/dev/null || echo \"Python not found\")'
+            echo 'Node version: $(node --version 2>/dev/null || echo \"Node not found\")'
+            echo 'NPM version: $(npm --version 2>/dev/null || echo \"NPM not found\")'
+            echo 'Git version: $(git --version 2>/dev/null || echo \"Git not found\")'
+          "
+          
+          echo "✅ All connection tests passed!"

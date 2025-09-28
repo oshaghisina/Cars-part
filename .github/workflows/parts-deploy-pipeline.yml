@@ -1,0 +1,231 @@
+name: 'Parts & Deploy Pipeline'
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'app/api/routers/parts_*.py'
+      - 'app/services/parts_enhanced_service.py'
+      - 'app/schemas/parts_schemas.py'
+      - 'app/models/stock_models.py'
+      - 'app/frontend/web/src/views/Search.vue'
+      - 'app/frontend/web/src/components/pdp/BuyBox.vue'
+      - 'app/frontend/web/src/services/api.js'
+      - 'app/frontend/panel/src/views/Parts.vue'
+      - 'app/frontend/panel/src/api/partsApi.js'
+      - 'scripts/deploy-*.sh'
+      - 'scripts/create_*.py'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'app/api/routers/parts_*.py'
+      - 'app/services/parts_enhanced_service.py'
+      - 'app/schemas/parts_schemas.py'
+      - 'app/models/stock_models.py'
+      - 'app/frontend/web/src/views/Search.vue'
+      - 'app/frontend/web/src/components/pdp/BuyBox.vue'
+      - 'app/frontend/web/src/services/api.js'
+      - 'app/frontend/panel/src/views/Parts.vue'
+      - 'app/frontend/panel/src/api/partsApi.js'
+  workflow_dispatch:
+    inputs:
+      run-parts-guardrails:
+        description: 'Force run parts guardrails'
+        type: boolean
+        default: false
+      run-deployment:
+        description: 'Force run deployment'
+        type: boolean
+        default: false
+
+env:
+  IS_PARTS_CHANGE: ${{ contains(github.event.head_commit.modified, 'parts') || github.event.inputs.run-parts-guardrails == 'true' }}
+  IS_MAIN_BRANCH: ${{ github.ref == 'refs/heads/main' }}
+  IS_DEPLOYMENT_NEEDED: ${{ github.ref == 'refs/heads/main' && (contains(github.event.head_commit.modified, 'parts') || github.event.inputs.run-deployment == 'true') }}
+
+jobs:
+  # ============================================================================
+  # PARTS GUARDRAILS JOB
+  # ============================================================================
+  parts-guardrails:
+    name: '🛡️ Parts Integration Guardrails'
+    runs-on: ubuntu-latest
+    if: env.IS_PARTS_CHANGE == 'true'
+    
+    services:
+      sqlite:
+        image: sqlite:latest
+        
+    outputs:
+      status: ${{ steps.guardrails-status.outputs.status }}
+      artifacts-path: ${{ steps.guardrails-status.outputs.artifacts-path }}
+    
+    steps:
+    - name: '📋 Checkout Repository'
+      uses: actions/checkout@v4
+      
+    - name: '🔧 Setup Environment'
+      uses: ./.github/actions/setup-environment
+      with:
+        python-version: '3.11'
+        node-version: '18'
+        install-backend-deps: 'true'
+        install-frontend-deps: 'true'
+        setup-database: 'true'
+        
+    - name: '🎨 Build Frontend Applications'
+      uses: ./.github/actions/build-frontend
+      with:
+        build-web: 'true'
+        build-panel: 'true'
+        build-mode: 'preview'
+        upload-artifacts: 'false'
+        
+    - name: '⚙️ Start Services'
+      uses: ./.github/actions/manage-services
+      with:
+        start-backend: 'true'
+        start-web: 'true'
+        start-panel: 'true'
+        backend-port: '8001'
+        web-port: '5174'
+        panel-port: '5173'
+        wait-time: '15'
+        
+    - name: '🔍 Run Parts Change Detection'
+      id: parts-check
+      shell: bash
+      run: |
+        echo "::group::🔍 Parts Change Detection"
+        ./.github/scripts/check-parts-changes.sh
+        echo "::endgroup::"
+        
+    - name: '🛡️ Run CI Guardrails'
+      if: steps.parts-check.outcome == 'success'
+      shell: bash
+      run: |
+        echo "::group::🛡️ CI Guardrails"
+        python scripts/ci_guardrails_parts.py --fail-fast
+        echo "::endgroup::"
+        
+    - name: '🧪 Run Smoke Tests'
+      if: steps.parts-check.outcome == 'success'
+      shell: bash
+      run: |
+        echo "::group::🧪 Smoke Tests"
+        python scripts/smoke_test_parts_integration.py --verbose
+        echo "::endgroup::"
+      continue-on-error: true
+      
+    - name: '📊 Set Guardrails Status'
+      id: guardrails-status
+      shell: bash
+      run: |
+        if [ "${{ steps.parts-check.outcome }}" = "success" ]; then
+          echo "status=success" >> $GITHUB_OUTPUT
+        else
+          echo "status=skipped" >> $GITHUB_OUTPUT
+        fi
+        echo "artifacts-path=guardrails-results" >> $GITHUB_OUTPUT
+        
+    - name: '📦 Upload Guardrails Results'
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: guardrails-results
+        path: |
+          *.log
+          test-results/
+        retention-days: 7
+
+  # ============================================================================
+  # DEPLOYMENT JOB
+  # ============================================================================
+  deploy:
+    name: '🚀 Production Deployment'
+    runs-on: ubuntu-latest
+    if: env.IS_DEPLOYMENT_NEEDED == 'true'
+    needs: [parts-guardrails]
+    
+    # Allow deployment even if parts guardrails were skipped
+    if: always() && (needs.parts-guardrails.result == 'success' || needs.parts-guardrails.result == 'skipped')
+    
+    outputs:
+      deployment-status: ${{ steps.deploy.outputs.deployment-status }}
+      deployment-url: ${{ steps.deploy.outputs.deployment-url }}
+      
+    steps:
+    - name: '📋 Checkout Repository'
+      uses: actions/checkout@v4
+      
+    - name: '🔧 Setup Environment'
+      uses: ./.github/actions/setup-environment
+      with:
+        python-version: '3.11'
+        node-version: '18'
+        install-backend-deps: 'true'
+        install-frontend-deps: 'true'
+        setup-database: 'false'
+        
+    - name: '🎨 Build Frontend for Production'
+      uses: ./.github/actions/build-frontend
+      with:
+        build-web: 'true'
+        build-panel: 'true'
+        build-mode: 'production'
+        upload-artifacts: 'true'
+        
+    - name: '🚀 Deploy to Production'
+      id: deploy
+      uses: ./.github/actions/deploy
+      with:
+        server-host: ${{ secrets.PROD_SERVER_HOST }}
+        server-user: ${{ secrets.PROD_SERVER_USER }}
+        server-password: ${{ secrets.PROD_SSH_PASSWORD }}
+        deployment-type: 'blue-green'
+        environment: 'production'
+        rollback-on-failure: 'true'
+        
+    - name: '📦 Upload Deployment Artifacts'
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-artifacts
+        path: |
+          app/frontend/web/dist/
+          app/frontend/panel/dist/
+        retention-days: 30
+
+  # ============================================================================
+  # NOTIFICATION JOB
+  # ============================================================================
+  notify:
+    name: '📢 Notify Results'
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [parts-guardrails, deploy]
+    
+    steps:
+    - name: '📊 Workflow Summary'
+      shell: bash
+      run: |
+        echo "::group::📊 Workflow Summary"
+        echo "🛡️ Parts Guardrails: ${{ needs.parts-guardrails.result }}"
+        echo "🚀 Deployment: ${{ needs.deploy.result }}"
+        echo "🌍 Environment: Production"
+        echo "⏰ Completed: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+        echo "::endgroup::"
+        
+    - name: '📦 Download and Display Artifacts'
+      if: always()
+      shell: bash
+      run: |
+        echo "::group::📦 Available Artifacts"
+        if [ "${{ needs.parts-guardrails.result }}" != "skipped" ]; then
+          echo "🛡️ Guardrails Results: Available"
+        fi
+        if [ "${{ needs.deploy.result }}" = "success" ]; then
+          echo "🚀 Deployment Artifacts: Available"
+          echo "🔗 Deployment URL: ${{ needs.deploy.outputs.deployment-url }}"
+        fi
+        echo "::endgroup::"
