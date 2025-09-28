@@ -51,10 +51,6 @@ jobs:
     name: '🛡️ Parts Integration Guardrails'
     runs-on: ubuntu-latest
     
-    services:
-      sqlite:
-        image: sqlite:latest
-        
     outputs:
       status: ${{ steps.guardrails-status.outputs.status }}
       artifacts-path: ${{ steps.guardrails-status.outputs.artifacts-path }}

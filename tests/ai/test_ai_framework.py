@@ -934,7 +934,6 @@ class AITestSuite:
 
 # Pytest integration
 @pytest.fixture
-@pytest.fixture
 async def ai_test_suite():
     """Pytest fixture for AI test suite."""
     return AITestSuite()
