@@ -11,6 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.api.dependencies import get_current_active_user
+from app.db.models import User
 from app.schemas.parts_schemas import (  # ApiResponse,  # Unused import
     PartCreateIn,
     PartDetail,
@@ -280,12 +282,16 @@ async def set_part_stock(
     part_id: int,
     request: StockLevelIn,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),  # ADD AUTHENTICATION
 ):
-    """Set or update stock level for a part."""
+    """Set or update stock level for a part (Legacy endpoint - now requires authentication)."""
     try:
-        parts_service = PartsEnhancedService(db)
+        # Use enhanced stock service for better version control
+        from app.services.stock_service_enhanced import StockServiceEnhanced
+        stock_service = StockServiceEnhanced(db)
+        
         stock_data = request.dict(exclude_unset=True)
-        stock = parts_service.set_part_stock(part_id, stock_data)
+        stock = stock_service.set_part_stock_legacy(part_id, stock_data)
 
         if not stock:
             raise HTTPException(status_code=400, detail="Failed to set stock")

@@ -26,6 +26,7 @@ from app.api.routers import (
     vehicles_enhanced,
 )
 from app.api.routers.parts_admin import router as parts_admin_router
+from app.api.routers.parts_admin_v2 import router as parts_admin_v2_router
 from app.api.routers.parts_public import router as parts_public_router
 from app.core.config import settings
 from app.db.database import Base, engine
@@ -226,6 +227,7 @@ app.include_router(leads.router, prefix="/api/v1/leads", tags=["leads"])
 # Temporarily disabled
 app.include_router(parts_public_router, prefix="/api/v1/parts", tags=["parts-public"])
 app.include_router(parts_admin_router, prefix="/api/v1/admin/parts", tags=["parts-admin"])
+app.include_router(parts_admin_v2_router, prefix="/api/v1", tags=["parts-admin-v2"])
 app.include_router(vehicles_module.router, prefix="/api/v1/vehicles", tags=["vehicles"])
 app.include_router(categories_module.router, prefix="/api/v1/categories", tags=["categories"])
 app.include_router(vehicles_enhanced.router, prefix="/api/v1", tags=["vehicles-enhanced"])
