@@ -103,7 +103,7 @@
             <div class="bg-gray-50 p-4 rounded-lg">
               <h4 class="font-medium text-gray-900">API Status</h4>
               <p class="text-sm text-green-600">✅ Online</p>
-              <p class="text-sm text-gray-500">Running on localhost:8001</p>
+              <p class="text-sm text-gray-500">API Server Online</p>
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <h4 class="font-medium text-gray-900">Bot Status</h4>
