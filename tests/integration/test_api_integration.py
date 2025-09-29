@@ -47,6 +47,7 @@ class TestAPIIntegration:
         cors_headers = {
             "Origin": "http://testclient",
             "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "Content-Type",
         }
         response = client.options("/api/v1/health", headers=cors_headers)
         if response.status_code in (200, 204):
