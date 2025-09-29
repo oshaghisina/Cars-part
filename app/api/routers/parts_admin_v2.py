@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_db, get_current_active_user
 from app.db.models import User
+
 # from app.models.stock_models import StockLevel, PartVersion, StockVersion  # Unused imports
 from app.services.parts_service_enhanced import PartsServiceEnhanced
 from app.services.stock_service_enhanced import StockServiceEnhanced
@@ -19,14 +20,18 @@ router = APIRouter(prefix="/admin/v2", tags=["Admin V2"])
 # Pydantic models for V2 API
 class StockUpdateV2(BaseModel):
     """Stock update request with version control."""
+
     current_stock: int = Field(..., ge=0, description="Current stock quantity")
     reserved_quantity: int = Field(..., ge=0, description="Reserved quantity")
     min_stock_level: int = Field(..., ge=0, description="Minimum stock level")
-    expected_version: int = Field(..., ge=1, description="Expected current version for optimistic locking")
+    expected_version: int = Field(
+        ..., ge=1, description="Expected current version for optimistic locking"
+    )
 
 
 class PartUpdateV2(BaseModel):
     """Part update request with version control."""
+
     part_name: Optional[str] = Field(None, description="Part name")
     brand_oem: Optional[str] = Field(None, description="Brand/OEM")
     vehicle_make: Optional[str] = Field(None, description="Vehicle make")
@@ -45,12 +50,15 @@ class PartUpdateV2(BaseModel):
     unit: Optional[str] = Field(None, description="Unit")
     pack_size: Optional[int] = Field(None, ge=1, description="Pack size")
     status: Optional[str] = Field(None, description="Status")
-    expected_version: int = Field(..., ge=1, description="Expected current version for optimistic locking")
+    expected_version: int = Field(
+        ..., ge=1, description="Expected current version for optimistic locking"
+    )
     change_reason: Optional[str] = Field(None, description="Reason for the change")
 
 
 class StockLevelV2(BaseModel):
     """Enhanced stock level response with version info."""
+
     id: int
     part_id: int
     current_stock: int
@@ -68,6 +76,7 @@ class StockLevelV2(BaseModel):
 
 class PartV2(BaseModel):
     """Enhanced part response with version info."""
+
     id: int
     part_name: str
     brand_oem: str
@@ -98,6 +107,7 @@ class PartV2(BaseModel):
 
 class VersionHistoryItem(BaseModel):
     """Version history item."""
+
     id: int
     version: int
     changes: dict
@@ -111,6 +121,7 @@ class VersionHistoryItem(BaseModel):
 
 class RollbackRequest(BaseModel):
     """Rollback request."""
+
     target_version: int = Field(..., ge=1, description="Target version to rollback to")
     reason: Optional[str] = Field(None, description="Reason for rollback")
 
@@ -121,24 +132,24 @@ async def update_stock_v2(
     part_id: int,
     stock_data: StockUpdateV2,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Update stock with version control and authentication."""
     stock_service = StockServiceEnhanced(db)
-    
+
     try:
         stock = stock_service.set_part_stock_with_version(
             part_id=part_id,
-            stock_data=stock_data.dict(exclude={'expected_version'}),
+            stock_data=stock_data.dict(exclude={"expected_version"}),
             expected_version=stock_data.expected_version,
-            updated_by=current_user.username
+            updated_by=current_user.username,
         )
-        
+
         if not stock:
             raise HTTPException(status_code=404, detail="Stock level not found")
-        
+
         return stock
-        
+
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
@@ -149,15 +160,15 @@ async def update_stock_v2(
 async def get_stock_v2(
     part_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get stock level with version information."""
     stock_service = StockServiceEnhanced(db)
-    
+
     stock, _ = stock_service.get_stock_with_version(part_id)
     if not stock:
         raise HTTPException(status_code=404, detail="Stock level not found")
-    
+
     return stock
 
 
@@ -166,11 +177,11 @@ async def get_stock_history(
     part_id: int,
     limit: int = Query(10, ge=1, le=50, description="Number of history items to return"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get stock change history."""
     stock_service = StockServiceEnhanced(db)
-    
+
     history = stock_service.get_stock_history(part_id, limit)
     return history
 
@@ -180,20 +191,20 @@ async def rollback_stock(
     part_id: int,
     rollback_request: RollbackRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Rollback stock to a specific version."""
     stock_service = StockServiceEnhanced(db)
-    
+
     success = stock_service.rollback_stock_to_version(
         part_id=part_id,
         target_version=rollback_request.target_version,
-        rolled_back_by=str(current_user.username)
+        rolled_back_by=str(current_user.username),
     )
-    
+
     if not success:
         raise HTTPException(status_code=400, detail="Rollback failed")
-    
+
     return {"message": f"Stock rolled back to version {rollback_request.target_version}"}
 
 
@@ -203,25 +214,25 @@ async def update_part_v2(
     part_id: int,
     part_data: PartUpdateV2,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Update part with version control and authentication."""
     parts_service = PartsServiceEnhanced(db)
-    
+
     try:
         part = parts_service.update_part_with_version(
             part_id=part_id,
-            update_data=part_data.dict(exclude={'expected_version', 'change_reason'}),
+            update_data=part_data.dict(exclude={"expected_version", "change_reason"}),
             expected_version=part_data.expected_version,
             updated_by=current_user.username,
-            change_reason=part_data.change_reason
+            change_reason=part_data.change_reason,
         )
-        
+
         if not part:
             raise HTTPException(status_code=404, detail="Part not found")
-        
+
         return part
-        
+
     except ValueError as e:
         raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
@@ -232,15 +243,15 @@ async def update_part_v2(
 async def get_part_v2(
     part_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get part with version information."""
     parts_service = PartsServiceEnhanced(db)
-    
+
     part, _ = parts_service.get_part_with_version(part_id)
     if not part:
         raise HTTPException(status_code=404, detail="Part not found")
-    
+
     return part
 
 
@@ -249,11 +260,11 @@ async def get_part_history(
     part_id: int,
     limit: int = Query(10, ge=1, le=50, description="Number of history items to return"),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Get part change history."""
     parts_service = PartsServiceEnhanced(db)
-    
+
     history = parts_service.get_part_history(part_id, limit)
     return history
 
@@ -263,32 +274,31 @@ async def rollback_part(
     part_id: int,
     rollback_request: RollbackRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Rollback part to a specific version."""
     parts_service = PartsServiceEnhanced(db)
-    
+
     success = parts_service.rollback_part_to_version(
         part_id=part_id,
         target_version=rollback_request.target_version,
-        rolled_back_by=str(current_user.username)
+        rolled_back_by=str(current_user.username),
     )
-    
+
     if not success:
         raise HTTPException(status_code=400, detail="Rollback failed")
-    
+
     return {"message": f"Part rolled back to version {rollback_request.target_version}"}
 
 
 # Statistics endpoints
 @router.get("/statistics/stock")
 async def get_stock_statistics(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)
 ):
     """Get stock statistics and health metrics."""
     stock_service = StockServiceEnhanced(db)
-    
+
     stats = stock_service.get_stock_statistics()
     return stats
 
@@ -298,40 +308,38 @@ async def get_stock_statistics(
 async def invalidate_part_cache(
     part_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
 ):
     """Manually invalidate part cache."""
     from app.core.cache import cache_service
-    
+
     success = cache_service.invalidate_part(part_id)
     if not success:
         raise HTTPException(status_code=500, detail="Cache invalidation failed")
-    
+
     return {"message": f"Cache invalidated for part {part_id}"}
 
 
 @router.post("/cache/clear")
 async def clear_all_cache(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)
 ):
     """Clear all cache data."""
     from app.core.cache import cache_service
-    
+
     success = cache_service.clear_all()
     if not success:
         raise HTTPException(status_code=500, detail="Cache clear failed")
-    
+
     return {"message": "All cache data cleared"}
 
 
 @router.get("/cache/stats")
 async def get_cache_statistics(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)
 ):
     """Get cache statistics."""
     from app.core.cache import cache_service
-    
+
     stats = cache_service.get_cache_stats()
     return stats

@@ -288,8 +288,9 @@ async def set_part_stock(
     try:
         # Use enhanced stock service for better version control
         from app.services.stock_service_enhanced import StockServiceEnhanced
+
         stock_service = StockServiceEnhanced(db)
-        
+
         stock_data = request.dict(exclude_unset=True)
         stock = stock_service.set_part_stock_legacy(part_id, stock_data)
 

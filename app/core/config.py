@@ -70,28 +70,28 @@ class Settings(BaseSettings):
     jwt_secret_key: str = "your-secret-key-change-this-in-production"
     jwt_algorithm: str = "HS256"
     jwt_access_token_expire_minutes: int = 30
-    
+
     # Cache Configuration
     redis_url: str = "redis://localhost:6379/0"
     cache_enabled: bool = True
     cache_ttl: int = 300  # 5 minutes default
     cache_part_detail_ttl: int = 1  # 1 second for updated parts
     cache_part_list_ttl: int = 300  # 5 minutes for part lists
-    
+
     # Real-time Configuration
     websocket_enabled: bool = True
     websocket_heartbeat_seconds: int = 30
     websocket_max_connections: int = 1000
-    
+
     # Performance SLA
     part_detail_freshness_seconds: int = 1
     max_response_time_ms: int = 500
-    
+
     # Concurrency Control
     optimistic_locking_enabled: bool = True
     max_retry_attempts: int = 3
     lock_timeout_seconds: int = 30
-    
+
     # CDN Configuration
     cdn_enabled: bool = False
     cdn_provider: str = "cloudflare"  # cloudflare, cloudfront, none

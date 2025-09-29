@@ -23,7 +23,7 @@ class StockLevel(Base):
     min_stock_level = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, default=func.now(), nullable=False)
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now(), nullable=False)
-    
+
     # Version tracking columns
     version = Column(Integer, nullable=False, default=1)
     updated_by = Column(String(100), nullable=True)
@@ -31,7 +31,9 @@ class StockLevel(Base):
 
     # Relationships
     part = relationship("Part", back_populates="stock_level")
-    version_history = relationship("StockVersion", back_populates="stock", cascade="all, delete-orphan")
+    version_history = relationship(
+        "StockVersion", back_populates="stock", cascade="all, delete-orphan"
+    )
 
 
 class PartPrice(Base):
@@ -53,9 +55,9 @@ class PartPrice(Base):
 
 class PartVersion(Base):
     """Version history for parts changes."""
-    
+
     __tablename__ = "part_versions"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     part_id = Column(Integer, ForeignKey("parts.id"), nullable=False)
     version = Column(Integer, nullable=False)
@@ -63,22 +65,22 @@ class PartVersion(Base):
     changed_by = Column(String(100), nullable=True)
     change_reason = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
-    
+
     # Relationship
     part = relationship("Part", back_populates="version_history")
 
 
 class StockVersion(Base):
     """Version history for stock changes."""
-    
+
     __tablename__ = "stock_versions"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     stock_id = Column(Integer, ForeignKey("stock_levels.id"), nullable=False)
     version = Column(Integer, nullable=False)
     changes = Column(JSON, nullable=False)  # Field-level changes
     changed_by = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=func.now(), nullable=False)
-    
+
     # Relationship
     stock = relationship("StockLevel", back_populates="version_history")

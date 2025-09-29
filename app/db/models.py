@@ -51,7 +51,7 @@ class Part(Base):
     status = Column(String(20), nullable=False, default="active", index=True)
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
-    
+
     # Version tracking columns
     current_version = Column(Integer, nullable=False, default=1)
     last_updated_by = Column(String(100), nullable=True)
@@ -71,7 +71,9 @@ class Part(Base):
         "PartSpecification", back_populates="part", cascade="all, delete-orphan"
     )
     images = relationship("PartImage", back_populates="part", cascade="all, delete-orphan")
-    version_history = relationship("PartVersion", back_populates="part", cascade="all, delete-orphan")
+    version_history = relationship(
+        "PartVersion", back_populates="part", cascade="all, delete-orphan"
+    )
     # stock_alerts = relationship("StockAlert", back_populates="part", cascade="all, delete-orphan")
 
 

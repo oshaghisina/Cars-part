@@ -152,13 +152,14 @@ async def get_part_detail(part_id: int, db: Session = Depends(get_db)):
     try:
         # Try cache first
         from app.core.cache import cache_service
+
         cached_data = cache_service.get_part_detail(part_id)
-        
+
         if cached_data:
             # Strip helper fields before creating Pydantic model
-            clean_data = {k: v for k, v in cached_data.items() if not k.startswith('_')}
+            clean_data = {k: v for k, v in cached_data.items() if not k.startswith("_")}
             return PartDetail(**clean_data)
-        
+
         # Fallback to database
         parts_service = PartsEnhancedService(db)
         part = parts_service.get_part_by_id(part_id)
@@ -168,11 +169,11 @@ async def get_part_detail(part_id: int, db: Session = Depends(get_db)):
 
         # Serialize and cache the result
         part_detail = _serialize_part_detail(part)
-        
+
         # Convert to dict for caching
         part_dict = part_detail.dict()
         cache_service.set_part_detail(part_id, part_dict)
-        
+
         return part_detail
 
     except HTTPException:
