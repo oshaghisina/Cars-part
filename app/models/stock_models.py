@@ -5,7 +5,7 @@ Stock management models for parts inventory tracking.
 # from datetime import datetime  # Unused import
 # from typing import Optional  # Unused import
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func, JSON
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base

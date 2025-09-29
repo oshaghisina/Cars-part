@@ -6,13 +6,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.api.dependencies import get_db, get_current_active_user
+from app.api.dependencies import get_current_active_user, get_db
 from app.db.models import User
 
 # from app.models.stock_models import StockLevel, PartVersion, StockVersion  # Unused imports
 from app.services.parts_service_enhanced import PartsServiceEnhanced
 from app.services.stock_service_enhanced import StockServiceEnhanced
-
 
 router = APIRouter(prefix="/admin/v2", tags=["Admin V2"])
 

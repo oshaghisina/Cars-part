@@ -8,8 +8,8 @@ from typing import Dict, List
 from fastapi import WebSocket
 from fastapi.websockets import WebSocketState
 
-from app.core.config import settings
 from app.core.auth import verify_token
+from app.core.config import settings
 
 
 class WebSocketManager:

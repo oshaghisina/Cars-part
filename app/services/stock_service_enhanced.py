@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from app.core.cache import cache_service
 from app.core.decorators import performance_monitor, retry_on_failure, transactional
 from app.core.events import event_bus
-from app.models.stock_models import StockLevel, StockVersion
 from app.db.models import Part
+from app.models.stock_models import StockLevel, StockVersion
 
 
 class StockServiceEnhanced:

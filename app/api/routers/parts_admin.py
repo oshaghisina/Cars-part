@@ -10,8 +10,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.db.database import get_db
 from app.api.dependencies import get_current_active_user
+from app.db.database import get_db
 from app.db.models import User
 from app.schemas.parts_schemas import (  # ApiResponse,  # Unused import
     PartCreateIn,
