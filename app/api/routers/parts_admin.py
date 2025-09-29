@@ -131,23 +131,13 @@ async def list_parts(
     category: Optional[str] = Query(None, description="Filter by category name"),
     category_id: Optional[int] = Query(None, description="Filter by category id"),
     vehicle_make: Optional[str] = Query(None, description="Filter by vehicle make"),
-    brand: Optional[str] = Query(
-        None, description="Alias for vehicle make filter (brand)"
-    ),
+    brand: Optional[str] = Query(None, description="Alias for vehicle make filter (brand)"),
     model: Optional[str] = Query(None, description="Filter by vehicle model"),
-    vehicle_model: Optional[str] = Query(
-        None, description="Alias for vehicle model filter"
-    ),
+    vehicle_model: Optional[str] = Query(None, description="Alias for vehicle model filter"),
     trim: Optional[str] = Query(None, description="Filter by vehicle trim"),
-    vehicle_trim: Optional[str] = Query(
-        None, description="Alias for vehicle trim filter"
-    ),
-    price_min: Optional[Decimal] = Query(
-        None, description="Filter by minimum effective price"
-    ),
-    price_max: Optional[Decimal] = Query(
-        None, description="Filter by maximum effective price"
-    ),
+    vehicle_trim: Optional[str] = Query(None, description="Alias for vehicle trim filter"),
+    price_min: Optional[Decimal] = Query(None, description="Filter by minimum effective price"),
+    price_max: Optional[Decimal] = Query(None, description="Filter by maximum effective price"),
     db: Session = Depends(get_db),
 ):
     """List parts for admin panel with pagination and filters."""

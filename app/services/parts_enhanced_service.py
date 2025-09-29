@@ -74,9 +74,7 @@ class PartsEnhancedService:
 
         if join_price:
             price_expr = cast(
-                func.nullif(
-                    func.coalesce(PartPrice.sale_price, PartPrice.list_price), ""
-                ),
+                func.nullif(func.coalesce(PartPrice.sale_price, PartPrice.list_price), ""),
                 Numeric(12, 2),
             )
 
